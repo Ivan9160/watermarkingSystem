@@ -1,0 +1,1 @@
+{"version":3,"file":"create-organization.dto.js","sourceRoot":"","sources":["../../../../src/api/organizations/dto/create-organization.dto.ts"],"names":[],"mappings":";;;;;;;;;AAAA,OAAO,EAAE,UAAU,EAAE,QAAQ,EAAE,SAAS,EAAE,MAAM,iBAAiB,CAAC;AAElE,MAAM,OAAO,qBAAqB;IAIhC,IAAI,CAAU;CACf;AADC;IAHC,QAAQ,EAAE;IACV,UAAU,EAAE;IACZ,SAAS,CAAC,GAAG,CAAC;;mDACD"}

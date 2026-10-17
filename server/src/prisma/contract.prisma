@@ -26,7 +26,6 @@ model Organization {
 
   @@map("organizations")
 }
-
 model Batch {
   id              String @id @default(cuid(2))
   organizationId  String

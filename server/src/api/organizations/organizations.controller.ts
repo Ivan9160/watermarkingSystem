@@ -9,6 +9,8 @@ import { AuthGuard } from "@nestjs/passport";
 import type { Request } from "express";
 import { CreateOrganizationDto } from "./dto/create-organization.dto.js";
 import { OrganizationsService } from "./organizations.service.js";
+import { JwtGuard } from "../auth/jwt.guard.js";
+import { Headers } from "@nestjs/common";
 
 type AuthenticatedRequest = Request & {
   user: {
@@ -23,11 +25,15 @@ export class OrganizationsController {
   ) {}
 
   @Post()
-  @UseGuards(AuthGuard("jwt"))
+  @UseGuards(JwtGuard)
   create(
-    @Req() req: AuthenticatedRequest,
+    @Headers('authorization') authorization: string ,
     @Body() dto: CreateOrganizationDto,
   ) {
-    return this.organizationsService.create(req.user.sub, dto.name);
+    const token = authorization?.match(/^Bearer\s+(.+)$/i)?.[1];
+    if (!token) {
+      throw new Error("Bearer token is required");
+    }
+    return this.organizationsService.create(token, dto.name);
   }
 }

@@ -1,12 +1,11 @@
 import { ConflictException, Injectable } from "@nestjs/common";
-import { PrismaService } from "../prisma/prisma.service.js";
+import { db } from "../../prisma/db.ts";
 
 @Injectable()
 export class OrganizationsService {
-  constructor(private readonly prisma: PrismaService) {}
 
   async create(auth0Sub: string, name: string) {
-    const existing = await this.prisma.orm.public.Organization
+    const existing = await db.orm.public.Organization
       .where({ auth0Sub })
       .select("id")
       .first();
@@ -17,12 +16,11 @@ export class OrganizationsService {
       );
     }
 
-    const organization = await this.prisma.orm.public.Organization.create({
+    const organization = await db.orm.public.Organization.create({
       auth0Sub,
       name: name.trim(),
     });
 
-    // Keep Auth0's subject internal; return only public organization fields.
     return {
       id: organization.id,
       name: organization.name,
