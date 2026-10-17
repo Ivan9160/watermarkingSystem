@@ -1,8 +1,10 @@
-import { Module } from '@nestjs/common';
-import { ApiKeyGuard } from './api-key.guard.js';
+import { Module } from "@nestjs/common";
+import { PassportModule } from "@nestjs/passport";
+import { Auth0JwtStrategy } from "./auth0-jwt.strategy";
 
 @Module({
-  providers: [ApiKeyGuard],
-  exports: [ApiKeyGuard],
+  imports: [PassportModule.register({ defaultStrategy: "jwt" })],
+  providers: [Auth0JwtStrategy],
+  exports: [PassportModule],
 })
 export class AuthModule {}

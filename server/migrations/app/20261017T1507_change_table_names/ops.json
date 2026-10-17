@@ -1,0 +1,512 @@
+[
+  {
+    "id": "dropTable.Batch",
+    "label": "Drop table \"Batch\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Batch"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Batch\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Batch\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop table \"Batch\"",
+        "sql": "DROP TABLE \"public\".\"Batch\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Batch\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Batch\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropTable.ImageJob",
+    "label": "Drop table \"ImageJob\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "ImageJob"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"ImageJob\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ImageJob\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop table \"ImageJob\"",
+        "sql": "DROP TABLE \"public\".\"ImageJob\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"ImageJob\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ImageJob\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropTable.Organization",
+    "label": "Drop table \"Organization\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Organization"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Organization\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Organization\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop table \"Organization\"",
+        "sql": "DROP TABLE \"public\".\"Organization\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Organization\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Organization\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.batches",
+    "label": "Create table \"batches\"",
+    "summary": "Creates table \"batches\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"batches\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"batches\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"batches\"",
+        "sql": "CREATE TABLE \"public\".\"batches\" (\n  \"completedAt\" timestamptz,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" text NOT NULL,\n  \"organizationId\" text NOT NULL,\n  \"status\" text DEFAULT 'QUEUED' NOT NULL,\n  \"watermarkConfig\" json NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"batches_status_check_221b8aea\" CHECK (\"status\" IN ('QUEUED', 'PROCESSING', 'COMPLETED', 'FAILED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"batches\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"batches\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.image_jobs",
+    "label": "Create table \"image_jobs\"",
+    "summary": "Creates table \"image_jobs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"image_jobs\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"image_jobs\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"image_jobs\"",
+        "sql": "CREATE TABLE \"public\".\"image_jobs\" (\n  \"batchId\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"errorMessage\" text,\n  \"id\" text NOT NULL,\n  \"outputUrl\" text,\n  \"processedAt\" timestamptz,\n  \"sourceUrl\" text NOT NULL,\n  \"status\" text DEFAULT 'PENDING' NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"image_jobs_status_check_8276955c\" CHECK (\"status\" IN ('PENDING', 'PROCESSING', 'SUCCEEDED', 'FAILED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"image_jobs\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"image_jobs\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.organizations",
+    "label": "Create table \"organizations\"",
+    "summary": "Creates table \"organizations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "organizations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"organizations\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"organizations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"organizations\"",
+        "sql": "CREATE TABLE \"public\".\"organizations\" (\n  \"auth0Sub\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" text NOT NULL,\n  \"name\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"organizations\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"organizations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.organizations.organizations_auth0Sub_key",
+    "label": "Add unique constraint on \"organizations\" (auth0Sub)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "organizations_auth0Sub_key",
+        "table": "organizations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"organizations_auth0Sub_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "organizations_auth0Sub_key",
+          "public",
+          "\"public\".\"organizations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"organizations_auth0Sub_key\"",
+        "sql": "ALTER TABLE \"public\".\"organizations\" ADD CONSTRAINT \"organizations_auth0Sub_key\" UNIQUE (\"auth0Sub\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"organizations_auth0Sub_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "organizations_auth0Sub_key",
+          "public",
+          "\"public\".\"organizations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.batches.batches_organizationId_idx_2e17ef41",
+    "label": "Create index \"batches_organizationId_idx_2e17ef41\" on \"batches\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "batches_organizationId_idx_2e17ef41",
+        "table": "batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"batches_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"batches_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"batches_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"batches_organizationId_idx_2e17ef41\" ON \"public\".\"batches\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"batches_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"batches_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.batches.batches_organizationId_status_idx_21af5e82",
+    "label": "Create index \"batches_organizationId_status_idx_21af5e82\" on \"batches\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "batches_organizationId_status_idx_21af5e82",
+        "table": "batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"batches_organizationId_status_idx_21af5e82\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"batches_organizationId_status_idx_21af5e82\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"batches_organizationId_status_idx_21af5e82\"",
+        "sql": "CREATE INDEX \"batches_organizationId_status_idx_21af5e82\" ON \"public\".\"batches\" (\"organizationId\", \"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"batches_organizationId_status_idx_21af5e82\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"batches_organizationId_status_idx_21af5e82\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.image_jobs.image_jobs_batchId_idx_84d4b0b9",
+    "label": "Create index \"image_jobs_batchId_idx_84d4b0b9\" on \"image_jobs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "image_jobs_batchId_idx_84d4b0b9",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"image_jobs_batchId_idx_84d4b0b9\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"image_jobs_batchId_idx_84d4b0b9\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"image_jobs_batchId_idx_84d4b0b9\"",
+        "sql": "CREATE INDEX \"image_jobs_batchId_idx_84d4b0b9\" ON \"public\".\"image_jobs\" (\"batchId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"image_jobs_batchId_idx_84d4b0b9\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"image_jobs_batchId_idx_84d4b0b9\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.image_jobs.image_jobs_batchId_status_idx_a1ac997b",
+    "label": "Create index \"image_jobs_batchId_status_idx_a1ac997b\" on \"image_jobs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "image_jobs_batchId_status_idx_a1ac997b",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"image_jobs_batchId_status_idx_a1ac997b\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"image_jobs_batchId_status_idx_a1ac997b\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"image_jobs_batchId_status_idx_a1ac997b\"",
+        "sql": "CREATE INDEX \"image_jobs_batchId_status_idx_a1ac997b\" ON \"public\".\"image_jobs\" (\"batchId\", \"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"image_jobs_batchId_status_idx_a1ac997b\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"image_jobs_batchId_status_idx_a1ac997b\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.batches.batches_organizationId_fkey",
+    "label": "Add foreign key \"batches_organizationId_fkey\" on \"batches\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "batches_organizationId_fkey",
+        "table": "batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"batches_organizationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "batches_organizationId_fkey",
+          "public",
+          "\"public\".\"batches\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"batches_organizationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"batches\"\nADD CONSTRAINT \"batches_organizationId_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"batches_organizationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "batches_organizationId_fkey",
+          "public",
+          "\"public\".\"batches\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.image_jobs.image_jobs_batchId_fkey",
+    "label": "Add foreign key \"image_jobs_batchId_fkey\" on \"image_jobs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "image_jobs_batchId_fkey",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"image_jobs_batchId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "image_jobs_batchId_fkey",
+          "public",
+          "\"public\".\"image_jobs\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"image_jobs_batchId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\"\nADD CONSTRAINT \"image_jobs_batchId_fkey\"\nFOREIGN KEY (\"batchId\")\nREFERENCES \"public\".\"batches\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"image_jobs_batchId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "image_jobs_batchId_fkey",
+          "public",
+          "\"public\".\"image_jobs\""
+        ]
+      }
+    ]
+  }
+]

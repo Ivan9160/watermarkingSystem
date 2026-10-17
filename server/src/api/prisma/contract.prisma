@@ -1,0 +1,59 @@
+// use prisma-8
+
+enum BatchStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum ImageJobStatus {
+  PENDING
+  PROCESSING
+  SUCCEEDED
+  FAILED
+}
+
+model Organization {
+  id        String @id @default(cuid(2))
+  auth0Sub  String @unique
+  name      String
+
+  batches Batch[]
+
+  createdAt DateTime @default(now())
+  updatedAt temporal.updatedAt()
+
+  @@map("organizations")
+}
+
+model Batch {
+  id              String @id @default(cuid(2))
+  organizationId  String
+  watermarkConfig Json
+  status          BatchStatus @default(QUEUED)
+  createdAt       DateTime @default(now())
+  completedAt     DateTime?
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  items        ImageJob[]
+
+  @@index([organizationId, status])
+  @@map("batches")
+}
+
+model ImageJob {
+  id           String @id @default(cuid(2))
+  batchId      String
+  sourceUrl    String
+  outputUrl    String?
+  status       ImageJobStatus @default(PENDING)
+  errorMessage String?
+  createdAt    DateTime @default(now())
+  processedAt  DateTime?
+
+  batch Batch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
+  @@index([batchId, status])
+  @@map("image_jobs")
+}
