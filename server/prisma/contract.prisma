@@ -1,0 +1,132 @@
+// use prisma-8
+
+enum OrganizationStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum PresetStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum BatchStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  COMPLETED_WITH_ERRORS
+  FAILED
+}
+
+enum ImageTaskStatus {
+  PENDING
+  DOWNLOADING
+  QUEUED
+  PROCESSING
+  SUCCEEDED
+  FAILED
+}
+
+model Organization {
+  id        String             @id @default(cuid())
+  name      String
+  status    OrganizationStatus @default(ACTIVE)
+  apiKeys   ApiKey[]
+  assets    WatermarkAsset[]
+  presets   Preset[]
+  batches   Batch[]
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+}
+
+model ApiKey {
+  id             String       @id @default(cuid())
+  organizationId String
+  name           String
+  keyHash        String       @unique
+  revokedAt      DateTime?
+  createdAt      DateTime     @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+}
+
+model WatermarkAsset {
+  id             String       @id @default(cuid())
+  organizationId String
+  objectKey      String       @unique
+  mimeType       String
+  sizeBytes      BigInt
+  uploadedAt     DateTime?
+  createdAt      DateTime     @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  presets        Preset[]
+
+  @@index([organizationId])
+}
+
+model Preset {
+  id             String         @id @default(cuid())
+  organizationId String
+  name           String
+  description    String?
+  config         Json
+  logoAssetId    String?
+  status         PresetStatus   @default(ACTIVE)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  logoAsset      WatermarkAsset? @relation(fields: [logoAssetId], references: [id], onDelete: Restrict)
+  batches        Batch[]
+
+  @@index([organizationId, status])
+}
+
+model Batch {
+  id              String      @id @default(cuid())
+  organizationId  String
+  presetId        String
+  presetConfig    Json
+  logoObjectKey   String?
+  status          BatchStatus @default(QUEUED)
+  totalItems      Int         @default(0)
+  processedItems  Int         @default(0)
+  succeededItems  Int         @default(0)
+  failedItems     Int         @default(0)
+  idempotencyKey  String?
+  createdAt       DateTime    @default(now())
+  startedAt       DateTime?
+  completedAt     DateTime?
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  preset          Preset       @relation(fields: [presetId], references: [id], onDelete: Restrict)
+  items           ImageTask[]
+
+  @@unique([organizationId, idempotencyKey])
+  @@index([organizationId, status, createdAt])
+}
+
+model ImageTask {
+  id                String          @id @default(cuid())
+  batchId           String
+  organizationId    String
+  externalId        String?
+  sourceUrl         String
+  originalKey       String?
+  outputKey         String?
+  sourceContentType String?
+  outputContentType String?
+  status            ImageTaskStatus @default(PENDING)
+  attempts          Int             @default(0)
+  errorCode         String?
+  errorMessage      String?
+  processingTimeMs  Int?
+  createdAt         DateTime        @default(now())
+  startedAt         DateTime?
+  processedAt       DateTime?
+  batch             Batch           @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
+  @@unique([batchId, externalId])
+  @@index([organizationId, status])
+  @@index([batchId, status])
+}
