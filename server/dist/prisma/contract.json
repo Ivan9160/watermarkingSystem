@@ -204,6 +204,13 @@
                                     "kind": "scalar"
                                 }
                             },
+                            "imageIndex": {
+                                "nullable": false,
+                                "type": {
+                                    "codecId": "pg/int4@1",
+                                    "kind": "scalar"
+                                }
+                            },
                             "outputUrl": {
                                 "nullable": true,
                                 "type": {
@@ -215,6 +222,13 @@
                                 "nullable": true,
                                 "type": {
                                     "codecId": "pg/timestamptz-temporal@1",
+                                    "kind": "scalar"
+                                }
+                            },
+                            "productOfferId": {
+                                "nullable": false,
+                                "type": {
+                                    "codecId": "pg/text@1",
                                     "kind": "scalar"
                                 }
                             },
@@ -236,6 +250,13 @@
                                     "entityName": "ImageJobStatus",
                                     "namespaceId": "public",
                                     "plane": "domain"
+                                }
+                            },
+                            "storageKey": {
+                                "nullable": false,
+                                "type": {
+                                    "codecId": "pg/text@1",
+                                    "kind": "scalar"
                                 }
                             }
                         },
@@ -271,17 +292,26 @@
                                 "id": {
                                     "column": "id"
                                 },
+                                "imageIndex": {
+                                    "column": "imageIndex"
+                                },
                                 "outputUrl": {
                                     "column": "outputUrl"
                                 },
                                 "processedAt": {
                                     "column": "processedAt"
                                 },
+                                "productOfferId": {
+                                    "column": "productOfferId"
+                                },
                                 "sourceUrl": {
                                     "column": "sourceUrl"
                                 },
                                 "status": {
                                     "column": "status"
+                                },
+                                "storageKey": {
+                                    "column": "storageKey"
                                 }
                             },
                             "namespaceId": "public",
@@ -509,6 +539,11 @@
                                     "dataType": "pg/text",
                                     "nullable": false
                                 },
+                                "imageIndex": {
+                                    "codecId": "pg/int4@1",
+                                    "dataType": "pg/int4",
+                                    "nullable": false
+                                },
                                 "outputUrl": {
                                     "codecId": "pg/text@1",
                                     "dataType": "pg/text",
@@ -518,6 +553,11 @@
                                     "codecId": "pg/timestamptz-temporal@1",
                                     "dataType": "pg/timestamptz",
                                     "nullable": true
+                                },
+                                "productOfferId": {
+                                    "codecId": "pg/text@1",
+                                    "dataType": "pg/text",
+                                    "nullable": false
                                 },
                                 "sourceUrl": {
                                     "codecId": "pg/text@1",
@@ -538,6 +578,11 @@
                                         "namespaceId": "public",
                                         "plane": "storage"
                                     }
+                                },
+                                "storageKey": {
+                                    "codecId": "pg/text@1",
+                                    "dataType": "pg/text",
+                                    "nullable": false
                                 }
                             },
                             "foreignKeys": [
@@ -586,7 +631,13 @@
                                     "id"
                                 ]
                             },
-                            "uniques": []
+                            "uniques": [
+                                {
+                                    "columns": [
+                                        "storageKey"
+                                    ]
+                                }
+                            ]
                         },
                         "organizations": {
                             "columns": {
@@ -661,7 +712,7 @@
                 "kind": "postgres-schema"
             }
         },
-        "storageHash": "5724c69b3db9f143d24cbd45502e23d6ba77d239b12bb9182028cee13556f036"
+        "storageHash": "16731d46859f3aa73d422cdf30aa4fd82d058871b1033154f3dd87dd8715f7e4"
     },
     "execution": {
         "executionHash": "3dc90c69da62fd35ba375082263419d4dc7db4ddc538d953b1d59db8f55029a0",

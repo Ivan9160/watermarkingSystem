@@ -15,6 +15,7 @@ import { CreateOrganizationDto } from "./dto/create-organization.dto.js";
 import { OrganizationsService } from "./organizations.service.js";
 import { JwtGuard } from "../auth/jwt.guard.js";
 import { Headers } from "@nestjs/common";
+import { UnauthorizedException } from "@nestjs/common";
 let OrganizationsController = class OrganizationsController {
     organizationsService;
     constructor(organizationsService) {
@@ -23,7 +24,7 @@ let OrganizationsController = class OrganizationsController {
     create(authorization, dto) {
         const token = authorization?.match(/^Bearer\s+(.+)$/i)?.[1];
         if (!token) {
-            throw new Error("Bearer token is required");
+            throw new UnauthorizedException("Bearer token is required");
         }
         return this.organizationsService.create(token, dto.name);
     }

@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'5724c69b3db9f143d24cbd45502e23d6ba77d239b12bb9182028cee13556f036'>;
+  StorageHashBase<'16731d46859f3aa73d422cdf30aa4fd82d058871b1033154f3dd87dd8715f7e4'>;
 export type ExecutionHash =
   ExecutionHashBase<'3dc90c69da62fd35ba375082263419d4dc7db4ddc538d953b1d59db8f55029a0'>;
 export type ProfileHash =
@@ -247,10 +247,13 @@ export type FieldOutputTypes = {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly errorMessage: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/text@1']['output'];
+      readonly imageIndex: CodecTypes['pg/int4@1']['output'];
       readonly outputUrl: CodecTypes['pg/text@1']['output'] | null;
       readonly processedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly productOfferId: CodecTypes['pg/text@1']['output'];
       readonly sourceUrl: CodecTypes['pg/text@1']['output'];
       readonly status: 'PENDING' | 'PROCESSING' | 'SUCCEEDED' | 'FAILED';
+      readonly storageKey: CodecTypes['pg/text@1']['output'];
     };
     readonly Organization: {
       readonly auth0Sub: CodecTypes['pg/text@1']['output'];
@@ -276,10 +279,13 @@ export type FieldInputTypes = {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly errorMessage: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/text@1']['input'];
+      readonly imageIndex: CodecTypes['pg/int4@1']['input'];
       readonly outputUrl: CodecTypes['pg/text@1']['input'] | null;
       readonly processedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly productOfferId: CodecTypes['pg/text@1']['input'];
       readonly sourceUrl: CodecTypes['pg/text@1']['input'];
       readonly status: 'PENDING' | 'PROCESSING' | 'SUCCEEDED' | 'FAILED';
+      readonly storageKey: CodecTypes['pg/text@1']['input'];
     };
     readonly Organization: {
       readonly auth0Sub: CodecTypes['pg/text@1']['input'];
@@ -305,10 +311,13 @@ export type StorageColumnTypes = {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly errorMessage: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/text@1']['output'];
+      readonly imageIndex: CodecTypes['pg/int4@1']['output'];
       readonly outputUrl: CodecTypes['pg/text@1']['output'] | null;
       readonly processedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly productOfferId: CodecTypes['pg/text@1']['output'];
       readonly sourceUrl: CodecTypes['pg/text@1']['output'];
       readonly status: 'PENDING' | 'PROCESSING' | 'SUCCEEDED' | 'FAILED';
+      readonly storageKey: CodecTypes['pg/text@1']['output'];
     };
     readonly organizations: {
       readonly auth0Sub: CodecTypes['pg/text@1']['output'];
@@ -334,10 +343,13 @@ export type StorageColumnInputTypes = {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly errorMessage: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/text@1']['input'];
+      readonly imageIndex: CodecTypes['pg/int4@1']['input'];
       readonly outputUrl: CodecTypes['pg/text@1']['input'] | null;
       readonly processedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly productOfferId: CodecTypes['pg/text@1']['input'];
       readonly sourceUrl: CodecTypes['pg/text@1']['input'];
       readonly status: 'PENDING' | 'PROCESSING' | 'SUCCEEDED' | 'FAILED';
+      readonly storageKey: CodecTypes['pg/text@1']['input'];
     };
     readonly organizations: {
       readonly auth0Sub: CodecTypes['pg/text@1']['input'];
@@ -366,10 +378,13 @@ export namespace Models {
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     errorMessage: CodecTypes['pg/text@1']['output'] | null;
     id: CodecTypes['pg/text@1']['output'];
+    imageIndex: CodecTypes['pg/int4@1']['output'];
     outputUrl: CodecTypes['pg/text@1']['output'] | null;
     processedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+    productOfferId: CodecTypes['pg/text@1']['output'];
     sourceUrl: CodecTypes['pg/text@1']['output'];
     status: 'PENDING' | 'PROCESSING' | 'SUCCEEDED' | 'FAILED';
+    storageKey: CodecTypes['pg/text@1']['output'];
     batch: public_Batch;
     readonly [RelationKeys]?: 'batch';
   };
@@ -512,6 +527,12 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly many: false;
                 };
+                readonly imageIndex: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
                 readonly outputUrl: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
@@ -522,6 +543,12 @@ type ContractBase = Omit<
                   readonly dataType: 'pg/timestamptz';
                   readonly codecId: 'pg/timestamptz-temporal@1';
                   readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly productOfferId: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
                   readonly many: false;
                 };
                 readonly sourceUrl: {
@@ -540,9 +567,15 @@ type ContractBase = Omit<
                   };
                   readonly many: false;
                 };
+                readonly storageKey: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
               };
               primaryKey: { readonly columns: readonly ['id'] };
-              uniques: readonly [];
+              uniques: readonly [{ readonly columns: readonly ['storageKey'] }];
               indexes: readonly [
                 {
                   readonly name: 'image_jobs_batchId_idx_84d4b0b9';
@@ -735,6 +768,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly imageIndex: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
               readonly outputUrl: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -746,11 +783,19 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/timestamptz-temporal@1';
                 };
               };
+              readonly productOfferId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly sourceUrl: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly storageKey: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
@@ -777,10 +822,13 @@ type ContractBase = Omit<
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly errorMessage: { readonly column: 'errorMessage' };
                 readonly id: { readonly column: 'id' };
+                readonly imageIndex: { readonly column: 'imageIndex' };
                 readonly outputUrl: { readonly column: 'outputUrl' };
                 readonly processedAt: { readonly column: 'processedAt' };
+                readonly productOfferId: { readonly column: 'productOfferId' };
                 readonly sourceUrl: { readonly column: 'sourceUrl' };
                 readonly status: { readonly column: 'status' };
+                readonly storageKey: { readonly column: 'storageKey' };
               };
             };
           };

@@ -46,6 +46,9 @@ model ImageJob {
   batchId      String
   sourceUrl    String
   outputUrl    String?
+  productOfferId  String
+  imageIndex  Int
+  storageKey   String @unique
   status       ImageJobStatus @default(PENDING)
   errorMessage String?
   createdAt    DateTime @default(now())

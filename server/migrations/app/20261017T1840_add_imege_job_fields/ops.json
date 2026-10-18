@@ -1,0 +1,239 @@
+[
+  {
+    "id": "column.image_jobs.imageIndex",
+    "label": "Add column imageIndex to image_jobs",
+    "summary": "Adds column imageIndex to table image_jobs",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "image_jobs"
+      }
+    },
+    "operationClass": "additive",
+    "precheck": [
+      {
+        "description": "ensure column \"imageIndex\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "imageIndex"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"imageIndex\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" ADD COLUMN \"imageIndex\" int4 DEFAULT (0) NOT NULL"
+      },
+      {
+        "description": "drop temporary default from column \"imageIndex\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" ALTER COLUMN \"imageIndex\" DROP DEFAULT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"imageIndex\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "imageIndex"
+        ]
+      },
+      {
+        "description": "verify column \"imageIndex\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "imageIndex",
+          "NO"
+        ]
+      },
+      {
+        "description": "verify column \"imageIndex\" has no default after temporary default removal",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"column_default\" IS NOT NULL)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "imageIndex"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.image_jobs.productOfferId",
+    "label": "Add column productOfferId to image_jobs",
+    "summary": "Adds column productOfferId to table image_jobs",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "image_jobs"
+      }
+    },
+    "operationClass": "additive",
+    "precheck": [
+      {
+        "description": "ensure column \"productOfferId\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "productOfferId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"productOfferId\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" ADD COLUMN \"productOfferId\" text DEFAULT ('') NOT NULL"
+      },
+      {
+        "description": "drop temporary default from column \"productOfferId\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" ALTER COLUMN \"productOfferId\" DROP DEFAULT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"productOfferId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "productOfferId"
+        ]
+      },
+      {
+        "description": "verify column \"productOfferId\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "productOfferId",
+          "NO"
+        ]
+      },
+      {
+        "description": "verify column \"productOfferId\" has no default after temporary default removal",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"column_default\" IS NOT NULL)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "productOfferId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.image_jobs.storageKey",
+    "label": "Add column storageKey to image_jobs",
+    "summary": "Adds column storageKey to table image_jobs",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "storageKey",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"storageKey\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "storageKey"
+        ]
+      },
+      {
+        "description": "ensure table \"image_jobs\" is empty before adding NOT NULL column without default",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"public\".\"image_jobs\" LIMIT 1) AS \"result\"",
+        "params": [],
+        "meta": {
+          "requiredColumn": {
+            "table": "image_jobs",
+            "column": "storageKey",
+            "reason": "newField"
+          }
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"storageKey\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" ADD COLUMN \"storageKey\" text NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"storageKey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "storageKey"
+        ]
+      },
+      {
+        "description": "verify column \"storageKey\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "storageKey",
+          "NO"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.image_jobs.image_jobs_storageKey_key",
+    "label": "Add unique constraint on \"image_jobs\" (storageKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "image_jobs_storageKey_key",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"image_jobs_storageKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "image_jobs_storageKey_key",
+          "public",
+          "\"public\".\"image_jobs\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"image_jobs_storageKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" ADD CONSTRAINT \"image_jobs_storageKey_key\" UNIQUE (\"storageKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"image_jobs_storageKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "image_jobs_storageKey_key",
+          "public",
+          "\"public\".\"image_jobs\""
+        ]
+      }
+    ]
+  }
+]
