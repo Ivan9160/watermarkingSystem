@@ -1,5 +1,5 @@
-import { CreateOrganizationDto } from "./dto/create-organization.dto.js";
-import { OrganizationsService } from "./organizations.service.js";
+import { CreateOrganizationDto } from './dto/create-organization.dto.js';
+import { OrganizationsService } from './organizations.service.js';
 export declare class OrganizationsController {
     private readonly organizationsService;
     constructor(organizationsService: OrganizationsService);

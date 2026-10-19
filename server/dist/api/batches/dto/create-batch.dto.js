@@ -9,17 +9,33 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 import { Type } from 'class-transformer';
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsNotEmpty, IsObject, IsOptional, IsString, IsUrl, MaxLength, ValidateNested, } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional, } from '@nestjs/swagger';
 export class ProductImagesDto {
     offerId;
     images;
 }
 __decorate([
+    ApiProperty({
+        description: 'Allegro offer ID associated with these images.',
+        example: '123456789',
+        maxLength: 128,
+    }),
     IsString(),
     IsNotEmpty(),
     MaxLength(128),
     __metadata("design:type", String)
 ], ProductImagesDto.prototype, "offerId", void 0);
 __decorate([
+    ApiProperty({
+        description: 'HTTPS URLs of the product images. Provide between 1 and 20 images.',
+        type: [String],
+        minItems: 1,
+        maxItems: 20,
+        example: [
+            'https://example.com/images/product-1.jpg',
+            'https://example.com/images/product-2.jpg',
+        ],
+    }),
     IsArray(),
     ArrayMinSize(1),
     ArrayMaxSize(20),
@@ -31,6 +47,28 @@ export class CreateBatchDto {
     watermarkConfig;
 }
 __decorate([
+    ApiProperty({
+        description: 'Products included in the batch. Each product must contain an offer ID and between 1 and 20 HTTPS image URLs.',
+        type: () => ProductImagesDto,
+        isArray: true,
+        minItems: 1,
+        maxItems: 20,
+        example: [
+            {
+                offerId: '123456789',
+                images: [
+                    'https://example.com/images/product-1.jpg',
+                    'https://example.com/images/product-2.jpg',
+                ],
+            },
+            {
+                offerId: '987654321',
+                images: [
+                    'https://example.com/images/product-3.jpg',
+                ],
+            },
+        ],
+    }),
     IsArray(),
     ArrayMinSize(1),
     ArrayMaxSize(20),
@@ -39,6 +77,15 @@ __decorate([
     __metadata("design:type", Array)
 ], CreateBatchDto.prototype, "products", void 0);
 __decorate([
+    ApiPropertyOptional({
+        description: 'Optional JSON configuration for the watermark. The supported properties depend on the watermark processing implementation.',
+        type: 'object',
+        additionalProperties: true,
+        example: {
+            text: 'My Shop',
+            opacity: 0.5,
+        },
+    }),
     IsOptional(),
     IsObject(),
     __metadata("design:type", Object)

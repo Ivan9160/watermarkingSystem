@@ -8,10 +8,15 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 import { IsNotEmpty, IsString, MaxLength } from "class-validator";
+import { ApiProperty } from "@nestjs/swagger";
 export class CreateOrganizationDto {
     name;
 }
 __decorate([
+    ApiProperty({
+        description: 'Display name of the organization.',
+        example: 'My Allegro Shop',
+    }),
     IsString(),
     IsNotEmpty(),
     MaxLength(100),

@@ -10,9 +10,10 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-import { Body, Controller, Post, UseGuards, } from "@nestjs/common";
-import { CreateOrganizationDto } from "./dto/create-organization.dto.js";
-import { OrganizationsService } from "./organizations.service.js";
+import { Body, Controller, Post, UseGuards, } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiBody, ApiCreatedResponse, ApiBadRequestResponse, ApiUnauthorizedResponse, } from '@nestjs/swagger';
+import { CreateOrganizationDto } from './dto/create-organization.dto.js';
+import { OrganizationsService } from './organizations.service.js';
 import { AllegroUser } from "../allegro-auth/allegro-user.decorator.js";
 import { AllegroAuthGuard } from "../auth/allegro-auth.guard.js";
 let OrganizationsController = class OrganizationsController {
@@ -27,6 +28,26 @@ let OrganizationsController = class OrganizationsController {
 __decorate([
     Post(),
     UseGuards(AllegroAuthGuard),
+    ApiBearerAuth('allegroAccessToken'),
+    ApiOperation({
+        summary: 'Create an organization',
+        description: 'Creates an organization associated with the authenticated Allegro seller. ' +
+            'The Allegro seller ID is extracted from the access token and must not be ' +
+            'provided in the request body.',
+    }),
+    ApiBody({
+        type: CreateOrganizationDto,
+        description: 'Organization creation data.',
+    }),
+    ApiCreatedResponse({
+        description: 'The organization was created successfully.',
+    }),
+    ApiBadRequestResponse({
+        description: 'The request body is invalid.',
+    }),
+    ApiUnauthorizedResponse({
+        description: 'The Allegro access token is missing or invalid.',
+    }),
     __param(0, AllegroUser()),
     __param(1, Body()),
     __metadata("design:type", Function),
@@ -34,7 +55,8 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], OrganizationsController.prototype, "create", null);
 OrganizationsController = __decorate([
-    Controller("organizations"),
+    ApiTags('Organizations'),
+    Controller('organizations'),
     __metadata("design:paramtypes", [OrganizationsService])
 ], OrganizationsController);
 export { OrganizationsController };

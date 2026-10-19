@@ -1,3 +1,4 @@
+import type { Request } from 'express';
 import { BatchesService } from './batches.service.ts';
 import { CreateBatchDto } from './dto/create-batch.dto.ts';
 interface AllegroAuthenticatedRequest extends Request {

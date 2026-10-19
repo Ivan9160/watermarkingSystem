@@ -11,6 +11,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 import { Body, Controller, Post, UseGuards, Req, } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiBody, ApiCreatedResponse, ApiBadRequestResponse, ApiUnauthorizedResponse, } from '@nestjs/swagger';
 import { BatchesService } from "./batches.service.js";
 import { CreateBatchDto } from "./dto/create-batch.dto.js";
 import { AllegroAuthGuard } from "../auth/allegro-auth.guard.js";
@@ -26,6 +27,25 @@ let BatchesController = class BatchesController {
 __decorate([
     Post(),
     UseGuards(AllegroAuthGuard),
+    ApiBearerAuth('allegroAccessToken'),
+    ApiOperation({
+        summary: 'Create a batch',
+        description: 'Creates a new batch for the authenticated Allegro seller. ' +
+            'The seller ID is extracted from the Allegro access token.',
+    }),
+    ApiBody({
+        type: CreateBatchDto,
+        description: 'Batch creation data.',
+    }),
+    ApiCreatedResponse({
+        description: 'The batch was created successfully.',
+    }),
+    ApiBadRequestResponse({
+        description: 'The request body is invalid.',
+    }),
+    ApiUnauthorizedResponse({
+        description: 'The Allegro access token is missing or invalid.',
+    }),
     __param(0, Req()),
     __param(1, Body()),
     __metadata("design:type", Function),
@@ -33,6 +53,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], BatchesController.prototype, "create", null);
 BatchesController = __decorate([
+    ApiTags('Batches'),
     Controller('batches'),
     __metadata("design:paramtypes", [BatchesService])
 ], BatchesController);
