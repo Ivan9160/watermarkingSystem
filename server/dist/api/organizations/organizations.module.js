@@ -7,12 +7,17 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 import { Module } from "@nestjs/common";
 import { OrganizationsController } from "./organizations.controller.js";
 import { OrganizationsService } from "./organizations.service.js";
+import { AllegroAuthModule } from "../allegro-auth/allegro-auth.module.js";
+import { AllegroAuthService } from "../allegro-auth/allegro-auth.service.js";
+import { AllegroAuthGuard } from "../allegro-auth/allegro-auth.guard.js";
+import { ConfigService } from "@nestjs/config";
 let OrganizationsModule = class OrganizationsModule {
 };
 OrganizationsModule = __decorate([
     Module({
+        imports: [AllegroAuthModule],
         controllers: [OrganizationsController],
-        providers: [OrganizationsService],
+        providers: [OrganizationsService, AllegroAuthService, AllegroAuthGuard, ConfigService],
         exports: [OrganizationsService],
     })
 ], OrganizationsModule);

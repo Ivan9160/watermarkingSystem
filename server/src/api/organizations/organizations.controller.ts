@@ -11,6 +11,8 @@ import { OrganizationsService } from "./organizations.service.js";
 import { JwtGuard } from "../auth/jwt.guard.js";
 import { Headers } from "@nestjs/common";
 import { UnauthorizedException } from "@nestjs/common";
+import { AllegroUser } from "../allegro-auth/allegro-user.decorator.ts";
+import { AllegroAuthGuard } from "../auth/allegro-auth.guard.ts";
 
 
 @Controller("organizations")
@@ -20,15 +22,11 @@ export class OrganizationsController {
   ) {}
 
   @Post()
-  @UseGuards(JwtGuard)
+  @UseGuards(AllegroAuthGuard)
   create(
-    @Headers('authorization') authorization: string ,
+    @AllegroUser() user: { id: number },
     @Body() dto: CreateOrganizationDto,
   ) {
-    const token = authorization?.match(/^Bearer\s+(.+)$/i)?.[1];
-    if (!token) {
-      throw new UnauthorizedException("Bearer token is required");
-    }
-    return this.organizationsService.create(dto);
+    return this.organizationsService.create(user.id, dto);
   }
 }

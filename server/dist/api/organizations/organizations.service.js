@@ -7,17 +7,17 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 import { ConflictException, Injectable } from "@nestjs/common";
 import { db } from "../../prisma/db.js";
 let OrganizationsService = class OrganizationsService {
-    async create(auth0Sub, name) {
+    async create(allegroUserId, dto) {
         const existing = await db.orm.public.Organization
-            .where({ auth0Sub })
+            .where({ allegroUserId: allegroUserId })
             .select("id")
             .first();
         if (existing) {
             throw new ConflictException("Organization already exists for this user");
         }
         const organization = await db.orm.public.Organization.create({
-            auth0Sub,
-            name: name.trim(),
+            allegroUserId: allegroUserId,
+            name: dto.name.trim(),
         });
         return {
             id: organization.id,

@@ -13,29 +13,24 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 import { Body, Controller, Post, UseGuards, } from "@nestjs/common";
 import { CreateOrganizationDto } from "./dto/create-organization.dto.js";
 import { OrganizationsService } from "./organizations.service.js";
-import { JwtGuard } from "../auth/jwt.guard.js";
-import { Headers } from "@nestjs/common";
-import { UnauthorizedException } from "@nestjs/common";
+import { AllegroUser } from "../allegro-auth/allegro-user.decorator.js";
+import { AllegroAuthGuard } from "../auth/allegro-auth.guard.js";
 let OrganizationsController = class OrganizationsController {
     organizationsService;
     constructor(organizationsService) {
         this.organizationsService = organizationsService;
     }
-    create(authorization, dto) {
-        const token = authorization?.match(/^Bearer\s+(.+)$/i)?.[1];
-        if (!token) {
-            throw new UnauthorizedException("Bearer token is required");
-        }
-        return this.organizationsService.create(token, dto.name);
+    create(user, dto) {
+        return this.organizationsService.create(user.id, dto);
     }
 };
 __decorate([
     Post(),
-    UseGuards(JwtGuard),
-    __param(0, Headers('authorization')),
+    UseGuards(AllegroAuthGuard),
+    __param(0, AllegroUser()),
     __param(1, Body()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, CreateOrganizationDto]),
+    __metadata("design:paramtypes", [Object, CreateOrganizationDto]),
     __metadata("design:returntype", void 0)
 ], OrganizationsController.prototype, "create", null);
 OrganizationsController = __decorate([

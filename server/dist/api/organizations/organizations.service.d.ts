@@ -1,5 +1,6 @@
+import * as dto from "./dto/create-organization.dto.ts";
 export declare class OrganizationsService {
-    create(auth0Sub: string, name: string): Promise<{
+    create(allegroUserId: number, dto: dto.CreateOrganizationDto): Promise<{
         id: string;
         name: string;
         createdAt: Temporal.Instant;

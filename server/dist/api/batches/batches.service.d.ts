@@ -3,7 +3,7 @@ import { CreateBatchDto } from './dto/create-batch.dto.ts';
 export declare class BatchesService {
     private readonly minio;
     constructor(minio: MinioStorageService);
-    create(token: string, dto: CreateBatchDto): Promise<{
+    create(allegroUserId: number, dto: CreateBatchDto): Promise<{
         id: string;
         status: "QUEUED" | "PROCESSING" | "COMPLETED" | "FAILED";
         totalProducts: number;

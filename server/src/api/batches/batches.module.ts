@@ -6,10 +6,14 @@ import { MinioModule } from '../../minio/minio.module.ts';
 import { PrismaModule } from '../../prisma/prisma.module.ts';
 import { JwtGuard } from '../auth/jwt.guard.ts';
 import { MinioStorageService } from '../../minio/minio-storage.service.ts';
+import { AllegroAuthModule } from '../allegro-auth/allegro-auth.module.ts';
+import { AllegroAuthGuard } from '../allegro-auth/allegro-auth.guard.ts';
+import { AllegroAuthService } from '../allegro-auth/allegro-auth.service.ts';
+import { ConfigService } from '@nestjs/config';
 
 @Module({
-  imports: [MinioModule, PrismaModule],
+  imports: [MinioModule, PrismaModule, AllegroAuthModule],
   controllers: [BatchesController],
-  providers: [BatchesService, JwtGuard, MinioStorageService],
+  providers: [BatchesService, JwtGuard, MinioStorageService, AllegroAuthGuard, AllegroAuthService, ConfigService],
 })
 export class BatchesModule {}

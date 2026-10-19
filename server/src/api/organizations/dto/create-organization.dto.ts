@@ -5,8 +5,4 @@ export class CreateOrganizationDto {
   @IsNotEmpty()
   @MaxLength(100)
   name!: string;
-
-  @IsInt()
-  @IsNotEmpty()
-  allegroUserId!: number;
 }

@@ -5,9 +5,9 @@ import * as dto from "./dto/create-organization.dto.ts";
 @Injectable()
 export class OrganizationsService {
 
-  async create( dto: dto.CreateOrganizationDto) {
+  async create( allegroUserId: number, dto: dto.CreateOrganizationDto) {
     const existing = await db.orm.public.Organization
-      .where({ allegroUserId: dto.allegroUserId })
+      .where({ allegroUserId: allegroUserId })
       .select("id")
       .first();
 
@@ -18,7 +18,7 @@ export class OrganizationsService {
     }
 
     const organization = await db.orm.public.Organization.create({
-      allegroUserId: dto.allegroUserId,
+      allegroUserId: allegroUserId,
       name: dto.name.trim(),
     });
 

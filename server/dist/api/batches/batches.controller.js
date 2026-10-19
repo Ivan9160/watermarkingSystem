@@ -10,27 +10,23 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-import { Body, Controller, Headers, Post, UnauthorizedException, UseGuards, } from '@nestjs/common';
-import { JwtGuard } from "../auth/jwt.guard.js";
+import { Body, Controller, Post, UseGuards, Req, } from '@nestjs/common';
 import { BatchesService } from "./batches.service.js";
 import { CreateBatchDto } from "./dto/create-batch.dto.js";
+import { AllegroAuthGuard } from "../auth/allegro-auth.guard.js";
 let BatchesController = class BatchesController {
     batchesService;
     constructor(batchesService) {
         this.batchesService = batchesService;
     }
-    create(authorization, dto) {
-        const token = authorization?.match(/^Bearer\s+(\S+)$/i)?.[1];
-        if (!token) {
-            throw new UnauthorizedException('Bearer token is required');
-        }
-        return this.batchesService.create(token, dto);
+    create(req, dto) {
+        return this.batchesService.create(req.allegroUser.id, dto);
     }
 };
 __decorate([
     Post(),
-    UseGuards(JwtGuard),
-    __param(0, Headers('authorization')),
+    UseGuards(AllegroAuthGuard),
+    __param(0, Req()),
     __param(1, Body()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, CreateBatchDto]),

@@ -1,15 +1,20 @@
 import {
   Body,
   Controller,
-  Headers,
   Post,
-  UnauthorizedException,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 
-import { JwtGuard } from '../auth/jwt.guard.ts';
 import { BatchesService } from './batches.service.ts';
 import { CreateBatchDto } from './dto/create-batch.dto.ts';
+import { AllegroAuthGuard } from '../auth/allegro-auth.guard.ts';
+
+interface AllegroAuthenticatedRequest extends Request {
+  allegroUser: {
+    id: number;
+  };
+}
 
 @Controller('batches')
 export class BatchesController {
@@ -18,22 +23,8 @@ export class BatchesController {
   ) {}
 
   @Post()
-  @UseGuards(JwtGuard)
-  create(
-    @Headers('authorization') authorization: string | undefined,
-    @Headers('allegro-user-id') allegroUserId: string | undefined,
-    @Body() dto: CreateBatchDto,
-  ) {
-    const token = authorization?.match(/^Bearer\s+(\S+)$/i)?.[1];
-
-    if (!token) {
-      throw new UnauthorizedException('Bearer token is required');
-    }
-
-    if (!allegroUserId) {
-      throw new UnauthorizedException('Allegro user ID is required');
-    }
-
-    return this.batchesService.create(Number(allegroUserId), dto);
+  @UseGuards(AllegroAuthGuard)
+  create(@Req() req: AllegroAuthenticatedRequest, @Body() dto: CreateBatchDto) {
+    return this.batchesService.create(req.allegroUser.id, dto);
   }
 }

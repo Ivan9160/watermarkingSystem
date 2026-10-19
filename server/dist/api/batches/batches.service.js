@@ -24,7 +24,7 @@ let BatchesService = class BatchesService {
     constructor(minio) {
         this.minio = minio;
     }
-    async create(token, dto) {
+    async create(allegroUserId, dto) {
         const totalImages = dto.products.reduce((total, product) => total + product.images.length, 0);
         if (totalImages > MAX_IMAGES_PER_BATCH) {
             throw new BadRequestException(`Maximum ${MAX_IMAGES_PER_BATCH} images per batch`);
@@ -34,7 +34,7 @@ let BatchesService = class BatchesService {
             throw new BadRequestException('Each offerId must be unique in a batch');
         }
         const organization = await db.orm.public.Organization
-            .where({ auth0Sub: token })
+            .where({ allegroUserId: allegroUserId })
             .first();
         if (!organization) {
             throw new NotFoundException('Create an organization before creating a batch');

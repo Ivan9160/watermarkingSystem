@@ -11,13 +11,17 @@ import { MinioModule } from "../../minio/minio.module.js";
 import { PrismaModule } from "../../prisma/prisma.module.js";
 import { JwtGuard } from "../auth/jwt.guard.js";
 import { MinioStorageService } from "../../minio/minio-storage.service.js";
+import { AllegroAuthModule } from "../allegro-auth/allegro-auth.module.js";
+import { AllegroAuthGuard } from "../allegro-auth/allegro-auth.guard.js";
+import { AllegroAuthService } from "../allegro-auth/allegro-auth.service.js";
+import { ConfigService } from '@nestjs/config';
 let BatchesModule = class BatchesModule {
 };
 BatchesModule = __decorate([
     Module({
-        imports: [MinioModule, PrismaModule],
+        imports: [MinioModule, PrismaModule, AllegroAuthModule],
         controllers: [BatchesController],
-        providers: [BatchesService, JwtGuard, MinioStorageService],
+        providers: [BatchesService, JwtGuard, MinioStorageService, AllegroAuthGuard, AllegroAuthService, ConfigService],
     })
 ], BatchesModule);
 export { BatchesModule };
