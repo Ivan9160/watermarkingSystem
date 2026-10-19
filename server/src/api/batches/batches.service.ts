@@ -29,7 +29,7 @@ export class BatchesService {
     private readonly minio: MinioStorageService,
   ) {}
 
-  async create(token: string, dto: CreateBatchDto) {
+  async create(allegroUserId: number, dto: CreateBatchDto) {
     const totalImages = dto.products.reduce(
       (total, product) => total + product.images.length,
       0,
@@ -53,7 +53,7 @@ export class BatchesService {
     
 
     const organization = await db.orm.public.Organization
-      .where({ auth0Sub: token })
+      .where({ allegroUserId: allegroUserId })
       .first();
 
     if (!organization) {

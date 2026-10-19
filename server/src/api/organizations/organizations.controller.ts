@@ -29,6 +29,6 @@ export class OrganizationsController {
     if (!token) {
       throw new UnauthorizedException("Bearer token is required");
     }
-    return this.organizationsService.create(token, dto.name);
+    return this.organizationsService.create(dto);
   }
 }

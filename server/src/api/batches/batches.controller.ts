@@ -21,6 +21,7 @@ export class BatchesController {
   @UseGuards(JwtGuard)
   create(
     @Headers('authorization') authorization: string | undefined,
+    @Headers('allegro-user-id') allegroUserId: string | undefined,
     @Body() dto: CreateBatchDto,
   ) {
     const token = authorization?.match(/^Bearer\s+(\S+)$/i)?.[1];
@@ -29,6 +30,10 @@ export class BatchesController {
       throw new UnauthorizedException('Bearer token is required');
     }
 
-    return this.batchesService.create(token, dto);
+    if (!allegroUserId) {
+      throw new UnauthorizedException('Allegro user ID is required');
+    }
+
+    return this.batchesService.create(Number(allegroUserId), dto);
   }
 }

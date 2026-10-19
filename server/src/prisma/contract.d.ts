@@ -18,9 +18,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'16731d46859f3aa73d422cdf30aa4fd82d058871b1033154f3dd87dd8715f7e4'>;
+  StorageHashBase<'c302d024c78e2e6fe5b4734002567d2660e4dcb096d9874afe0ef675e9dce3a1'>;
 export type ExecutionHash =
-  ExecutionHashBase<'3dc90c69da62fd35ba375082263419d4dc7db4ddc538d953b1d59db8f55029a0'>;
+  ExecutionHashBase<'c7e1094373242d094521a589186384b9b075c967394a60098d6bd8aa5e5f4f66'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -240,6 +240,7 @@ export type FieldOutputTypes = {
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly organizationId: CodecTypes['pg/text@1']['output'];
       readonly status: 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly watermarkConfig: CodecTypes['pg/json@1']['output'];
     };
     readonly ImageJob: {
@@ -256,7 +257,7 @@ export type FieldOutputTypes = {
       readonly storageKey: CodecTypes['pg/text@1']['output'];
     };
     readonly Organization: {
-      readonly auth0Sub: CodecTypes['pg/text@1']['output'];
+      readonly allegroUserId: CodecTypes['pg/int4@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
@@ -272,6 +273,7 @@ export type FieldInputTypes = {
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly organizationId: CodecTypes['pg/text@1']['input'];
       readonly status: 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly watermarkConfig: CodecTypes['pg/json@1']['input'];
     };
     readonly ImageJob: {
@@ -288,7 +290,7 @@ export type FieldInputTypes = {
       readonly storageKey: CodecTypes['pg/text@1']['input'];
     };
     readonly Organization: {
-      readonly auth0Sub: CodecTypes['pg/text@1']['input'];
+      readonly allegroUserId: CodecTypes['pg/int4@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
@@ -299,64 +301,66 @@ export type FieldInputTypes = {
 export type StorageColumnTypes = {
   readonly public: {
     readonly batches: {
-      readonly completedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
-      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly completed_at: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
-      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly organization_id: CodecTypes['pg/text@1']['output'];
       readonly status: 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
-      readonly watermarkConfig: CodecTypes['pg/json@1']['output'];
+      readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly watermark_config: CodecTypes['pg/json@1']['output'];
     };
     readonly image_jobs: {
-      readonly batchId: CodecTypes['pg/text@1']['output'];
-      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-      readonly errorMessage: CodecTypes['pg/text@1']['output'] | null;
+      readonly batch_id: CodecTypes['pg/text@1']['output'];
+      readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly error_message: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/text@1']['output'];
-      readonly imageIndex: CodecTypes['pg/int4@1']['output'];
-      readonly outputUrl: CodecTypes['pg/text@1']['output'] | null;
-      readonly processedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
-      readonly productOfferId: CodecTypes['pg/text@1']['output'];
-      readonly sourceUrl: CodecTypes['pg/text@1']['output'];
+      readonly image_index: CodecTypes['pg/int4@1']['output'];
+      readonly output_url: CodecTypes['pg/text@1']['output'] | null;
+      readonly processed_at: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly product_offer_id: CodecTypes['pg/text@1']['output'];
+      readonly source_url: CodecTypes['pg/text@1']['output'];
       readonly status: 'PENDING' | 'PROCESSING' | 'SUCCEEDED' | 'FAILED';
-      readonly storageKey: CodecTypes['pg/text@1']['output'];
+      readonly storage_key: CodecTypes['pg/text@1']['output'];
     };
     readonly organizations: {
-      readonly auth0Sub: CodecTypes['pg/text@1']['output'];
-      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly allegro_user_id: CodecTypes['pg/int4@1']['output'];
+      readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
-      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
   };
 };
 export type StorageColumnInputTypes = {
   readonly public: {
     readonly batches: {
-      readonly completedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
-      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly completed_at: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
-      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly organization_id: CodecTypes['pg/text@1']['input'];
       readonly status: 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
-      readonly watermarkConfig: CodecTypes['pg/json@1']['input'];
+      readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly watermark_config: CodecTypes['pg/json@1']['input'];
     };
     readonly image_jobs: {
-      readonly batchId: CodecTypes['pg/text@1']['input'];
-      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
-      readonly errorMessage: CodecTypes['pg/text@1']['input'] | null;
+      readonly batch_id: CodecTypes['pg/text@1']['input'];
+      readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly error_message: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/text@1']['input'];
-      readonly imageIndex: CodecTypes['pg/int4@1']['input'];
-      readonly outputUrl: CodecTypes['pg/text@1']['input'] | null;
-      readonly processedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
-      readonly productOfferId: CodecTypes['pg/text@1']['input'];
-      readonly sourceUrl: CodecTypes['pg/text@1']['input'];
+      readonly image_index: CodecTypes['pg/int4@1']['input'];
+      readonly output_url: CodecTypes['pg/text@1']['input'] | null;
+      readonly processed_at: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly product_offer_id: CodecTypes['pg/text@1']['input'];
+      readonly source_url: CodecTypes['pg/text@1']['input'];
       readonly status: 'PENDING' | 'PROCESSING' | 'SUCCEEDED' | 'FAILED';
-      readonly storageKey: CodecTypes['pg/text@1']['input'];
+      readonly storage_key: CodecTypes['pg/text@1']['input'];
     };
     readonly organizations: {
-      readonly auth0Sub: CodecTypes['pg/text@1']['input'];
-      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly allegro_user_id: CodecTypes['pg/int4@1']['input'];
+      readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
-      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
   };
 };
@@ -368,6 +372,7 @@ export namespace Models {
     id: CodecTypes['pg/text@1']['output'];
     organizationId: CodecTypes['pg/text@1']['output'];
     status: 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+    updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     watermarkConfig: CodecTypes['pg/json@1']['output'];
     items: public_ImageJob[];
     organization: public_Organization;
@@ -389,7 +394,7 @@ export namespace Models {
     readonly [RelationKeys]?: 'batch';
   };
   export type public_Organization = {
-    auth0Sub: CodecTypes['pg/text@1']['output'];
+    allegroUserId: CodecTypes['pg/int4@1']['output'];
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     id: CodecTypes['pg/text@1']['output'];
     name: CodecTypes['pg/text@1']['output'];
@@ -427,13 +432,13 @@ type ContractBase = Omit<
           readonly table: {
             readonly batches: {
               columns: {
-                readonly completedAt: {
+                readonly completed_at: {
                   readonly dataType: 'pg/timestamptz';
                   readonly codecId: 'pg/timestamptz-temporal@1';
                   readonly nullable: true;
                   readonly many: false;
                 };
-                readonly createdAt: {
+                readonly created_at: {
                   readonly dataType: 'pg/timestamptz';
                   readonly codecId: 'pg/timestamptz-temporal@1';
                   readonly nullable: false;
@@ -446,7 +451,7 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly many: false;
                 };
-                readonly organizationId: {
+                readonly organization_id: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
@@ -462,7 +467,13 @@ type ContractBase = Omit<
                   };
                   readonly many: false;
                 };
-                readonly watermarkConfig: {
+                readonly updated_at: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly watermark_config: {
                   readonly dataType: 'pg/json';
                   readonly codecId: 'pg/json@1';
                   readonly nullable: false;
@@ -473,15 +484,15 @@ type ContractBase = Omit<
               uniques: readonly [];
               indexes: readonly [
                 {
-                  readonly name: 'batches_organizationId_idx_2e17ef41';
-                  readonly prefix: 'batches_organizationId_idx';
-                  readonly columns: readonly ['organizationId'];
+                  readonly name: 'batches_organization_id_idx_1a5cd3f5';
+                  readonly prefix: 'batches_organization_id_idx';
+                  readonly columns: readonly ['organization_id'];
                   readonly unique: false;
                 },
                 {
-                  readonly name: 'batches_organizationId_status_idx_21af5e82';
-                  readonly prefix: 'batches_organizationId_status_idx';
-                  readonly columns: readonly ['organizationId', 'status'];
+                  readonly name: 'batches_organization_id_status_idx_5a4ed970';
+                  readonly prefix: 'batches_organization_id_status_idx';
+                  readonly columns: readonly ['organization_id', 'status'];
                   readonly unique: false;
                 },
               ];
@@ -490,7 +501,7 @@ type ContractBase = Omit<
                   readonly source: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'batches';
-                    readonly columns: readonly ['organizationId'];
+                    readonly columns: readonly ['organization_id'];
                   };
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
@@ -502,20 +513,20 @@ type ContractBase = Omit<
             };
             readonly image_jobs: {
               columns: {
-                readonly batchId: {
+                readonly batch_id: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
                   readonly many: false;
                 };
-                readonly createdAt: {
+                readonly created_at: {
                   readonly dataType: 'pg/timestamptz';
                   readonly codecId: 'pg/timestamptz-temporal@1';
                   readonly nullable: false;
                   readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
                   readonly many: false;
                 };
-                readonly errorMessage: {
+                readonly error_message: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: true;
@@ -527,31 +538,31 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly many: false;
                 };
-                readonly imageIndex: {
+                readonly image_index: {
                   readonly dataType: 'pg/int4';
                   readonly codecId: 'pg/int4@1';
                   readonly nullable: false;
                   readonly many: false;
                 };
-                readonly outputUrl: {
+                readonly output_url: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: true;
                   readonly many: false;
                 };
-                readonly processedAt: {
+                readonly processed_at: {
                   readonly dataType: 'pg/timestamptz';
                   readonly codecId: 'pg/timestamptz-temporal@1';
                   readonly nullable: true;
                   readonly many: false;
                 };
-                readonly productOfferId: {
+                readonly product_offer_id: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
                   readonly many: false;
                 };
-                readonly sourceUrl: {
+                readonly source_url: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
@@ -567,7 +578,7 @@ type ContractBase = Omit<
                   };
                   readonly many: false;
                 };
-                readonly storageKey: {
+                readonly storage_key: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
@@ -575,18 +586,18 @@ type ContractBase = Omit<
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
-              uniques: readonly [{ readonly columns: readonly ['storageKey'] }];
+              uniques: readonly [{ readonly columns: readonly ['storage_key'] }];
               indexes: readonly [
                 {
-                  readonly name: 'image_jobs_batchId_idx_84d4b0b9';
-                  readonly prefix: 'image_jobs_batchId_idx';
-                  readonly columns: readonly ['batchId'];
+                  readonly name: 'image_jobs_batch_id_idx_49ba28fa';
+                  readonly prefix: 'image_jobs_batch_id_idx';
+                  readonly columns: readonly ['batch_id'];
                   readonly unique: false;
                 },
                 {
-                  readonly name: 'image_jobs_batchId_status_idx_a1ac997b';
-                  readonly prefix: 'image_jobs_batchId_status_idx';
-                  readonly columns: readonly ['batchId', 'status'];
+                  readonly name: 'image_jobs_batch_id_status_idx_66fc6971';
+                  readonly prefix: 'image_jobs_batch_id_status_idx';
+                  readonly columns: readonly ['batch_id', 'status'];
                   readonly unique: false;
                 },
               ];
@@ -595,7 +606,7 @@ type ContractBase = Omit<
                   readonly source: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'image_jobs';
-                    readonly columns: readonly ['batchId'];
+                    readonly columns: readonly ['batch_id'];
                   };
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
@@ -607,13 +618,13 @@ type ContractBase = Omit<
             };
             readonly organizations: {
               columns: {
-                readonly auth0Sub: {
-                  readonly dataType: 'pg/text';
-                  readonly codecId: 'pg/text@1';
+                readonly allegro_user_id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
                   readonly nullable: false;
                   readonly many: false;
                 };
-                readonly createdAt: {
+                readonly created_at: {
                   readonly dataType: 'pg/timestamptz';
                   readonly codecId: 'pg/timestamptz-temporal@1';
                   readonly nullable: false;
@@ -632,7 +643,7 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly many: false;
                 };
-                readonly updatedAt: {
+                readonly updated_at: {
                   readonly dataType: 'pg/timestamptz';
                   readonly codecId: 'pg/timestamptz-temporal@1';
                   readonly nullable: false;
@@ -640,7 +651,7 @@ type ContractBase = Omit<
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
-              uniques: readonly [{ readonly columns: readonly ['auth0Sub'] }];
+              uniques: readonly [{ readonly columns: readonly ['allegro_user_id'] }];
               indexes: readonly [];
               foreignKeys: readonly [];
             };
@@ -704,6 +715,13 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
               readonly watermarkConfig: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/json@1' };
@@ -738,12 +756,13 @@ type ContractBase = Omit<
               readonly table: 'batches';
               readonly namespaceId: 'public';
               readonly fields: {
-                readonly completedAt: { readonly column: 'completedAt' };
-                readonly createdAt: { readonly column: 'createdAt' };
+                readonly completedAt: { readonly column: 'completed_at' };
+                readonly createdAt: { readonly column: 'created_at' };
                 readonly id: { readonly column: 'id' };
-                readonly organizationId: { readonly column: 'organizationId' };
+                readonly organizationId: { readonly column: 'organization_id' };
                 readonly status: { readonly column: 'status' };
-                readonly watermarkConfig: { readonly column: 'watermarkConfig' };
+                readonly updatedAt: { readonly column: 'updated_at' };
+                readonly watermarkConfig: { readonly column: 'watermark_config' };
               };
             };
           };
@@ -818,25 +837,25 @@ type ContractBase = Omit<
               readonly table: 'image_jobs';
               readonly namespaceId: 'public';
               readonly fields: {
-                readonly batchId: { readonly column: 'batchId' };
-                readonly createdAt: { readonly column: 'createdAt' };
-                readonly errorMessage: { readonly column: 'errorMessage' };
+                readonly batchId: { readonly column: 'batch_id' };
+                readonly createdAt: { readonly column: 'created_at' };
+                readonly errorMessage: { readonly column: 'error_message' };
                 readonly id: { readonly column: 'id' };
-                readonly imageIndex: { readonly column: 'imageIndex' };
-                readonly outputUrl: { readonly column: 'outputUrl' };
-                readonly processedAt: { readonly column: 'processedAt' };
-                readonly productOfferId: { readonly column: 'productOfferId' };
-                readonly sourceUrl: { readonly column: 'sourceUrl' };
+                readonly imageIndex: { readonly column: 'image_index' };
+                readonly outputUrl: { readonly column: 'output_url' };
+                readonly processedAt: { readonly column: 'processed_at' };
+                readonly productOfferId: { readonly column: 'product_offer_id' };
+                readonly sourceUrl: { readonly column: 'source_url' };
                 readonly status: { readonly column: 'status' };
-                readonly storageKey: { readonly column: 'storageKey' };
+                readonly storageKey: { readonly column: 'storage_key' };
               };
             };
           };
           readonly Organization: {
             readonly fields: {
-              readonly auth0Sub: {
+              readonly allegroUserId: {
                 readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
               readonly createdAt: {
                 readonly nullable: false;
@@ -878,11 +897,11 @@ type ContractBase = Omit<
               readonly table: 'organizations';
               readonly namespaceId: 'public';
               readonly fields: {
-                readonly auth0Sub: { readonly column: 'auth0Sub' };
-                readonly createdAt: { readonly column: 'createdAt' };
+                readonly allegroUserId: { readonly column: 'allegro_user_id' };
+                readonly createdAt: { readonly column: 'created_at' };
                 readonly id: { readonly column: 'id' };
                 readonly name: { readonly column: 'name' };
-                readonly updatedAt: { readonly column: 'updatedAt' };
+                readonly updatedAt: { readonly column: 'updated_at' };
               };
             };
           };
@@ -965,6 +984,15 @@ type ContractBase = Omit<
           };
         },
         {
+          readonly onCreate: { readonly id: 'instantNow'; readonly kind: 'generator' };
+          readonly onUpdate: { readonly id: 'instantNow'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'batches';
+            readonly field: 'updated_at';
+            readonly namespace: 'public';
+          };
+        },
+        {
           readonly onCreate: { readonly id: 'cuid2'; readonly kind: 'generator' };
           readonly ref: {
             readonly entry: 'image_jobs';
@@ -985,7 +1013,7 @@ type ContractBase = Omit<
           readonly onUpdate: { readonly id: 'instantNow'; readonly kind: 'generator' };
           readonly ref: {
             readonly entry: 'organizations';
-            readonly field: 'updatedAt';
+            readonly field: 'updated_at';
             readonly namespace: 'public';
           };
         },
