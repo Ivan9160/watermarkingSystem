@@ -1,12 +1,13 @@
 import { useMemo, useRef, useState, type ChangeEvent, type DragEvent } from 'react';
 import { PageHeading } from '../components/PageHeading';
-import { useApp } from '../context/AppContext';
+import { useApp, type LibrarySourceFilter } from '../context/AppContext';
 
 type Filter = 'all' | 'selected';
 
 export function LibraryPage() {
     const { images, catalogLoading, catalogError, selectedIds, toggleImage, openEditor,
-        setPage, selectAll, clearSelection, addLocalImages, removeLocalImage } = useApp();
+        setPage, selectAll, clearSelection, addLocalImages, removeLocalImage,
+        librarySourceFilter, setLibrarySourceFilter } = useApp();
     const fileInput = useRef<HTMLInputElement>(null);
     const [query, setQuery] = useState('');
     const [filter, setFilter] = useState<Filter>('all');
@@ -19,6 +20,8 @@ export function LibraryPage() {
         const { imported, skipped } = addLocalImages(files);
         setImportMessage(`${imported} image${imported === 1 ? '' : 's'} added to this session${skipped ? ` · ${skipped} skipped (unsupported or >25 MB)` : ''}.`);
         setFilter('all');
+        // Show uploads immediately even if Library was filtered to Allegro.
+        if (imported > 0) setLibrarySourceFilter('local');
     }
 
     function handleInput(event: ChangeEvent<HTMLInputElement>) {
@@ -35,8 +38,12 @@ export function LibraryPage() {
     const visible = useMemo(() => images
         .filter(image => (image.filename + ' ' + (image.productName ?? '')).toLowerCase().includes(query.toLowerCase()))
         .filter(image => filter === 'all' || selectedIds.includes(image.id))
+        .filter(image => librarySourceFilter === 'all' || image.source === librarySourceFilter)
         .sort((a, b) => a.filename.localeCompare(b.filename, undefined, { numeric: true }) * (sort === 'asc' ? 1 : -1)),
-    [images, query, filter, sort, selectedIds]);
+    [images, query, filter, sort, selectedIds, librarySourceFilter]);
+
+    const localCount = images.filter(image => image.source === 'local').length;
+    const allegroCount = images.filter(image => image.source === 'allegro').length;
 
     return <div className="page-shell" onDrop={handleDrop} onDragOver={event => { event.preventDefault(); setDragOver(true); }} onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget as Node)) setDragOver(false); }}>
         <input ref={fileInput} type="file" hidden multiple accept="image/png,image/jpeg,image/webp" onChange={handleInput} aria-label="Choose product images" />
@@ -49,6 +56,11 @@ export function LibraryPage() {
             <div className="library-metrics"><span className="counter">{images.length} images</span><span className="counter counter-accent">{selectedIds.length} selected</span></div>
             <div className="library-controls">
                 <div className="search-input"><span>⌕</span><input aria-label="Search images" placeholder="Search images..." value={query} onChange={event => setQuery(event.target.value)} /></div>
+                <select aria-label="Image source" value={librarySourceFilter} onChange={event => setLibrarySourceFilter(event.target.value as LibrarySourceFilter)}>
+                    <option value="all">All sources ({images.length})</option>
+                    <option value="local">Uploaded by me ({localCount})</option>
+                    <option value="allegro">Allegro ({allegroCount})</option>
+                </select>
                 <select aria-label="Filter images" value={filter} onChange={event => setFilter(event.target.value as Filter)}><option value="all">All images</option><option value="selected">Selected only</option></select>
                 <select aria-label="Sort images" value={sort} onChange={event => setSort(event.target.value as 'asc' | 'desc')}><option value="asc">Name A–Z</option><option value="desc">Name Z–A</option></select>
             </div>
@@ -75,7 +87,7 @@ export function LibraryPage() {
             {!catalogLoading && visible.length === 0 && <div className="empty-library dropzone">
                 <div className="drop-icon">▧</div>
                 <strong>{images.length ? 'No matching images' : 'Your image library is empty'}</strong>
-                <p>{images.length ? 'Try a different filter or search.' : 'Add product images from your computer or connect an Allegro seller account.'}</p>
+                <p>{images.length ? 'Try another source filter or search.' : 'Add product images from your computer or connect an Allegro seller account.'}</p>
                 <div className="empty-actions"><button className="btn btn-primary" onClick={() => fileInput.current?.click()}>Choose images</button><button className="btn btn-secondary" onClick={() => setPage('integrations')}>Connect store →</button></div>
                 <small>You can also drag photos here · Up to 25 MB per image</small>
             </div>}

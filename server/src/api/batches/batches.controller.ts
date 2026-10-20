@@ -1,16 +1,32 @@
 import {
   Body,
   Controller,
-  Headers,
   Post,
-  UnauthorizedException,
   UseGuards,
+  Req,
 } from '@nestjs/common';
+import type { Request } from 'express';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiBody,
+  ApiCreatedResponse,
+  ApiBadRequestResponse,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 
-import { JwtGuard } from '../auth/jwt.guard.ts';
 import { BatchesService } from './batches.service.ts';
 import { CreateBatchDto } from './dto/create-batch.dto.ts';
+import { AllegroAuthGuard } from '../auth/allegro-auth.guard.ts';
 
+interface AllegroAuthenticatedRequest extends Request {
+  allegroUser: {
+    id: number;
+  };
+}
+
+@ApiTags('Batches')
 @Controller('batches')
 export class BatchesController {
   constructor(
@@ -18,17 +34,34 @@ export class BatchesController {
   ) {}
 
   @Post()
-  @UseGuards(JwtGuard)
+  @UseGuards(AllegroAuthGuard)
+  @ApiBearerAuth('allegroAccessToken')
+  @ApiOperation({
+    summary: 'Create a batch',
+    description:
+      'Creates a new batch for the authenticated Allegro seller. ' +
+      'The seller ID is extracted from the Allegro access token.',
+  })
+  @ApiBody({
+    type: CreateBatchDto,
+    description: 'Batch creation data.',
+  })
+  @ApiCreatedResponse({
+    description: 'The batch was created successfully.',
+  })
+  @ApiBadRequestResponse({
+    description: 'The request body is invalid.',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'The Allegro access token is missing or invalid.',
+  })
   create(
-    @Headers('authorization') authorization: string | undefined,
+    @Req() req: AllegroAuthenticatedRequest,
     @Body() dto: CreateBatchDto,
   ) {
-    const token = authorization?.match(/^Bearer\s+(\S+)$/i)?.[1];
-
-    if (!token) {
-      throw new UnauthorizedException('Bearer token is required');
-    }
-
-    return this.batchesService.create(token, dto);
+    return this.batchesService.create(
+      req.allegroUser.id,
+      dto,
+    );
   }
 }

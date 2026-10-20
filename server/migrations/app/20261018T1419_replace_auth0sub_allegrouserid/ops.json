@@ -1,0 +1,193 @@
+[
+  {
+    "id": "dropConstraint.organizations.organizations_auth0Sub_key",
+    "label": "Drop constraint \"organizations_auth0Sub_key\" on \"organizations\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "organizations_auth0Sub_key",
+        "table": "organizations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"organizations_auth0Sub_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "organizations_auth0Sub_key",
+          "public",
+          "\"public\".\"organizations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop constraint \"organizations_auth0Sub_key\"",
+        "sql": "ALTER TABLE \"public\".\"organizations\" DROP CONSTRAINT \"organizations_auth0Sub_key\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"organizations_auth0Sub_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "organizations_auth0Sub_key",
+          "public",
+          "\"public\".\"organizations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropColumn.organizations.auth0Sub",
+    "label": "Drop column \"auth0Sub\" from \"organizations\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "auth0Sub",
+        "table": "organizations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"auth0Sub\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "organizations",
+          "auth0Sub"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"auth0Sub\"",
+        "sql": "ALTER TABLE \"public\".\"organizations\" DROP COLUMN \"auth0Sub\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"auth0Sub\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "organizations",
+          "auth0Sub"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.organizations.allegroUserId",
+    "label": "Add column allegroUserId to organizations",
+    "summary": "Adds column allegroUserId to table organizations",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "allegroUserId",
+        "table": "organizations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"allegroUserId\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "organizations",
+          "allegroUserId"
+        ]
+      },
+      {
+        "description": "ensure table \"organizations\" is empty before adding NOT NULL column without default",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"public\".\"organizations\" LIMIT 1) AS \"result\"",
+        "params": [],
+        "meta": {
+          "requiredColumn": {
+            "table": "organizations",
+            "column": "allegroUserId",
+            "reason": "newField"
+          }
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"allegroUserId\"",
+        "sql": "ALTER TABLE \"public\".\"organizations\" ADD COLUMN \"allegroUserId\" int4 NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"allegroUserId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "organizations",
+          "allegroUserId"
+        ]
+      },
+      {
+        "description": "verify column \"allegroUserId\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "organizations",
+          "allegroUserId",
+          "NO"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.organizations.organizations_allegroUserId_key",
+    "label": "Add unique constraint on \"organizations\" (allegroUserId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "organizations_allegroUserId_key",
+        "table": "organizations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"organizations_allegroUserId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "organizations_allegroUserId_key",
+          "public",
+          "\"public\".\"organizations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"organizations_allegroUserId_key\"",
+        "sql": "ALTER TABLE \"public\".\"organizations\" ADD CONSTRAINT \"organizations_allegroUserId_key\" UNIQUE (\"allegroUserId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"organizations_allegroUserId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "organizations_allegroUserId_key",
+          "public",
+          "\"public\".\"organizations\""
+        ]
+      }
+    ]
+  }
+]

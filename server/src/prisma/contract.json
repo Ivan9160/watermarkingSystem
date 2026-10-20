@@ -108,6 +108,13 @@
                   "plane": "domain"
                 }
               },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
               "watermarkConfig": {
                 "nullable": false,
                 "type": {
@@ -152,22 +159,25 @@
             "storage": {
               "fields": {
                 "completedAt": {
-                  "column": "completedAt"
+                  "column": "completed_at"
                 },
                 "createdAt": {
-                  "column": "createdAt"
+                  "column": "created_at"
                 },
                 "id": {
                   "column": "id"
                 },
                 "organizationId": {
-                  "column": "organizationId"
+                  "column": "organization_id"
                 },
                 "status": {
                   "column": "status"
                 },
+                "updatedAt": {
+                  "column": "updated_at"
+                },
                 "watermarkConfig": {
-                  "column": "watermarkConfig"
+                  "column": "watermark_config"
                 }
               },
               "namespaceId": "public",
@@ -281,37 +291,37 @@
             "storage": {
               "fields": {
                 "batchId": {
-                  "column": "batchId"
+                  "column": "batch_id"
                 },
                 "createdAt": {
-                  "column": "createdAt"
+                  "column": "created_at"
                 },
                 "errorMessage": {
-                  "column": "errorMessage"
+                  "column": "error_message"
                 },
                 "id": {
                   "column": "id"
                 },
                 "imageIndex": {
-                  "column": "imageIndex"
+                  "column": "image_index"
                 },
                 "outputUrl": {
-                  "column": "outputUrl"
+                  "column": "output_url"
                 },
                 "processedAt": {
-                  "column": "processedAt"
+                  "column": "processed_at"
                 },
                 "productOfferId": {
-                  "column": "productOfferId"
+                  "column": "product_offer_id"
                 },
                 "sourceUrl": {
-                  "column": "sourceUrl"
+                  "column": "source_url"
                 },
                 "status": {
                   "column": "status"
                 },
                 "storageKey": {
-                  "column": "storageKey"
+                  "column": "storage_key"
                 }
               },
               "namespaceId": "public",
@@ -320,10 +330,10 @@
           },
           "Organization": {
             "fields": {
-              "auth0Sub": {
+              "allegroUserId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "pg/int4@1",
                   "kind": "scalar"
                 }
               },
@@ -375,11 +385,11 @@
             },
             "storage": {
               "fields": {
-                "auth0Sub": {
-                  "column": "auth0Sub"
+                "allegroUserId": {
+                  "column": "allegro_user_id"
                 },
                 "createdAt": {
-                  "column": "createdAt"
+                  "column": "created_at"
                 },
                 "id": {
                   "column": "id"
@@ -388,7 +398,7 @@
                   "column": "name"
                 },
                 "updatedAt": {
-                  "column": "updatedAt"
+                  "column": "updated_at"
                 }
               },
               "namespaceId": "public",
@@ -413,12 +423,12 @@
                 }
               ],
               "columns": {
-                "completedAt": {
+                "completed_at": {
                   "codecId": "pg/timestamptz-temporal@1",
                   "dataType": "pg/timestamptz",
                   "nullable": true
                 },
-                "createdAt": {
+                "created_at": {
                   "codecId": "pg/timestamptz-temporal@1",
                   "dataType": "pg/timestamptz",
                   "default": {
@@ -432,7 +442,7 @@
                   "dataType": "pg/text",
                   "nullable": false
                 },
-                "organizationId": {
+                "organization_id": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
                   "nullable": false
@@ -452,7 +462,12 @@
                     "plane": "storage"
                   }
                 },
-                "watermarkConfig": {
+                "updated_at": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": false
+                },
+                "watermark_config": {
                   "codecId": "pg/json@1",
                   "dataType": "pg/json",
                   "nullable": false
@@ -461,12 +476,12 @@
               "foreignKeys": [
                 {
                   "index": {
-                    "name": "batches_organizationId_idx_2e17ef41"
+                    "name": "batches_organization_id_idx_1a5cd3f5"
                   },
                   "onDelete": "cascade",
                   "source": {
                     "columns": [
-                      "organizationId"
+                      "organization_id"
                     ],
                     "namespaceId": "public",
                     "tableName": "batches"
@@ -483,19 +498,19 @@
               "indexes": [
                 {
                   "columns": [
-                    "organizationId"
+                    "organization_id"
                   ],
-                  "name": "batches_organizationId_idx_2e17ef41",
-                  "prefix": "batches_organizationId_idx",
+                  "name": "batches_organization_id_idx_1a5cd3f5",
+                  "prefix": "batches_organization_id_idx",
                   "unique": false
                 },
                 {
                   "columns": [
-                    "organizationId",
+                    "organization_id",
                     "status"
                   ],
-                  "name": "batches_organizationId_status_idx_21af5e82",
-                  "prefix": "batches_organizationId_status_idx",
+                  "name": "batches_organization_id_status_idx_5a4ed970",
+                  "prefix": "batches_organization_id_status_idx",
                   "unique": false
                 }
               ],
@@ -515,12 +530,12 @@
                 }
               ],
               "columns": {
-                "batchId": {
+                "batch_id": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
                   "nullable": false
                 },
-                "createdAt": {
+                "created_at": {
                   "codecId": "pg/timestamptz-temporal@1",
                   "dataType": "pg/timestamptz",
                   "default": {
@@ -529,7 +544,7 @@
                   },
                   "nullable": false
                 },
-                "errorMessage": {
+                "error_message": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
                   "nullable": true
@@ -539,27 +554,27 @@
                   "dataType": "pg/text",
                   "nullable": false
                 },
-                "imageIndex": {
+                "image_index": {
                   "codecId": "pg/int4@1",
                   "dataType": "pg/int4",
                   "nullable": false
                 },
-                "outputUrl": {
+                "output_url": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
                   "nullable": true
                 },
-                "processedAt": {
+                "processed_at": {
                   "codecId": "pg/timestamptz-temporal@1",
                   "dataType": "pg/timestamptz",
                   "nullable": true
                 },
-                "productOfferId": {
+                "product_offer_id": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
                   "nullable": false
                 },
-                "sourceUrl": {
+                "source_url": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
                   "nullable": false
@@ -579,7 +594,7 @@
                     "plane": "storage"
                   }
                 },
-                "storageKey": {
+                "storage_key": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
                   "nullable": false
@@ -588,12 +603,12 @@
               "foreignKeys": [
                 {
                   "index": {
-                    "name": "image_jobs_batchId_idx_84d4b0b9"
+                    "name": "image_jobs_batch_id_idx_49ba28fa"
                   },
                   "onDelete": "cascade",
                   "source": {
                     "columns": [
-                      "batchId"
+                      "batch_id"
                     ],
                     "namespaceId": "public",
                     "tableName": "image_jobs"
@@ -610,19 +625,19 @@
               "indexes": [
                 {
                   "columns": [
-                    "batchId"
+                    "batch_id"
                   ],
-                  "name": "image_jobs_batchId_idx_84d4b0b9",
-                  "prefix": "image_jobs_batchId_idx",
+                  "name": "image_jobs_batch_id_idx_49ba28fa",
+                  "prefix": "image_jobs_batch_id_idx",
                   "unique": false
                 },
                 {
                   "columns": [
-                    "batchId",
+                    "batch_id",
                     "status"
                   ],
-                  "name": "image_jobs_batchId_status_idx_a1ac997b",
-                  "prefix": "image_jobs_batchId_status_idx",
+                  "name": "image_jobs_batch_id_status_idx_66fc6971",
+                  "prefix": "image_jobs_batch_id_status_idx",
                   "unique": false
                 }
               ],
@@ -634,19 +649,19 @@
               "uniques": [
                 {
                   "columns": [
-                    "storageKey"
+                    "storage_key"
                   ]
                 }
               ]
             },
             "organizations": {
               "columns": {
-                "auth0Sub": {
-                  "codecId": "pg/text@1",
-                  "dataType": "pg/text",
+                "allegro_user_id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
                   "nullable": false
                 },
-                "createdAt": {
+                "created_at": {
                   "codecId": "pg/timestamptz-temporal@1",
                   "dataType": "pg/timestamptz",
                   "default": {
@@ -665,7 +680,7 @@
                   "dataType": "pg/text",
                   "nullable": false
                 },
-                "updatedAt": {
+                "updated_at": {
                   "codecId": "pg/timestamptz-temporal@1",
                   "dataType": "pg/timestamptz",
                   "nullable": false
@@ -681,7 +696,7 @@
               "uniques": [
                 {
                   "columns": [
-                    "auth0Sub"
+                    "allegro_user_id"
                   ]
                 }
               ]
@@ -712,10 +727,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "16731d46859f3aa73d422cdf30aa4fd82d058871b1033154f3dd87dd8715f7e4"
+    "storageHash": "c302d024c78e2e6fe5b4734002567d2660e4dcb096d9874afe0ef675e9dce3a1"
   },
   "execution": {
-    "executionHash": "3dc90c69da62fd35ba375082263419d4dc7db4ddc538d953b1d59db8f55029a0",
+    "executionHash": "c7e1094373242d094521a589186384b9b075c967394a60098d6bd8aa5e5f4f66",
     "mutations": {
       "defaults": [
         {
@@ -726,6 +741,21 @@
           "ref": {
             "entry": "batches",
             "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "batches",
+            "field": "updated_at",
             "namespace": "public"
           }
         },
@@ -762,7 +792,7 @@
           },
           "ref": {
             "entry": "organizations",
-            "field": "updatedAt",
+            "field": "updated_at",
             "namespace": "public"
           }
         }

@@ -1,12 +1,13 @@
 import { ConflictException, Injectable } from "@nestjs/common";
 import { db } from "../../prisma/db.ts";
+import * as dto from "./dto/create-organization.dto.ts";
 
 @Injectable()
 export class OrganizationsService {
 
-  async create(auth0Sub: string, name: string) {
+  async create( allegroUserId: number, dto: dto.CreateOrganizationDto) {
     const existing = await db.orm.public.Organization
-      .where({ auth0Sub })
+      .where({ allegroUserId: allegroUserId })
       .select("id")
       .first();
 
@@ -17,8 +18,8 @@ export class OrganizationsService {
     }
 
     const organization = await db.orm.public.Organization.create({
-      auth0Sub,
-      name: name.trim(),
+      allegroUserId: allegroUserId,
+      name: dto.name.trim(),
     });
 
     return {

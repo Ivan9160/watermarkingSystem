@@ -23,12 +23,17 @@ export class MinioStorageService implements OnModuleInit {
   }
 
   async onModuleInit(): Promise<void> {
-    const exists = await this.client.bucketExists(this.bucket);
-
-    if (!exists) {
-      await this.client.makeBucket(this.bucket, 'us-east-1');
+  for (let attempt = 1; ; attempt++) {
+    try {
+      const exists = await this.client.bucketExists(this.bucket);
+      if (!exists) await this.client.makeBucket(this.bucket, 'us-east-1');
+      return;
+    } catch (e: any) {
+      if (attempt >= 10 || e?.code !== 'ECONNREFUSED') throw e;
+      await new Promise((r) => setTimeout(r, 1000));
     }
   }
+}
 
   async upload(
     objectKey: string,
