@@ -5,9 +5,12 @@ import {
   Post,
   Query,
   Redirect,
-  BadRequestException,
+  Req,
+  Res,
+  UnauthorizedException,
 } from '@nestjs/common';
-
+import { timingSafeEqual } from 'node:crypto';
+import type { Request, Response } from 'express';
 import {
   ApiTags,
   ApiOperation,
@@ -17,161 +20,122 @@ import {
   ApiBadRequestResponse,
   ApiBody,
 } from '@nestjs/swagger';
-
 import { AllegroAuthService } from './allegro-auth.service.ts';
+import {
+  AllegroSessionService,
+  SESSION_MAX_AGE_MS,
+} from './allegro-session.service.ts';
+
+const OAUTH_STATE_COOKIE = 'waterm_allegro_oauth_state';
+const SESSION_COOKIE = 'waterm_allegro_session';
+const OAUTH_COOKIE_PATH = '/api/auth/allegro';
+const SECURE_COOKIE = process.env['NODE_ENV'] === 'production';
+
+function getCookie(req: Request, name: string): string | undefined {
+  const entry = req.headers.cookie
+    ?.split(';')
+    .map((value) => value.trim())
+    .find((value) => value.startsWith(`${name}=`));
+  return entry?.slice(name.length + 1);
+}
 
 @ApiTags('Allegro Authentication')
 @Controller('auth/allegro')
 export class AllegroAuthController {
   constructor(
     private readonly auth: AllegroAuthService,
+    private readonly sessions: AllegroSessionService,
   ) {}
 
   @Get('login')
   @Redirect()
-  @ApiOperation({
-    summary: 'Start Allegro OAuth authorization',
-    description:
-      'Redirects the user to Allegro to authorize the application.',
-  })
-  @ApiResponse({
-    status: 302,
-    description: 'Redirects the browser to the Allegro authorization page.',
-  })
-  login() {
-    return {
-      url: this.auth.buildAuthorizeUrl(),
-    };
+  @ApiOperation({ summary: 'Start Allegro OAuth authorization' })
+  @ApiResponse({ status: 302, description: 'Redirects to Allegro' })
+  login(@Res({ passthrough: true }) response: Response) {
+    const authorizeUrl = new URL(this.auth.buildAuthorizeUrl());
+    authorizeUrl.searchParams.set('prompt', 'confirm');
+    const url = authorizeUrl.toString();
+    const state = authorizeUrl.searchParams.get('state');
+    if (!state) throw new UnauthorizedException('Missing OAuth state');
+
+    response.cookie(OAUTH_STATE_COOKIE, state, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: SECURE_COOKIE,
+      path: OAUTH_COOKIE_PATH,
+      maxAge: 10 * 60 * 1000,
+    });
+
+    return { url };
   }
 
   @Get('callback')
-  @ApiOperation({
-    summary: 'Handle Allegro OAuth callback',
-    description:
-      'Exchanges the authorization code for tokens and retrieves ' +
-      'the authenticated Allegro account information.',
-  })
-  @ApiQuery({
-    name: 'code',
-    type: String,
-    required: true,
-    description: 'Temporary authorization code returned by Allegro.',
-    example: 'authorization_code_example',
-  })
-  @ApiQuery({
-    name: 'state',
-    type: String,
-    required: true,
-    description: 'OAuth state value used to validate the callback.',
-    example: 'a1b2c3d4e5f6',
-  })
-  @ApiOkResponse({
-    description:
-      'Authorization succeeded. Returns token information and the Allegro account ID.',
-    schema: {
-      type: 'object',
-      properties: {
-        access_token: {
-          type: 'string',
-          description: 'Allegro access token.',
-        },
-        refresh_token: {
-          type: 'string',
-          description: 'Token used to obtain a new access token.',
-        },
-        token_type: {
-          type: 'string',
-          example: 'bearer',
-        },
-        expires_in: {
-          type: 'number',
-          description: 'Access token lifetime in seconds.',
-          example: 43199,
-        },
-        allegroUserId: {
-          oneOf: [
-            { type: 'string' },
-            { type: 'number' },
-          ],
-          description: 'ID of the authenticated Allegro account.',
-          example: '111604947',
-        },
-        login: {
-          type: 'string',
-          description: 'Allegro account login.',
-          example: 'my_shop',
-        },
-      },
-    },
-  })
-  @ApiBadRequestResponse({
-    description: 'The authorization code or OAuth state is invalid.',
-  })
+  @ApiOperation({ summary: 'Handle Allegro OAuth callback and return to WaterM' })
+  @ApiQuery({ name: 'code', required: true })
+  @ApiQuery({ name: 'state', required: true })
   async callback(
     @Query('code') code: string,
     @Query('state') state: string,
+    @Req() request: Request,
+    @Res() response: Response,
   ) {
-    const token = await this.auth.exchangeCode(code, state);
-    const me = await this.auth.getMe(token.access_token);
+    const expected = getCookie(request, OAUTH_STATE_COOKIE);
+    response.clearCookie(OAUTH_STATE_COOKIE, { path: OAUTH_COOKIE_PATH });
 
-    return {
-      ...token,
-      allegroUserId: me.id,
-      login: me.login,
-    };
+    const a = Buffer.from(expected ?? '', 'utf8');
+    const b = Buffer.from(state ?? '', 'utf8');
+    if (!expected || !state || a.length !== b.length || !timingSafeEqual(a, b)) {
+      throw new UnauthorizedException('Invalid OAuth state cookie');
+    }
+
+    const tokens = await this.auth.exchangeCode(code, state);
+    const user = await this.auth.getMe(tokens.access_token);
+    const sessionId = this.sessions.createSession(tokens, user);
+
+    response.cookie(SESSION_COOKIE, sessionId, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: SECURE_COOKIE,
+      path: '/api',
+      maxAge: SESSION_MAX_AGE_MS,
+    });
+
+    return response.redirect('http://localhost:5173/?allegro=connected');
+  }
+
+  @Get('status')
+  @ApiOperation({ summary: 'Read Allegro connection status for current browser' })
+  getStatus(@Req() request: Request) {
+    return this.sessions.getStatus(getCookie(request, SESSION_COOKIE));
+  }
+
+  @Get('images')
+  @ApiOperation({ summary: 'Get all offer gallery images from all seller offers' })
+  getImages(@Req() request: Request) {
+    return this.sessions.getImages(getCookie(request, SESSION_COOKIE));
+  }
+
+  @Post('logout')
+  @ApiOperation({ summary: 'Disconnect the current browser from Allegro' })
+  logout(@Req() request: Request, @Res({ passthrough: true }) response: Response) {
+    this.sessions.disconnect(getCookie(request, SESSION_COOKIE));
+    response.clearCookie(SESSION_COOKIE, { path: '/api' });
+    response.clearCookie(OAUTH_STATE_COOKIE, { path: OAUTH_COOKIE_PATH });
+    return { connected: false };
   }
 
   @Post('refresh')
-  @ApiOperation({
-    summary: 'Refresh Allegro access token',
-    description:
-      'Exchanges a refresh token for a new Allegro access token.',
-  })
+  @ApiOperation({ summary: 'Refresh Allegro access token manually' })
   @ApiBody({
-    description: 'Refresh token obtained during OAuth authorization.',
     schema: {
       type: 'object',
       required: ['refresh_token'],
-      properties: {
-        refresh_token: {
-          type: 'string',
-          description: 'The current Allegro refresh token.',
-          example: 'refresh_token_example',
-        },
-      },
+      properties: { refresh_token: { type: 'string' } },
     },
   })
-  @ApiOkResponse({
-    description: 'The token was refreshed successfully.',
-    schema: {
-      type: 'object',
-      properties: {
-        access_token: {
-          type: 'string',
-          description: 'New Allegro access token.',
-        },
-        refresh_token: {
-          type: 'string',
-          description: 'New refresh token, if returned by Allegro.',
-        },
-        token_type: {
-          type: 'string',
-          example: 'bearer',
-        },
-        expires_in: {
-          type: 'number',
-          description: 'Access token lifetime in seconds.',
-          example: 43199,
-        },
-      },
-    },
-  })
-  @ApiBadRequestResponse({
-    description: 'The refresh token is invalid or expired.',
-  })
-  refresh(
-    @Body('refresh_token') refreshToken: string,
-  ) {
+  @ApiOkResponse({ description: 'New access token returned' })
+  @ApiBadRequestResponse({ description: 'Invalid refresh token' })
+  refresh(@Body('refresh_token') refreshToken: string) {
     return this.auth.refresh(refreshToken);
   }
 }

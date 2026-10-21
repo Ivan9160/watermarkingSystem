@@ -1,8 +1,6 @@
 import type { AllegroConnection, ProcessingBatch, ProductImage, WatermarkSettings, WorkspaceSession } from '../types';
 
-// Proposed WaterM BACKEND endpoints, not Allegro's public API endpoints.
-// Allegro OAuth tokens and client secrets belong in NestJS, never in React.
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '/api';
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
     const response = await fetch(`${API_BASE}${path}`, {
@@ -10,7 +8,6 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
         ...options,
         headers: { 'Content-Type': 'application/json', ...options?.headers },
     });
-
     if (!response.ok) {
         throw new Error(`API request failed (${response.status})`);
     }
@@ -31,9 +28,9 @@ export const api = {
             body: JSON.stringify({ imageIds, presetId }),
         }),
     getBatch: (id: string) => request<ProcessingBatch>(`/batches/${encodeURIComponent(id)}`),
-    getAllegroStatus: () => request<AllegroConnection>('/integrations/allegro/status'),
-    getAllegroAuthorizationUrl: () =>
-        request<{ url: string }>('/integrations/allegro/authorize-url'),
-    syncAllegroCatalog: () =>
-        request<{ jobId: string }>('/integrations/allegro/sync', { method: 'POST' }),
+
+    getAllegroLoginUrl: () => `${API_BASE}/auth/allegro/login`,
+    getAllegroStatus: () => request<AllegroConnection>('/auth/allegro/status'),
+    getAllegroImages: () => request<{ items: ProductImage[]; offerCount: number; failedOffers: number; failedOfferIds: string[] }>('/auth/allegro/images'),
+    disconnectAllegro: () => request<{ connected: false }>('/auth/allegro/logout', { method: 'POST' }),
 };

@@ -1,3 +1,5 @@
 server-sample
 client
 node_modules
+server/dist/
+frontend/dist/

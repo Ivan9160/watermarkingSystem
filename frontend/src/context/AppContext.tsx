@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { api } from '../services/api';
 import type { Page, ProductImage, WatermarkSettings, WatermarkType, WorkspaceSession } from '../types';
 
@@ -6,6 +6,7 @@ const IS_BACKEND = import.meta.env.VITE_DATA_SOURCE === 'backend';
 const MAX_FILE_BYTES = 25 * 1024 * 1024;
 const VALID_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 type Scope = 'all' | 'selected';
+export type LibrarySourceFilter = 'all' | 'local' | 'allegro';
 
 interface ImportResult { imported: number; skipped: number; }
 
@@ -17,6 +18,10 @@ interface AppContextValue {
     catalogLoading: boolean;
     catalogError: string | null;
     refreshCatalog: () => Promise<void>;
+    importAllegroImages: (items: ProductImage[]) => void;
+    clearAllegroImages: () => void;
+    librarySourceFilter: LibrarySourceFilter;
+    setLibrarySourceFilter: (filter: LibrarySourceFilter) => void;
     addLocalImages: (files: File[]) => ImportResult;
     removeLocalImage: (imageId: string) => void;
     activeImage: ProductImage | undefined;
@@ -42,9 +47,13 @@ const DEMO_SESSION: WorkspaceSession = {
 const AppContext = createContext<AppContextValue | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-    const [page, setPage] = useState<Page>('dashboard');
+    const [page, setPage] = useState<Page>(() =>
+        new URLSearchParams(window.location.search).get('allegro') === 'connected'
+            ? 'integrations'
+            : 'dashboard');
     const [session, setSession] = useState<WorkspaceSession>(DEMO_SESSION);
     const [images, setImages] = useState<ProductImage[]>([]);
+    const [librarySourceFilter, setLibrarySourceFilter] = useState<LibrarySourceFilter>('all');
     const [catalogLoading, setCatalogLoading] = useState(IS_BACKEND);
     const [catalogError, setCatalogError] = useState<string | null>(null);
     const [activeImageId, setActiveImageId] = useState<string | null>(null);
@@ -55,17 +64,30 @@ export function AppProvider({ children }: { children: ReactNode }) {
         text: '© WATERMARK', color: '#7465f8', opacity: 55,
         size: 5, layout: 'single', position: 'bottom-right',
     });
-    // Browser object URLs belong only to this component. Revoke them on deletion/unmount.
     const localUrls = useRef(new Map<string, string>());
+
+    const importAllegroImages = useCallback((items: ProductImage[]) => {
+        setImages(current => [
+            ...current.filter(image => image.source !== 'allegro'),
+            ...items.map(image => ({ ...image, source: 'allegro' as const })),
+        ]);
+    }, []);
+
+    const clearAllegroImages = useCallback(() => {
+        setImages(current => current.filter(image => image.source !== 'allegro'));
+        setSelectedIds(current => current.filter(id => !id.startsWith('allegro-')));
+        setActiveImageId(current => current?.startsWith('allegro-') ? null : current);
+    }, []);
 
     async function refreshCatalog() {
         if (!IS_BACKEND) return;
         setCatalogLoading(true);
         try {
             const { items } = await api.getImages();
-            // Never remove user-selected local files when refreshing the remote catalog.
-            setImages(current => [...current.filter(image => image.source === 'local'),
-                ...items.map(image => ({ ...image, source: image.source ?? 'server' as const }))]);
+            setImages(current => [
+                ...current.filter(image => image.source === 'local'),
+                ...items.map(image => ({ ...image, source: image.source ?? 'server' as const })),
+            ]);
             setCatalogError(null);
         } catch (error) {
             setCatalogError(error instanceof Error ? error.message : 'Could not load catalog');
@@ -78,13 +100,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (IS_BACKEND) {
             void refreshCatalog();
             api.getSession().then(setSession).catch(() => {
-                // The demo identity remains visible until authentication is implemented.
             });
         }
         const urls = localUrls.current;
         return () => { urls.forEach(url => URL.revokeObjectURL(url)); urls.clear(); };
-        // Initial loading is performed once when the provider mounts.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     function addLocalImages(files: File[]): ImportResult {
@@ -109,7 +128,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     function removeLocalImage(id: string) {
         const url = localUrls.current.get(id);
-        if (!url) return; // Remote images cannot be deleted from this prototype.
+        if (!url) return;
         localUrls.current.delete(id);
         URL.revokeObjectURL(url);
         setImages(current => current.filter(image => image.id !== id));
@@ -135,6 +154,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     return <AppContext.Provider value={{
         page, setPage, session, images, catalogLoading, catalogError, refreshCatalog,
+        importAllegroImages, clearAllegroImages, librarySourceFilter, setLibrarySourceFilter,
         addLocalImages, removeLocalImage, activeImage, openEditor,
         selectedIds, toggleImage, selectAll: () => setSelectedIds(images.map(i => i.id)),
         clearSelection: () => setSelectedIds([]), settings,
