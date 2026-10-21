@@ -83,7 +83,6 @@ a { color: inherit; }
 .btn-secondary { background: #1c2535; }
 .btn-light { color: #251d57; border-color: #fff; background: #fff; }
 .btn-light:hover:not(:disabled) { background: #f0eefe; }
-.btn-ghost { background: transparent; border-color: #404b60; }
 .btn:disabled { opacity: .54; }
 
 .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); min-width: 0; }
@@ -133,12 +132,6 @@ a { color: inherit; }
 .allegro-card > p { color: #a4b0c3; font-size: 12px; max-width: 330px; }
 .allegro-foot { display: flex; align-items: center; gap: 10px; margin-top: 23px; }
 .inline-message { font-size: 11px !important; color: #c9c2f9 !important; margin-top: 9px; }
-.modal-backdrop { position: fixed; inset: 0; z-index: 50; background: #070910cc; display: grid; place-items: center; padding: 22px; }
-.modal { width: min(100%, 470px); background: #1c2433; padding: 26px; border-radius: 16px; border: 1px solid #49566c; box-shadow: 0 20px 60px #0009; }
-.modal p, .modal li { font-size: 13px; color: #aeb9ca; line-height: 1.6; }
-.modal p { margin: 17px 0 12px; }
-.modal ol { padding-left: 22px; margin-bottom: 20px; }
-.modal .btn { margin-top: 19px; }
 .icon-button { color: #c7cfdb; background: transparent; border: 0; font-size: 23px; }
 
 /* IMAGE LIBRARY */
