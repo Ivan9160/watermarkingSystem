@@ -25,7 +25,6 @@ const VALID_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 function getOfferId(image: ProductImage): string | undefined {
     if (image.offerId) return image.offerId;
     if (image.source !== 'allegro') return undefined;
-    // Current Allegro backend names files: <offerId>-01.jpg, <offerId>-02.jpg ...
     return image.filename.match(/^(.+)-\d{2}\.(?:jpe?g|png|webp)$/i)?.[1];
 }
 
@@ -61,7 +60,7 @@ export function LibraryPage() {
         images, catalogLoading, catalogError, selectedIds, toggleImage,
         openEditor, setPage, clearSelection, selectImages, deselectImages,
         addLocalImages, removeImages, librarySourceFilter,
-        setLibrarySourceFilter, importProgress,
+        setLibrarySourceFilter,
     } = useApp();
 
     const fileInput = useRef<HTMLInputElement>(null);
@@ -346,12 +345,6 @@ export function LibraryPage() {
                     </div>)}
                 </div>}
             </div>
-
-            {importProgress.stage !== 'idle' && <div className="panel" role="status" style={{ padding: 12, marginBottom: 10, fontSize: 12 }}>
-                Import: {importProgress.stage.replaceAll('-', ' ')} · {importProgress.processedOffers}
-                {importProgress.totalOffers !== null ? ` / ${importProgress.totalOffers}` : ''} offers · {importProgress.importedImages} images
-                {importProgress.failedOffers > 0 && ` · ${importProgress.failedOffers} failed`}
-            </div>}
 
             <div className={`library-grid library-grid--${gridColumns} scrollable-content${dragOver ? ' library-drag-active' : ''}${visible.length === 0 ? ' library-empty' : ''}`}>
                 {catalogLoading && <div className="empty-library">Loading images...</div>}

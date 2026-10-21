@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Post,
   Query,
   Redirect,
@@ -107,6 +109,24 @@ export class AllegroAuthController {
   @ApiOperation({ summary: 'Read Allegro connection status for current browser' })
   getStatus(@Req() request: Request) {
     return this.sessions.getStatus(getCookie(request, SESSION_COOKIE));
+  }
+
+  @Post('import')
+  @HttpCode(HttpStatus.ACCEPTED)
+  @ApiOperation({ summary: 'Start importing all Allegro offer images' })
+  @ApiResponse({
+    status: 202,
+    description: 'Import started or already running; returns the current progress.',
+  })
+  startImport(@Req() request: Request) {
+    return this.sessions.startImport(getCookie(request, SESSION_COOKIE));
+  }
+
+  @Get('import/progress')
+  @ApiOperation({ summary: 'Get current Allegro import progress' })
+  @ApiOkResponse({ description: 'Current stage and real import counters.' })
+  getImportProgress(@Req() request: Request) {
+    return this.sessions.getImportProgress(getCookie(request, SESSION_COOKIE));
   }
 
   @Get('images')

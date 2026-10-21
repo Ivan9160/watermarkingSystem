@@ -686,7 +686,7 @@ a {
 
 .dashboard-lower {
     display: grid;
-    grid-template-columns: 1.05fr 1fr;
+    grid-template-columns: 0.75fr 1fr;
     gap: 12px;
     min-height: 0;
 }
