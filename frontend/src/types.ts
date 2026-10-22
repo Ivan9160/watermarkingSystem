@@ -1,9 +1,9 @@
-export type Page = 'dashboard' | 'library' | 'editor' | 'batch' | 'removal' | 'verification' | 'integrations';
+export type Page = 'dashboard' | 'library' | 'editor' | 'batch' | 'templates' | 'removal' | 'verification' | 'integrations';
 export type WatermarkType = 'visible' | 'invisible';
 export type WatermarkLayout = 'single' | 'pattern';
 export type WatermarkPosition = 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left' | 'center';
 export type ImageSource = 'local' | 'allegro' | 'server';
-export type ImportStage = 'idle'  | 'fetching-offers' | 'fetching-images' | 'completed' | 'failed';
+export type ImportStage = 'idle' | 'fetching-offers' | 'fetching-images' | 'completed' | 'failed';
 
 export interface ProductImage {
     id: string;

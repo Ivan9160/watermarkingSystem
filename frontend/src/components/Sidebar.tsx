@@ -5,6 +5,7 @@ const navigation: { id: Page; label: string; icon: string; group: string }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: '◫', group: 'WORKSPACE' },
     { id: 'library', label: 'Image Library', icon: '▦', group: 'WORKSPACE' },
     { id: 'editor', label: 'Watermark Editor', icon: '✎', group: 'WORKSPACE' },
+    { id: 'templates', label: 'Templates', icon: '▧', group: 'WORKSPACE' },
     { id: 'batch', label: 'Batch Processing', icon: '▤', group: 'WORKSPACE' },
     { id: 'integrations', label: 'Integrations', icon: '↗', group: 'WORKSPACE' },
     { id: 'removal', label: 'Watermark Removal', icon: '◈', group: 'TOOLS' },

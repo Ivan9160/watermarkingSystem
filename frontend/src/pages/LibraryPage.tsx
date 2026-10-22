@@ -244,7 +244,7 @@ export function LibraryPage() {
                     <button className="btn btn-primary" onClick={() => setPage('batch')}>Batch preview →</button>
                 </>} />
 
-            <div className="library-toolbar" style={{ alignItems: 'flex-start' }}>
+            <div className="library-toolbar">
                 <div className="library-metrics">
                     <span className="counter">{images.length} images</span>
                     <span className="counter counter-accent">{selectedIds.length} selected</span>
@@ -267,15 +267,13 @@ export function LibraryPage() {
                         <option value="jpeg">JPG / JPEG</option>
                         <option value="png">PNG</option>
                         <option value="webp">WebP</option>
-                        <option value="unknown">Unknown format</option>
                     </select>
                     <select aria-label="Resolution" value={resolution}
                         onChange={event => setResolution(event.target.value as ResolutionFilter)}>
                         <option value="all">Any resolution</option>
-                        <option value="small">Width under 1280px</option>
-                        <option value="hd">1280–3839px wide</option>
+                        <option value="small">Under 1280px</option>
+                        <option value="hd">1280–3840px</option>
                         <option value="large">3840px and above</option>
-                        <option value="unknown">Resolution unknown</option>
                     </select>
                     <select aria-label="File size" value={size}
                         onChange={event => setSize(event.target.value as SizeFilter)}>
@@ -283,7 +281,6 @@ export function LibraryPage() {
                         <option value="under1">Under 1 MB</option>
                         <option value="from1to5">1–5 MB</option>
                         <option value="over5">Over 5 MB</option>
-                        <option value="unknown">Size unknown</option>
                     </select>
                     <select aria-label="Photos per product" value={count}
                         onChange={event => setCount(event.target.value as CountFilter)}>
@@ -305,43 +302,42 @@ export function LibraryPage() {
                 </div>
             </div>
 
-            <div className="library-selection-row" style={{ flexWrap: 'wrap', gap: 12 }}>
+            <div className="library-selection-row">
                 <span>{visibleSelected} of {visible.length} matching images selected</span>
-                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                <div className="library-selection-actions">
                     <button className="subtle-link" onClick={() => selectImages(visibleIds)}>Select matching</button>
                     <button className="subtle-link" onClick={() => deselectImages(visibleIds)}>Deselect matching</button>
                     <button className="subtle-link" onClick={() => selectImages(images.map(image => image.id))}>Select all</button>
                     <button className="subtle-link" onClick={clearSelection}>Clear selection</button>
-                    {selectedIds.length > 0 && <button className="subtle-link"
-                        style={{ color: '#f0a4ad' }} onClick={deleteSelectedImages}>
+                    {selectedIds.length > 0 && <button className="subtle-link subtle-link-danger" onClick={deleteSelectedImages}>
                         Delete selected ({selectedIds.length})
                     </button>}
                 </div>
             </div>
 
-            <div className="panel" style={{ padding: '12px 15px', margin: '7px 0 12px', borderStyle: dragOver ? 'dashed' : 'solid', borderColor: dragOver ? '#8b7aff' : undefined }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-                    <span aria-hidden="true" style={{ fontSize: 22 }}>⇪</span>
-                    <div style={{ flex: 1, minWidth: 180 }}>
-                        <strong style={{ fontSize: 13 }}>Drop product photos anywhere on this page</strong>
-                        <div style={{ color: '#9aa7bc', fontSize: 11, marginTop: 3 }}>JPG, PNG, WebP · up to 25 MB per image</div>
+            <div className={`panel library-upload${dragOver ? ' library-upload--dragging' : ''}`}>
+                <div className="library-upload-main">
+                    <span aria-hidden="true" className="library-upload-icon">⇪</span>
+                    <div className="library-upload-copy">
+                        <strong className="library-upload-title">Drop product photos anywhere on this page</strong>
+                        <div className="library-upload-description">JPG, PNG, WebP · up to 25 MB per image</div>
                     </div>
                     <button className="btn btn-secondary" onClick={() => fileInput.current?.click()}>Choose files</button>
                 </div>
-                {uploadNotice && <div role="status" style={{ marginTop: 8, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-                    <span style={{ color: '#bab1ff', fontSize: 12 }}>{uploadNotice}</span>
+                {uploadNotice && <div role="status" className="library-upload-notice">
+                    <span className="library-upload-notice-text">{uploadNotice}</span>
                     {uploadPreviews.length > 0 && <button type="button" className="subtle-link"
                         onClick={() => setShowUploadDetails(value => !value)}>
                         {showUploadDetails ? 'Hide details' : 'Show upload details'}
                     </button>}
                 </div>}
-                {showUploadDetails && uploadPreviews.length > 0 && <div style={{ display: 'flex', gap: 10, overflowX: 'auto', marginTop: 10, paddingBottom: 3 }}>
-                    {uploadPreviews.map(item => <div key={item.id} style={{ width: 100, flexShrink: 0 }}>
-                        <div style={{ height: 62, background: '#212b3c', borderRadius: 8, display: 'grid', placeItems: 'center', overflow: 'hidden' }}>
-                            {item.url ? <img src={item.url} alt="" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} /> : <span>⚠</span>}
+                {showUploadDetails && uploadPreviews.length > 0 && <div className="library-upload-preview-list">
+                    {uploadPreviews.map(item => <div key={item.id} className="library-upload-preview-item">
+                        <div className="library-upload-preview-image">
+                            {item.url ? <img src={item.url} alt="" /> : <span>⚠</span>}
                         </div>
-                        <div title={item.name} style={{ color: '#bdc7d6', fontSize: 10, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', marginTop: 5 }}>{item.name}</div>
-                        <div style={{ color: item.issue ? '#f2a9a9' : '#85d6b5', fontSize: 10 }}>{item.issue ?? 'Added'}</div>
+                        <div title={item.name} className="library-upload-preview-name">{item.name}</div>
+                        <div className={`library-upload-preview-status${item.issue ? ' library-upload-preview-status--error' : ''}`}>{item.issue ?? 'Added'}</div>
                     </div>)}
                 </div>}
             </div>
@@ -389,20 +385,20 @@ export function LibraryPage() {
                 </div>}
             </div>
 
-            {detailImage && <div role="presentation" style={{ position: 'fixed', inset: 0, zIndex: 40, background: '#05070dbb' }} onClick={() => setDetailId(null)}>
+            {detailImage && <div role="presentation" className="image-details-backdrop" onClick={() => setDetailId(null)}>
                 <aside role="dialog" aria-modal="true" aria-labelledby="image-details-title"
                     onClick={event => event.stopPropagation()}
-                    style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 'min(440px, 100vw)', overflowY: 'auto', background: '#151d2b', borderLeft: '1px solid #354157', padding: 24, boxSizing: 'border-box', boxShadow: '-20px 0 65px #0008' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
-                        <h2 id="image-details-title" style={{ fontSize: 19 }}>Image Details</h2>
+                    className="image-details-panel">
+                    <div className="image-details-heading">
+                        <h2 id="image-details-title">Image Details</h2>
                         <button className="btn btn-secondary" onClick={() => setDetailId(null)} aria-label="Close image details">✕</button>
                     </div>
-                    <div style={{ background: '#242e3e', borderRadius: 12, minHeight: 210, margin: '20px 0', padding: 12, display: 'grid', placeItems: 'center' }}>
+                    <div className="image-details-preview">
                         <img src={detailImage.src} alt={detailImage.productName ?? detailImage.filename}
                             onLoad={event => rememberDimensions(detailImage.id, event.currentTarget.naturalWidth, event.currentTarget.naturalHeight)}
-                            style={{ maxWidth: '100%', maxHeight: 280, objectFit: 'contain' }} />
+                            />
                     </div>
-                    <div style={{ display: 'grid', gap: 12, fontSize: 13 }}>
+                    <div className="image-details-metadata">
                         {([
                             ['Filename', detailImage.filename],
                             ['Product', detailImage.productName ?? '—'],
@@ -418,19 +414,19 @@ export function LibraryPage() {
                             ['File size', formatBytes(detailImage.sizeBytes)],
                             ['Uploaded', detailImage.uploadedAt ? new Date(detailImage.uploadedAt).toLocaleString() : 'Not available'],
                         ] as Array<[string, string]>).map(([label, value]) =>
-                            <div key={label} style={{ display: 'grid', gridTemplateColumns: '115px minmax(0,1fr)', gap: 12, borderBottom: '1px solid #2d3748', paddingBottom: 10 }}>
-                                <span style={{ color: '#94a3b8' }}>{label}</span>
-                                <span style={{ overflowWrap: 'anywhere' }}>{value}</span>
+                            <div key={label} className="image-details-row">
+                                <span className="image-details-label">{label}</span>
+                                <span className="image-details-value">{value}</span>
                             </div>)}
                     </div>
-                    <div style={{ display: 'grid', gap: 9, marginTop: 22 }}>
+                    <div className="image-details-actions">
                         <button className="btn btn-primary" onClick={() => { openEditor(detailImage.id); setDetailId(null); }}>Edit this image →</button>
                         <button className="btn btn-secondary" onClick={() => selectImages(detailGroup.map(item => item.id))}>Select all {detailGroup.length} photos of this product</button>
                         <button className="btn btn-secondary" onClick={() => deselectImages(detailGroup.map(item => item.id))}>Deselect product photos</button>
-                        <button className="btn btn-secondary" style={{ color: '#f0a4ad', borderColor: '#794756' }}
+                        <button className="btn btn-secondary btn-danger"
                             onClick={() => deleteImage(detailImage)}>Delete from WaterM</button>
                     </div>
-                    <p style={{ fontSize: 11, color: '#9aa7bc', marginTop: 18 }}>Allegro file size may be unavailable until the backend provides it. Offer ID is inferred from the current filename when not supplied directly.</p>
+                    <p className="image-details-note">Allegro file size may be unavailable until the backend provides it. Offer ID is inferred from the current filename when not supplied directly.</p>
                 </aside>
             </div>}
         </div>

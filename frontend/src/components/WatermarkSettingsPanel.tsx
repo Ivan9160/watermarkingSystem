@@ -1,4 +1,5 @@
 import { useApp } from '../context/AppContext';
+import { TemplateControls } from './TemplateControls';
 import type { WatermarkPosition } from '../types';
 
 interface Props {
@@ -12,7 +13,8 @@ export function WatermarkSettingsPanel({ title = 'Watermark settings', includeTy
 
     return (
         <div className="panel settings-panel">
-            <div className="panel-heading"><h2>{title}</h2><span className="muted-label">PRESET 01</span></div>
+            <div className="panel-heading"><h2>{title}</h2><span className="muted-label">TEMPLATES</span></div>
+            <TemplateControls />
             {includeType && <label className="form-field">
                 <span>Type</span>
                 <select value={watermarkType} onChange={event => setWatermarkType(event.target.value as 'visible' | 'invisible')}>
@@ -20,7 +22,7 @@ export function WatermarkSettingsPanel({ title = 'Watermark settings', includeTy
                     <option value="invisible">Invisible watermark</option>
                 </select>
             </label>}
-            {unavailable && <div className="notice-box"><strong>Invisible watermark — planned</strong><span>Embedding and extraction require the processing engine.</span></div>}
+            {unavailable && <div className="notice-box"><strong>Invisible watermark — planned</strong><span>Embedding and extraction require the processing engine. You can store this setting in a template, but it cannot be rendered yet.</span></div>}
             <fieldset className="settings-fields" disabled={unavailable}>
                 <label className="form-field">
                     <span>Watermark text</span>

@@ -84,7 +84,7 @@ export function PreviewCanvas({
                 ctx.stroke();
             }
 
-            if (templateOnly && visible) {
+            if (visible && (templateOnly || !imageSrc)) {
                 drawWatermark(ctx, WIDTH, HEIGHT, settings);
             }
 

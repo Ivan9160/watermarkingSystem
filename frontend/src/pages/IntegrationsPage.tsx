@@ -258,37 +258,37 @@ export function IntegrationsPage() {
                 </section>
 
                 {showProgress && (
-                    <section className="panel integration-guide" aria-live="polite">
+                    <section className="panel integration-progress" aria-live="polite">
                         <div className="panel-heading">
                             <h2>Catalog import progress</h2>
                             <span className="muted-label">
                                 {percent === undefined ? 'SCANNING' : `${percent}%`}
                             </span>
                         </div>
-                        <p style={{ color: 'var(--muted)', marginTop: 12, fontSize: 12 }}>
+                        <p className="integration-progress-label">
                             {getProgressLabel(importProgress)}
                         </p>
                         <progress
+                            className="integration-progress-bar"
                             aria-label="Allegro catalog import progress"
                             max={100}
                             value={percent}
-                            style={{ display: 'block', width: '100%', height: 12, marginTop: 12, accentColor: 'var(--accent)' }}
                         />
-                        <div className="stats-grid" style={{ marginTop: 16 }}>
-                            <div className="stat-card">
-                                <div className="stat-heading">Offers found</div>
+                        <div className="integration-progress-stats">
+                            <div className="integration-progress-stat">
+                                <span>Offers found</span>
                                 <strong>{importProgress.totalOffers ?? '—'}</strong>
                             </div>
-                            <div className="stat-card">
-                                <div className="stat-heading">Offers processed</div>
+                            <div className="integration-progress-stat">
+                                <span>Offers processed</span>
                                 <strong>{importProgress.processedOffers}</strong>
                             </div>
-                            <div className="stat-card">
-                                <div className="stat-heading">Photos imported</div>
+                            <div className="integration-progress-stat">
+                                <span>Photos imported</span>
                                 <strong>{importProgress.importedImages}</strong>
                             </div>
-                            <div className="stat-card">
-                                <div className="stat-heading">Failed offers</div>
+                            <div className="integration-progress-stat">
+                                <span>Failed offers</span>
                                 <strong>{importProgress.failedOffers}</strong>
                             </div>
                         </div>

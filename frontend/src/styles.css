@@ -1,7 +1,4 @@
-/* WaterM — consolidated frontend styles.
- * One source of truth for each component; viewport overrides live below.
- */
-
+/* Frontend styles*/
 
 /* ===== 01. Theme, reset and application shell ===== */
 
@@ -948,7 +945,7 @@ a {
     gap: 14px;
     overflow-x: hidden;
     overflow-y: auto;
-    padding: 2px 5px 0px 0;
+    padding: 2px 5px 18px 0;
 }
 
 .library-grid--1 {
@@ -1204,6 +1201,205 @@ a {
     margin-top: 8px;
 }
 
+.library-selection-row .subtle-link-danger {
+    color: #f0a4ad;
+}
+
+.library-upload {
+    flex-shrink: 0;
+    padding: 12px 15px;
+    margin: 7px 0 12px;
+}
+
+.library-upload--dragging {
+    border-style: dashed;
+    border-color: var(--accent);
+}
+
+.library-upload-main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.library-upload-icon {
+    font-size: 22px;
+    line-height: 1;
+    color: #b3a8ff;
+}
+
+.library-upload-copy {
+    flex: 1 1 180px;
+    min-width: 180px;
+}
+
+.library-upload-title {
+    font-size: 13px;
+}
+
+.library-upload-description {
+    color: #9aa7bc;
+    font-size: 11px;
+    margin-top: 3px;
+}
+
+.library-upload-notice {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.library-upload-notice-text {
+    color: #bab1ff;
+    font-size: 12px;
+}
+
+.library-upload-preview-list {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    margin-top: 10px;
+    padding-bottom: 3px;
+}
+
+.library-upload-preview-item {
+    flex: 0 0 100px;
+    width: 100px;
+    min-width: 0;
+}
+
+.library-upload-preview-image {
+    display: grid;
+    place-items: center;
+    height: 62px;
+    overflow: hidden;
+    background: #212b3c;
+    border-radius: 8px;
+}
+
+.library-upload-preview-image img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.library-upload-preview-name {
+    margin-top: 5px;
+    color: #bdc7d6;
+    font-size: 10px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.library-upload-preview-status {
+    color: #85d6b5;
+    font-size: 10px;
+}
+
+.library-upload-preview-status--error {
+    color: #f2a9a9;
+}
+
+.library-import-status {
+    flex-shrink: 0;
+    padding: 12px;
+    margin-bottom: 10px;
+    font-size: 12px;
+}
+
+.image-details-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: #05070dbb;
+}
+
+.image-details-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(440px, 100vw);
+    box-sizing: border-box;
+    overflow-y: auto;
+    padding: 24px;
+    background: #151d2b;
+    border-left: 1px solid #354157;
+    box-shadow: -20px 0 65px #0008;
+}
+
+.image-details-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.image-details-heading h2 {
+    font-size: 19px;
+}
+
+.image-details-preview {
+    display: grid;
+    place-items: center;
+    min-height: 210px;
+    margin: 20px 0;
+    padding: 12px;
+    background: #242e3e;
+    border-radius: 12px;
+}
+
+.image-details-preview img {
+    display: block;
+    max-width: 100%;
+    max-height: 280px;
+    object-fit: contain;
+}
+
+.image-details-metadata {
+    display: grid;
+    gap: 12px;
+    font-size: 13px;
+}
+
+.image-details-row {
+    display: grid;
+    grid-template-columns: 115px minmax(0, 1fr);
+    gap: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #2d3748;
+}
+
+.image-details-label {
+    color: #94a3b8;
+}
+
+.image-details-value {
+    overflow-wrap: anywhere;
+}
+
+.image-details-actions {
+    display: grid;
+    gap: 9px;
+    margin-top: 22px;
+}
+
+.btn-danger {
+    color: #f0a4ad;
+    border-color: #794756;
+}
+
+.image-details-note {
+    margin-top: 18px;
+    color: #9aa7bc;
+    font-size: 11px;
+}
+
 
 /* ===== 04. Watermark editor and batch preview ===== */
 
@@ -1449,7 +1645,347 @@ a {
 }
 
 
-/* ===== 05. Removal and verification pages ===== */
+/* ===== 05. Watermark template manager ===== */
+
+.template-controls {
+    padding: 4px 0 14px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+}
+
+.template-controls .template-selector {
+    margin-top: 10px;
+}
+
+.template-control-actions,
+.template-create-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.template-control-actions .btn {
+    min-width: 0;
+    white-space: normal;
+    text-align: center;
+}
+
+.template-status {
+    margin-top: 7px;
+    font-size: 11px;
+    color: var(--success);
+}
+
+.template-status--modified {
+    color: #e5b578;
+}
+
+.templates-content {
+    min-height: 0;
+    flex: 1;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 1px 2px 24px;
+}
+
+.template-alert,
+.template-notice {
+    border: 1px solid #3d5e51;
+    background: #1a3028;
+    color: #a4eac4;
+    padding: 10px 13px;
+    margin-bottom: 12px;
+    border-radius: 9px;
+    font-size: 12px;
+}
+
+.template-alert {
+    border-color: #81515a;
+    background: #38252e;
+    color: #efb5bd;
+}
+
+.template-create-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    gap: 24px;
+    padding: 22px;
+    align-items: stretch;
+}
+
+.template-create-form,
+.template-create-preview {
+    min-width: 0;
+}
+
+.template-create-form .panel-heading h2,
+.templates-list-heading h2 {
+    font-size: 17px;
+    font-weight: 750;
+}
+
+.template-description {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+.template-create-form .form-field input,
+.template-create-form .form-field textarea,
+.template-rename-form input {
+    width: 100%;
+    min-width: 0;
+    border: 1px solid #354155;
+    border-radius: 8px;
+    background: #101723;
+    color: var(--text);
+    padding: 9px 11px;
+    font: inherit;
+    font-size: 12px;
+}
+
+.template-create-form .form-field textarea {
+    resize: vertical;
+    min-height: 68px;
+    max-height: 180px;
+}
+
+.template-create-preview {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+}
+
+.template-preview-surface {
+    width: 100%;
+    overflow: hidden;
+    border-radius: 11px;
+    background: #e5e9f0;
+    border: 1px solid #354156;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.template-preview-surface .preview-canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    max-height: 230px;
+    object-fit: contain;
+    box-shadow: none;
+}
+
+.template-preview-caption {
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.templates-list-heading {
+    margin: 22px 0 13px;
+}
+
+.templates-list-heading p {
+    margin-top: 2px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.templates-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    align-items: stretch;
+}
+
+.template-card {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    transition: border-color .15s;
+}
+
+.template-card:hover,
+.template-card--active {
+    border-color: #6558b0;
+}
+
+.template-card-preview {
+    width: 100%;
+    overflow: hidden;
+    background: #e5e9f0;
+    aspect-ratio: 920 / 585;
+    border-bottom: 1px solid var(--border);
+}
+
+.template-card-preview .preview-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.template-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 15px;
+    min-width: 0;
+    flex: 1;
+}
+
+.template-card-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.template-card-title {
+    min-width: 0;
+    flex: 1;
+}
+
+.template-card-title h3 {
+    font-size: 14px;
+    font-weight: 750;
+    overflow-wrap: anywhere;
+}
+
+.template-active-badge {
+    flex-shrink: 0;
+    background: #273f32;
+    color: #96edb4;
+    border: 1px solid #42694e;
+    border-radius: 999px;
+    padding: 3px 8px;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.template-card-description {
+    color: #a2afc1;
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+
+.template-card-meta {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.template-card-meta span {
+    padding: 4px 7px;
+    background: #252d3e;
+    color: #b5c2d5;
+    border: 1px solid #354057;
+    border-radius: 6px;
+    font-size: 10px;
+}
+
+.template-card-updated {
+    font-size: 10px;
+    color: #77869b;
+}
+
+.template-card-main-actions {
+    margin-top: auto;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.template-card-main-actions .btn {
+    min-width: 0;
+    white-space: normal;
+    padding: 8px;
+    font-size: 11px;
+}
+
+.template-card-secondary-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 13px;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+}
+
+.template-card-secondary-actions button {
+    padding: 0;
+    background: none;
+    border: none;
+    color: #b7a8ff;
+    font-size: 11px;
+    font-weight: 650;
+}
+
+.template-card-secondary-actions button:hover {
+    color: #e5dfff;
+    text-decoration: underline;
+}
+
+.template-card-secondary-actions .template-delete {
+    color: #e7a5b1;
+}
+
+.template-rename-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.template-rename-form input {
+    flex: 1 1 140px;
+}
+
+.template-rename-form .btn {
+    min-height: 30px;
+    padding: 5px 8px;
+    font-size: 11px;
+}
+
+.template-empty {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 42px 20px;
+    text-align: center;
+}
+
+.template-empty-icon {
+    font-size: 45px;
+    color: #aa9cff;
+}
+
+.template-empty h3 {
+    font-size: 17px;
+}
+
+.template-empty p,
+.templates-storage-note {
+    font-size: 11px;
+    color: var(--muted);
+}
+
+.templates-storage-note {
+    margin-top: 15px;
+}
+
+
+/* ===== 06. Removal and verification pages ===== */
 
 .analysis-layout {
     flex: 1;
@@ -1543,7 +2079,7 @@ a {
 }
 
 
-/* ===== 06. Allegro integration ===== */
+/* ===== 07. Allegro integration ===== */
 
 .integration-content {
     display: flex;
@@ -1646,7 +2182,81 @@ a {
 }
 
 
-/* ===== 07. Responsive breakpoints ===== */
+/* Import progress is styled here, never inside TSX. */
+.integration-progress {
+    padding: 24px;
+    min-width: 0;
+}
+
+.integration-progress .panel-heading h2 {
+    font-size: 16px;
+}
+
+.integration-progress-label {
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.integration-progress-bar {
+    display: block;
+    width: 100%;
+    height: 12px;
+    margin: 12px 0 0;
+    overflow: hidden;
+    border: 0;
+    border-radius: 999px;
+    background: #242e40;
+    accent-color: var(--accent);
+}
+
+.integration-progress-bar::-webkit-progress-bar {
+    background: #242e40;
+    border-radius: 999px;
+}
+
+.integration-progress-bar::-webkit-progress-value {
+    background: var(--accent);
+    border-radius: 999px;
+    transition: width .2s ease;
+}
+
+.integration-progress-bar::-moz-progress-bar {
+    background: var(--accent);
+    border-radius: 999px;
+}
+
+.integration-progress-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.integration-progress-stat {
+    min-width: 0;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    background: var(--surface-2);
+}
+
+.integration-progress-stat span {
+    display: block;
+    color: #a9b5c6;
+    font-size: 11px;
+}
+
+.integration-progress-stat strong {
+    display: block;
+    margin-top: 6px;
+    font-size: 24px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+
+/* ===== 08. Responsive breakpoints ===== */
 
 @media (max-width: 1460px) {
     .library-controls {
@@ -1727,6 +2337,7 @@ a {
     .library-controls > .btn { grid-column: 1 / -1; }
     .library-selection-row { align-items: flex-start; }
     .integration-steps { grid-template-columns: 1fr; }
+    .integration-progress-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .integration-title { flex-wrap: wrap; }
     .integration-title .status-chip { margin: 0; }
     .connection-details { flex-direction: column; gap: 5px; }
@@ -1755,6 +2366,9 @@ a {
 }
 
 @media (max-width: 520px) {
+    .integration-progress, .integration-card, .integration-guide { padding: 16px; }
+    .integration-progress-stat { padding: 12px; }
+    .integration-progress-stat strong { font-size: 21px; }
     .library-grid:not(.library-empty) {
         grid-template-columns: minmax(0, 1fr);
         max-width: none;
