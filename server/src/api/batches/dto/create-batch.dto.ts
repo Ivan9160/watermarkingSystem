@@ -4,6 +4,7 @@ import {
   ArrayMinSize,
   IsArray,
   IsNotEmpty,
+  IsNumber,
   IsObject,
   IsOptional,
   IsString,
@@ -92,4 +93,7 @@ export class CreateBatchDto {
   @IsOptional()
   @IsObject()
   watermarkConfig?: { [key: string]: JsonValue };
+
+
 }
+

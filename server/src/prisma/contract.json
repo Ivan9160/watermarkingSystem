@@ -108,6 +108,13 @@
                   "plane": "domain"
                 }
               },
+              "totalImages": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "updatedAt": {
                 "nullable": false,
                 "type": {
@@ -173,6 +180,9 @@
                 "status": {
                   "column": "status"
                 },
+                "totalImages": {
+                  "column": "total_images"
+                },
                 "updatedAt": {
                   "column": "updated_at"
                 },
@@ -218,6 +228,20 @@
                 "nullable": false,
                 "type": {
                   "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "originalKey": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "outputKey": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
@@ -304,6 +328,12 @@
                 },
                 "imageIndex": {
                   "column": "image_index"
+                },
+                "originalKey": {
+                  "column": "original_key"
+                },
+                "outputKey": {
+                  "column": "output_key"
                 },
                 "outputUrl": {
                   "column": "output_url"
@@ -462,6 +492,11 @@
                     "plane": "storage"
                   }
                 },
+                "total_images": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
                 "updated_at": {
                   "codecId": "pg/timestamptz-temporal@1",
                   "dataType": "pg/timestamptz",
@@ -559,6 +594,16 @@
                   "dataType": "pg/int4",
                   "nullable": false
                 },
+                "original_key": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "output_key": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
                 "output_url": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
@@ -651,6 +696,16 @@
                   "columns": [
                     "storage_key"
                   ]
+                },
+                {
+                  "columns": [
+                    "original_key"
+                  ]
+                },
+                {
+                  "columns": [
+                    "output_key"
+                  ]
                 }
               ]
             },
@@ -727,7 +782,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "c302d024c78e2e6fe5b4734002567d2660e4dcb096d9874afe0ef675e9dce3a1"
+    "storageHash": "005f5b81f32dbf3126845868189d115e746af44d11e1d3b758dccecf7b45f0b4"
   },
   "execution": {
     "executionHash": "c7e1094373242d094521a589186384b9b075c967394a60098d6bd8aa5e5f4f66",

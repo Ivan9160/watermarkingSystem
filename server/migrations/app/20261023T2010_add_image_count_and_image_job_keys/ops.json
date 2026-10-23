@@ -1,0 +1,2499 @@
+[
+  {
+    "id": "dropColumn.batches.completedAt",
+    "label": "Drop column \"completedAt\" from \"batches\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "completedAt",
+        "table": "batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"completedAt\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "batches",
+          "completedAt"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"completedAt\"",
+        "sql": "ALTER TABLE \"public\".\"batches\" DROP COLUMN \"completedAt\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"completedAt\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "batches",
+          "completedAt"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropColumn.batches.createdAt",
+    "label": "Drop column \"createdAt\" from \"batches\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "createdAt",
+        "table": "batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"createdAt\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "batches",
+          "createdAt"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"createdAt\"",
+        "sql": "ALTER TABLE \"public\".\"batches\" DROP COLUMN \"createdAt\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"createdAt\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "batches",
+          "createdAt"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropColumn.batches.watermarkConfig",
+    "label": "Drop column \"watermarkConfig\" from \"batches\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "watermarkConfig",
+        "table": "batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"watermarkConfig\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "batches",
+          "watermarkConfig"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"watermarkConfig\"",
+        "sql": "ALTER TABLE \"public\".\"batches\" DROP COLUMN \"watermarkConfig\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"watermarkConfig\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "batches",
+          "watermarkConfig"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropConstraint.batches.batches_organizationId_fkey",
+    "label": "Drop constraint \"batches_organizationId_fkey\" on \"batches\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "batches_organizationId_fkey",
+        "table": "batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"batches_organizationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "batches_organizationId_fkey",
+          "public",
+          "\"public\".\"batches\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop constraint \"batches_organizationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"batches\" DROP CONSTRAINT \"batches_organizationId_fkey\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"batches_organizationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "batches_organizationId_fkey",
+          "public",
+          "\"public\".\"batches\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropIndex.batches.batches_organizationId_idx_2e17ef41",
+    "label": "Drop index \"batches_organizationId_idx_2e17ef41\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "batches_organizationId_idx_2e17ef41",
+        "table": "batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"batches_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"batches_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop index \"batches_organizationId_idx_2e17ef41\"",
+        "sql": "DROP INDEX \"public\".\"batches_organizationId_idx_2e17ef41\"",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"batches_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"batches_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropIndex.batches.batches_organizationId_status_idx_21af5e82",
+    "label": "Drop index \"batches_organizationId_status_idx_21af5e82\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "batches_organizationId_status_idx_21af5e82",
+        "table": "batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"batches_organizationId_status_idx_21af5e82\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"batches_organizationId_status_idx_21af5e82\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop index \"batches_organizationId_status_idx_21af5e82\"",
+        "sql": "DROP INDEX \"public\".\"batches_organizationId_status_idx_21af5e82\"",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"batches_organizationId_status_idx_21af5e82\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"batches_organizationId_status_idx_21af5e82\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropColumn.batches.organizationId",
+    "label": "Drop column \"organizationId\" from \"batches\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "organizationId",
+        "table": "batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"organizationId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "batches",
+          "organizationId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"organizationId\"",
+        "sql": "ALTER TABLE \"public\".\"batches\" DROP COLUMN \"organizationId\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"organizationId\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "batches",
+          "organizationId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropColumn.image_jobs.createdAt",
+    "label": "Drop column \"createdAt\" from \"image_jobs\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "createdAt",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"createdAt\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "createdAt"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"createdAt\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" DROP COLUMN \"createdAt\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"createdAt\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "createdAt"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropColumn.image_jobs.errorMessage",
+    "label": "Drop column \"errorMessage\" from \"image_jobs\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "errorMessage",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"errorMessage\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "errorMessage"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"errorMessage\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" DROP COLUMN \"errorMessage\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"errorMessage\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "errorMessage"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropColumn.image_jobs.imageIndex",
+    "label": "Drop column \"imageIndex\" from \"image_jobs\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "imageIndex",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"imageIndex\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "imageIndex"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"imageIndex\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" DROP COLUMN \"imageIndex\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"imageIndex\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "imageIndex"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropColumn.image_jobs.outputUrl",
+    "label": "Drop column \"outputUrl\" from \"image_jobs\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "outputUrl",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"outputUrl\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "outputUrl"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"outputUrl\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" DROP COLUMN \"outputUrl\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"outputUrl\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "outputUrl"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropColumn.image_jobs.processedAt",
+    "label": "Drop column \"processedAt\" from \"image_jobs\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "processedAt",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"processedAt\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "processedAt"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"processedAt\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" DROP COLUMN \"processedAt\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"processedAt\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "processedAt"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropColumn.image_jobs.productOfferId",
+    "label": "Drop column \"productOfferId\" from \"image_jobs\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "productOfferId",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"productOfferId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "productOfferId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"productOfferId\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" DROP COLUMN \"productOfferId\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"productOfferId\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "productOfferId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropColumn.image_jobs.sourceUrl",
+    "label": "Drop column \"sourceUrl\" from \"image_jobs\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "sourceUrl",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"sourceUrl\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "sourceUrl"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"sourceUrl\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" DROP COLUMN \"sourceUrl\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"sourceUrl\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "sourceUrl"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropConstraint.image_jobs.image_jobs_batchId_fkey",
+    "label": "Drop constraint \"image_jobs_batchId_fkey\" on \"image_jobs\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "image_jobs_batchId_fkey",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"image_jobs_batchId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "image_jobs_batchId_fkey",
+          "public",
+          "\"public\".\"image_jobs\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop constraint \"image_jobs_batchId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" DROP CONSTRAINT \"image_jobs_batchId_fkey\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"image_jobs_batchId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "image_jobs_batchId_fkey",
+          "public",
+          "\"public\".\"image_jobs\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropIndex.image_jobs.image_jobs_batchId_idx_84d4b0b9",
+    "label": "Drop index \"image_jobs_batchId_idx_84d4b0b9\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "image_jobs_batchId_idx_84d4b0b9",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"image_jobs_batchId_idx_84d4b0b9\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"image_jobs_batchId_idx_84d4b0b9\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop index \"image_jobs_batchId_idx_84d4b0b9\"",
+        "sql": "DROP INDEX \"public\".\"image_jobs_batchId_idx_84d4b0b9\"",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"image_jobs_batchId_idx_84d4b0b9\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"image_jobs_batchId_idx_84d4b0b9\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropIndex.image_jobs.image_jobs_batchId_status_idx_a1ac997b",
+    "label": "Drop index \"image_jobs_batchId_status_idx_a1ac997b\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "image_jobs_batchId_status_idx_a1ac997b",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"image_jobs_batchId_status_idx_a1ac997b\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"image_jobs_batchId_status_idx_a1ac997b\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop index \"image_jobs_batchId_status_idx_a1ac997b\"",
+        "sql": "DROP INDEX \"public\".\"image_jobs_batchId_status_idx_a1ac997b\"",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"image_jobs_batchId_status_idx_a1ac997b\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"image_jobs_batchId_status_idx_a1ac997b\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropColumn.image_jobs.batchId",
+    "label": "Drop column \"batchId\" from \"image_jobs\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "batchId",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"batchId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "batchId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"batchId\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" DROP COLUMN \"batchId\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"batchId\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "batchId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropConstraint.image_jobs.image_jobs_storageKey_key",
+    "label": "Drop constraint \"image_jobs_storageKey_key\" on \"image_jobs\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "image_jobs_storageKey_key",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"image_jobs_storageKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "image_jobs_storageKey_key",
+          "public",
+          "\"public\".\"image_jobs\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop constraint \"image_jobs_storageKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" DROP CONSTRAINT \"image_jobs_storageKey_key\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"image_jobs_storageKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "image_jobs_storageKey_key",
+          "public",
+          "\"public\".\"image_jobs\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropColumn.image_jobs.storageKey",
+    "label": "Drop column \"storageKey\" from \"image_jobs\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "storageKey",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"storageKey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "storageKey"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"storageKey\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" DROP COLUMN \"storageKey\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"storageKey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "storageKey"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropColumn.organizations.createdAt",
+    "label": "Drop column \"createdAt\" from \"organizations\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "createdAt",
+        "table": "organizations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"createdAt\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "organizations",
+          "createdAt"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"createdAt\"",
+        "sql": "ALTER TABLE \"public\".\"organizations\" DROP COLUMN \"createdAt\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"createdAt\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "organizations",
+          "createdAt"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropColumn.organizations.updatedAt",
+    "label": "Drop column \"updatedAt\" from \"organizations\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "updatedAt",
+        "table": "organizations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"updatedAt\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "organizations",
+          "updatedAt"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"updatedAt\"",
+        "sql": "ALTER TABLE \"public\".\"organizations\" DROP COLUMN \"updatedAt\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"updatedAt\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "organizations",
+          "updatedAt"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropConstraint.organizations.organizations_allegroUserId_key",
+    "label": "Drop constraint \"organizations_allegroUserId_key\" on \"organizations\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "organizations_allegroUserId_key",
+        "table": "organizations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"organizations_allegroUserId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "organizations_allegroUserId_key",
+          "public",
+          "\"public\".\"organizations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop constraint \"organizations_allegroUserId_key\"",
+        "sql": "ALTER TABLE \"public\".\"organizations\" DROP CONSTRAINT \"organizations_allegroUserId_key\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"organizations_allegroUserId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "organizations_allegroUserId_key",
+          "public",
+          "\"public\".\"organizations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropColumn.organizations.allegroUserId",
+    "label": "Drop column \"allegroUserId\" from \"organizations\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "allegroUserId",
+        "table": "organizations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"allegroUserId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "organizations",
+          "allegroUserId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"allegroUserId\"",
+        "sql": "ALTER TABLE \"public\".\"organizations\" DROP COLUMN \"allegroUserId\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"allegroUserId\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "organizations",
+          "allegroUserId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.batches.completed_at",
+    "label": "Add column \"completed_at\" to \"batches\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "completed_at",
+        "table": "batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"completed_at\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "batches",
+          "completed_at"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"completed_at\"",
+        "sql": "ALTER TABLE \"public\".\"batches\" ADD COLUMN \"completed_at\" timestamptz"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"completed_at\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "batches",
+          "completed_at"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.batches.created_at",
+    "label": "Add column \"created_at\" to \"batches\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "created_at",
+        "table": "batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"created_at\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "batches",
+          "created_at"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"created_at\"",
+        "sql": "ALTER TABLE \"public\".\"batches\" ADD COLUMN \"created_at\" timestamptz DEFAULT (now()) NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"created_at\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "batches",
+          "created_at"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.image_jobs.created_at",
+    "label": "Add column \"created_at\" to \"image_jobs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "created_at",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"created_at\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "created_at"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"created_at\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" ADD COLUMN \"created_at\" timestamptz DEFAULT (now()) NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"created_at\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "created_at"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.image_jobs.error_message",
+    "label": "Add column \"error_message\" to \"image_jobs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "error_message",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"error_message\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "error_message"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"error_message\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" ADD COLUMN \"error_message\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"error_message\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "error_message"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.image_jobs.original_key",
+    "label": "Add column \"original_key\" to \"image_jobs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "original_key",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"original_key\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "original_key"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"original_key\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" ADD COLUMN \"original_key\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"original_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "original_key"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.image_jobs.output_key",
+    "label": "Add column \"output_key\" to \"image_jobs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "output_key",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"output_key\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "output_key"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"output_key\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" ADD COLUMN \"output_key\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"output_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "output_key"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.image_jobs.output_url",
+    "label": "Add column \"output_url\" to \"image_jobs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "output_url",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"output_url\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "output_url"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"output_url\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" ADD COLUMN \"output_url\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"output_url\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "output_url"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.image_jobs.processed_at",
+    "label": "Add column \"processed_at\" to \"image_jobs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "processed_at",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"processed_at\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "processed_at"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"processed_at\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" ADD COLUMN \"processed_at\" timestamptz"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"processed_at\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "processed_at"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.organizations.created_at",
+    "label": "Add column \"created_at\" to \"organizations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "created_at",
+        "table": "organizations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"created_at\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "organizations",
+          "created_at"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"created_at\"",
+        "sql": "ALTER TABLE \"public\".\"organizations\" ADD COLUMN \"created_at\" timestamptz DEFAULT (now()) NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"created_at\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "organizations",
+          "created_at"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.batches.organization_id",
+    "label": "Add column organization_id to batches",
+    "summary": "Adds column organization_id to table batches",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "organization_id",
+        "table": "batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"organization_id\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "batches",
+          "organization_id"
+        ]
+      },
+      {
+        "description": "ensure table \"batches\" is empty before adding NOT NULL column without default",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"public\".\"batches\" LIMIT 1) AS \"result\"",
+        "params": [],
+        "meta": {
+          "requiredColumn": {
+            "table": "batches",
+            "column": "organization_id",
+            "reason": "newField"
+          }
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"organization_id\"",
+        "sql": "ALTER TABLE \"public\".\"batches\" ADD COLUMN \"organization_id\" text NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"organization_id\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "batches",
+          "organization_id"
+        ]
+      },
+      {
+        "description": "verify column \"organization_id\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "batches",
+          "organization_id",
+          "NO"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.batches.total_images",
+    "label": "Add column total_images to batches",
+    "summary": "Adds column total_images to table batches",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "batches"
+      }
+    },
+    "operationClass": "additive",
+    "precheck": [
+      {
+        "description": "ensure column \"total_images\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "batches",
+          "total_images"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"total_images\"",
+        "sql": "ALTER TABLE \"public\".\"batches\" ADD COLUMN \"total_images\" int4 DEFAULT (0) NOT NULL"
+      },
+      {
+        "description": "drop temporary default from column \"total_images\"",
+        "sql": "ALTER TABLE \"public\".\"batches\" ALTER COLUMN \"total_images\" DROP DEFAULT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"total_images\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "batches",
+          "total_images"
+        ]
+      },
+      {
+        "description": "verify column \"total_images\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "batches",
+          "total_images",
+          "NO"
+        ]
+      },
+      {
+        "description": "verify column \"total_images\" has no default after temporary default removal",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"column_default\" IS NOT NULL)) AS \"result\"",
+        "params": [
+          "public",
+          "batches",
+          "total_images"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.batches.updated_at",
+    "label": "Add column updated_at to batches",
+    "summary": "Adds column updated_at to table batches",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "batches"
+      }
+    },
+    "operationClass": "additive",
+    "precheck": [
+      {
+        "description": "ensure column \"updated_at\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "batches",
+          "updated_at"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"updated_at\"",
+        "sql": "ALTER TABLE \"public\".\"batches\" ADD COLUMN \"updated_at\" timestamptz DEFAULT ('epoch') NOT NULL"
+      },
+      {
+        "description": "drop temporary default from column \"updated_at\"",
+        "sql": "ALTER TABLE \"public\".\"batches\" ALTER COLUMN \"updated_at\" DROP DEFAULT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"updated_at\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "batches",
+          "updated_at"
+        ]
+      },
+      {
+        "description": "verify column \"updated_at\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "batches",
+          "updated_at",
+          "NO"
+        ]
+      },
+      {
+        "description": "verify column \"updated_at\" has no default after temporary default removal",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"column_default\" IS NOT NULL)) AS \"result\"",
+        "params": [
+          "public",
+          "batches",
+          "updated_at"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.batches.watermark_config",
+    "label": "Add column watermark_config to batches",
+    "summary": "Adds column watermark_config to table batches",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "batches"
+      }
+    },
+    "operationClass": "additive",
+    "precheck": [
+      {
+        "description": "ensure column \"watermark_config\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "batches",
+          "watermark_config"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"watermark_config\"",
+        "sql": "ALTER TABLE \"public\".\"batches\" ADD COLUMN \"watermark_config\" json DEFAULT ('{}'::json) NOT NULL"
+      },
+      {
+        "description": "drop temporary default from column \"watermark_config\"",
+        "sql": "ALTER TABLE \"public\".\"batches\" ALTER COLUMN \"watermark_config\" DROP DEFAULT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"watermark_config\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "batches",
+          "watermark_config"
+        ]
+      },
+      {
+        "description": "verify column \"watermark_config\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "batches",
+          "watermark_config",
+          "NO"
+        ]
+      },
+      {
+        "description": "verify column \"watermark_config\" has no default after temporary default removal",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"column_default\" IS NOT NULL)) AS \"result\"",
+        "params": [
+          "public",
+          "batches",
+          "watermark_config"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.image_jobs.batch_id",
+    "label": "Add column batch_id to image_jobs",
+    "summary": "Adds column batch_id to table image_jobs",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "batch_id",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"batch_id\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "batch_id"
+        ]
+      },
+      {
+        "description": "ensure table \"image_jobs\" is empty before adding NOT NULL column without default",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"public\".\"image_jobs\" LIMIT 1) AS \"result\"",
+        "params": [],
+        "meta": {
+          "requiredColumn": {
+            "table": "image_jobs",
+            "column": "batch_id",
+            "reason": "newField"
+          }
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"batch_id\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" ADD COLUMN \"batch_id\" text NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"batch_id\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "batch_id"
+        ]
+      },
+      {
+        "description": "verify column \"batch_id\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "batch_id",
+          "NO"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.image_jobs.image_index",
+    "label": "Add column image_index to image_jobs",
+    "summary": "Adds column image_index to table image_jobs",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "image_jobs"
+      }
+    },
+    "operationClass": "additive",
+    "precheck": [
+      {
+        "description": "ensure column \"image_index\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "image_index"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"image_index\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" ADD COLUMN \"image_index\" int4 DEFAULT (0) NOT NULL"
+      },
+      {
+        "description": "drop temporary default from column \"image_index\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" ALTER COLUMN \"image_index\" DROP DEFAULT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"image_index\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "image_index"
+        ]
+      },
+      {
+        "description": "verify column \"image_index\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "image_index",
+          "NO"
+        ]
+      },
+      {
+        "description": "verify column \"image_index\" has no default after temporary default removal",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"column_default\" IS NOT NULL)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "image_index"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.image_jobs.product_offer_id",
+    "label": "Add column product_offer_id to image_jobs",
+    "summary": "Adds column product_offer_id to table image_jobs",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "image_jobs"
+      }
+    },
+    "operationClass": "additive",
+    "precheck": [
+      {
+        "description": "ensure column \"product_offer_id\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "product_offer_id"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"product_offer_id\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" ADD COLUMN \"product_offer_id\" text DEFAULT ('') NOT NULL"
+      },
+      {
+        "description": "drop temporary default from column \"product_offer_id\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" ALTER COLUMN \"product_offer_id\" DROP DEFAULT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"product_offer_id\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "product_offer_id"
+        ]
+      },
+      {
+        "description": "verify column \"product_offer_id\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "product_offer_id",
+          "NO"
+        ]
+      },
+      {
+        "description": "verify column \"product_offer_id\" has no default after temporary default removal",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"column_default\" IS NOT NULL)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "product_offer_id"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.image_jobs.source_url",
+    "label": "Add column source_url to image_jobs",
+    "summary": "Adds column source_url to table image_jobs",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "image_jobs"
+      }
+    },
+    "operationClass": "additive",
+    "precheck": [
+      {
+        "description": "ensure column \"source_url\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "source_url"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"source_url\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" ADD COLUMN \"source_url\" text DEFAULT ('') NOT NULL"
+      },
+      {
+        "description": "drop temporary default from column \"source_url\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" ALTER COLUMN \"source_url\" DROP DEFAULT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"source_url\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "source_url"
+        ]
+      },
+      {
+        "description": "verify column \"source_url\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "source_url",
+          "NO"
+        ]
+      },
+      {
+        "description": "verify column \"source_url\" has no default after temporary default removal",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"column_default\" IS NOT NULL)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "source_url"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.image_jobs.storage_key",
+    "label": "Add column storage_key to image_jobs",
+    "summary": "Adds column storage_key to table image_jobs",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "storage_key",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"storage_key\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "storage_key"
+        ]
+      },
+      {
+        "description": "ensure table \"image_jobs\" is empty before adding NOT NULL column without default",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"public\".\"image_jobs\" LIMIT 1) AS \"result\"",
+        "params": [],
+        "meta": {
+          "requiredColumn": {
+            "table": "image_jobs",
+            "column": "storage_key",
+            "reason": "newField"
+          }
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"storage_key\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" ADD COLUMN \"storage_key\" text NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"storage_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "storage_key"
+        ]
+      },
+      {
+        "description": "verify column \"storage_key\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "storage_key",
+          "NO"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.organizations.allegro_user_id",
+    "label": "Add column allegro_user_id to organizations",
+    "summary": "Adds column allegro_user_id to table organizations",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "allegro_user_id",
+        "table": "organizations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"allegro_user_id\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "organizations",
+          "allegro_user_id"
+        ]
+      },
+      {
+        "description": "ensure table \"organizations\" is empty before adding NOT NULL column without default",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"public\".\"organizations\" LIMIT 1) AS \"result\"",
+        "params": [],
+        "meta": {
+          "requiredColumn": {
+            "table": "organizations",
+            "column": "allegro_user_id",
+            "reason": "newField"
+          }
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"allegro_user_id\"",
+        "sql": "ALTER TABLE \"public\".\"organizations\" ADD COLUMN \"allegro_user_id\" int4 NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"allegro_user_id\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "organizations",
+          "allegro_user_id"
+        ]
+      },
+      {
+        "description": "verify column \"allegro_user_id\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "organizations",
+          "allegro_user_id",
+          "NO"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.organizations.updated_at",
+    "label": "Add column updated_at to organizations",
+    "summary": "Adds column updated_at to table organizations",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "organizations"
+      }
+    },
+    "operationClass": "additive",
+    "precheck": [
+      {
+        "description": "ensure column \"updated_at\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "organizations",
+          "updated_at"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"updated_at\"",
+        "sql": "ALTER TABLE \"public\".\"organizations\" ADD COLUMN \"updated_at\" timestamptz DEFAULT ('epoch') NOT NULL"
+      },
+      {
+        "description": "drop temporary default from column \"updated_at\"",
+        "sql": "ALTER TABLE \"public\".\"organizations\" ALTER COLUMN \"updated_at\" DROP DEFAULT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"updated_at\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "organizations",
+          "updated_at"
+        ]
+      },
+      {
+        "description": "verify column \"updated_at\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "organizations",
+          "updated_at",
+          "NO"
+        ]
+      },
+      {
+        "description": "verify column \"updated_at\" has no default after temporary default removal",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"column_default\" IS NOT NULL)) AS \"result\"",
+        "params": [
+          "public",
+          "organizations",
+          "updated_at"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.image_jobs.image_jobs_original_key_key",
+    "label": "Add unique constraint on \"image_jobs\" (original_key)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "image_jobs_original_key_key",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"image_jobs_original_key_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "image_jobs_original_key_key",
+          "public",
+          "\"public\".\"image_jobs\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"image_jobs_original_key_key\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" ADD CONSTRAINT \"image_jobs_original_key_key\" UNIQUE (\"original_key\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"image_jobs_original_key_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "image_jobs_original_key_key",
+          "public",
+          "\"public\".\"image_jobs\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.image_jobs.image_jobs_output_key_key",
+    "label": "Add unique constraint on \"image_jobs\" (output_key)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "image_jobs_output_key_key",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"image_jobs_output_key_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "image_jobs_output_key_key",
+          "public",
+          "\"public\".\"image_jobs\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"image_jobs_output_key_key\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" ADD CONSTRAINT \"image_jobs_output_key_key\" UNIQUE (\"output_key\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"image_jobs_output_key_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "image_jobs_output_key_key",
+          "public",
+          "\"public\".\"image_jobs\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.image_jobs.image_jobs_storage_key_key",
+    "label": "Add unique constraint on \"image_jobs\" (storage_key)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "image_jobs_storage_key_key",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"image_jobs_storage_key_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "image_jobs_storage_key_key",
+          "public",
+          "\"public\".\"image_jobs\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"image_jobs_storage_key_key\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" ADD CONSTRAINT \"image_jobs_storage_key_key\" UNIQUE (\"storage_key\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"image_jobs_storage_key_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "image_jobs_storage_key_key",
+          "public",
+          "\"public\".\"image_jobs\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.organizations.organizations_allegro_user_id_key",
+    "label": "Add unique constraint on \"organizations\" (allegro_user_id)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "organizations_allegro_user_id_key",
+        "table": "organizations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"organizations_allegro_user_id_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "organizations_allegro_user_id_key",
+          "public",
+          "\"public\".\"organizations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"organizations_allegro_user_id_key\"",
+        "sql": "ALTER TABLE \"public\".\"organizations\" ADD CONSTRAINT \"organizations_allegro_user_id_key\" UNIQUE (\"allegro_user_id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"organizations_allegro_user_id_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "organizations_allegro_user_id_key",
+          "public",
+          "\"public\".\"organizations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.batches.batches_organization_id_idx_1a5cd3f5",
+    "label": "Create index \"batches_organization_id_idx_1a5cd3f5\" on \"batches\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "batches_organization_id_idx_1a5cd3f5",
+        "table": "batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"batches_organization_id_idx_1a5cd3f5\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"batches_organization_id_idx_1a5cd3f5\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"batches_organization_id_idx_1a5cd3f5\"",
+        "sql": "CREATE INDEX \"batches_organization_id_idx_1a5cd3f5\" ON \"public\".\"batches\" (\"organization_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"batches_organization_id_idx_1a5cd3f5\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"batches_organization_id_idx_1a5cd3f5\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.batches.batches_organization_id_status_idx_5a4ed970",
+    "label": "Create index \"batches_organization_id_status_idx_5a4ed970\" on \"batches\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "batches_organization_id_status_idx_5a4ed970",
+        "table": "batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"batches_organization_id_status_idx_5a4ed970\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"batches_organization_id_status_idx_5a4ed970\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"batches_organization_id_status_idx_5a4ed970\"",
+        "sql": "CREATE INDEX \"batches_organization_id_status_idx_5a4ed970\" ON \"public\".\"batches\" (\"organization_id\", \"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"batches_organization_id_status_idx_5a4ed970\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"batches_organization_id_status_idx_5a4ed970\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.image_jobs.image_jobs_batch_id_idx_49ba28fa",
+    "label": "Create index \"image_jobs_batch_id_idx_49ba28fa\" on \"image_jobs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "image_jobs_batch_id_idx_49ba28fa",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"image_jobs_batch_id_idx_49ba28fa\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"image_jobs_batch_id_idx_49ba28fa\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"image_jobs_batch_id_idx_49ba28fa\"",
+        "sql": "CREATE INDEX \"image_jobs_batch_id_idx_49ba28fa\" ON \"public\".\"image_jobs\" (\"batch_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"image_jobs_batch_id_idx_49ba28fa\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"image_jobs_batch_id_idx_49ba28fa\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.image_jobs.image_jobs_batch_id_status_idx_66fc6971",
+    "label": "Create index \"image_jobs_batch_id_status_idx_66fc6971\" on \"image_jobs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "image_jobs_batch_id_status_idx_66fc6971",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"image_jobs_batch_id_status_idx_66fc6971\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"image_jobs_batch_id_status_idx_66fc6971\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"image_jobs_batch_id_status_idx_66fc6971\"",
+        "sql": "CREATE INDEX \"image_jobs_batch_id_status_idx_66fc6971\" ON \"public\".\"image_jobs\" (\"batch_id\", \"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"image_jobs_batch_id_status_idx_66fc6971\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"image_jobs_batch_id_status_idx_66fc6971\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.batches.batches_organization_id_fkey",
+    "label": "Add foreign key \"batches_organization_id_fkey\" on \"batches\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "batches_organization_id_fkey",
+        "table": "batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"batches_organization_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "batches_organization_id_fkey",
+          "public",
+          "\"public\".\"batches\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"batches_organization_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"batches\"\nADD CONSTRAINT \"batches_organization_id_fkey\"\nFOREIGN KEY (\"organization_id\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"batches_organization_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "batches_organization_id_fkey",
+          "public",
+          "\"public\".\"batches\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.image_jobs.image_jobs_batch_id_fkey",
+    "label": "Add foreign key \"image_jobs_batch_id_fkey\" on \"image_jobs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "image_jobs_batch_id_fkey",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"image_jobs_batch_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "image_jobs_batch_id_fkey",
+          "public",
+          "\"public\".\"image_jobs\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"image_jobs_batch_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\"\nADD CONSTRAINT \"image_jobs_batch_id_fkey\"\nFOREIGN KEY (\"batch_id\")\nREFERENCES \"public\".\"batches\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"image_jobs_batch_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "image_jobs_batch_id_fkey",
+          "public",
+          "\"public\".\"image_jobs\""
+        ]
+      }
+    ]
+  }
+]

@@ -32,6 +32,7 @@ model Batch {
   organizationId  String @map("organization_id")
   watermarkConfig Json @map("watermark_config")
   status          BatchStatus @default(QUEUED)
+  totalImages     Int @map("total_images")
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       temporal.updatedAt() @map("updated_at")
   completedAt     DateTime? @map("completed_at")
@@ -55,6 +56,9 @@ model ImageJob {
   errorMessage String? @map("error_message")
   createdAt    DateTime @default(now()) @map("created_at")
   processedAt  DateTime? @map("processed_at")
+
+  originalKey    String?        @unique @map("original_key")
+  outputKey      String?        @unique @map("output_key")
 
   batch Batch @relation(fields: [batchId], references: [id], onDelete: Cascade)
 

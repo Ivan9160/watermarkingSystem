@@ -18,7 +18,7 @@ import {
 import { CreateOrganizationDto } from './dto/create-organization.dto.js';
 import { OrganizationsService } from './organizations.service.js';
 import { AllegroUser } from '../allegro-auth/allegro-user.decorator.ts';
-import { AllegroAuthGuard } from '../auth/allegro-auth.guard.ts';
+import { AllegroAuthGuard } from '../allegro-auth/allegro-auth.guard.ts';
 
 @ApiTags('Organizations')
 @Controller('organizations')

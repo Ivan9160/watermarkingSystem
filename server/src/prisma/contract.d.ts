@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'c302d024c78e2e6fe5b4734002567d2660e4dcb096d9874afe0ef675e9dce3a1'>;
+  StorageHashBase<'005f5b81f32dbf3126845868189d115e746af44d11e1d3b758dccecf7b45f0b4'>;
 export type ExecutionHash =
   ExecutionHashBase<'c7e1094373242d094521a589186384b9b075c967394a60098d6bd8aa5e5f4f66'>;
 export type ProfileHash =
@@ -240,6 +240,7 @@ export type FieldOutputTypes = {
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly organizationId: CodecTypes['pg/text@1']['output'];
       readonly status: 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+      readonly totalImages: CodecTypes['pg/int4@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly watermarkConfig: CodecTypes['pg/json@1']['output'];
     };
@@ -249,6 +250,8 @@ export type FieldOutputTypes = {
       readonly errorMessage: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly imageIndex: CodecTypes['pg/int4@1']['output'];
+      readonly originalKey: CodecTypes['pg/text@1']['output'] | null;
+      readonly outputKey: CodecTypes['pg/text@1']['output'] | null;
       readonly outputUrl: CodecTypes['pg/text@1']['output'] | null;
       readonly processedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly productOfferId: CodecTypes['pg/text@1']['output'];
@@ -273,6 +276,7 @@ export type FieldInputTypes = {
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly organizationId: CodecTypes['pg/text@1']['input'];
       readonly status: 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+      readonly totalImages: CodecTypes['pg/int4@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly watermarkConfig: CodecTypes['pg/json@1']['input'];
     };
@@ -282,6 +286,8 @@ export type FieldInputTypes = {
       readonly errorMessage: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly imageIndex: CodecTypes['pg/int4@1']['input'];
+      readonly originalKey: CodecTypes['pg/text@1']['input'] | null;
+      readonly outputKey: CodecTypes['pg/text@1']['input'] | null;
       readonly outputUrl: CodecTypes['pg/text@1']['input'] | null;
       readonly processedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly productOfferId: CodecTypes['pg/text@1']['input'];
@@ -306,6 +312,7 @@ export type StorageColumnTypes = {
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly organization_id: CodecTypes['pg/text@1']['output'];
       readonly status: 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+      readonly total_images: CodecTypes['pg/int4@1']['output'];
       readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly watermark_config: CodecTypes['pg/json@1']['output'];
     };
@@ -315,6 +322,8 @@ export type StorageColumnTypes = {
       readonly error_message: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly image_index: CodecTypes['pg/int4@1']['output'];
+      readonly original_key: CodecTypes['pg/text@1']['output'] | null;
+      readonly output_key: CodecTypes['pg/text@1']['output'] | null;
       readonly output_url: CodecTypes['pg/text@1']['output'] | null;
       readonly processed_at: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly product_offer_id: CodecTypes['pg/text@1']['output'];
@@ -339,6 +348,7 @@ export type StorageColumnInputTypes = {
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly organization_id: CodecTypes['pg/text@1']['input'];
       readonly status: 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+      readonly total_images: CodecTypes['pg/int4@1']['input'];
       readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly watermark_config: CodecTypes['pg/json@1']['input'];
     };
@@ -348,6 +358,8 @@ export type StorageColumnInputTypes = {
       readonly error_message: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly image_index: CodecTypes['pg/int4@1']['input'];
+      readonly original_key: CodecTypes['pg/text@1']['input'] | null;
+      readonly output_key: CodecTypes['pg/text@1']['input'] | null;
       readonly output_url: CodecTypes['pg/text@1']['input'] | null;
       readonly processed_at: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly product_offer_id: CodecTypes['pg/text@1']['input'];
@@ -372,6 +384,7 @@ export namespace Models {
     id: CodecTypes['pg/text@1']['output'];
     organizationId: CodecTypes['pg/text@1']['output'];
     status: 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+    totalImages: CodecTypes['pg/int4@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     watermarkConfig: CodecTypes['pg/json@1']['output'];
     items: public_ImageJob[];
@@ -384,6 +397,8 @@ export namespace Models {
     errorMessage: CodecTypes['pg/text@1']['output'] | null;
     id: CodecTypes['pg/text@1']['output'];
     imageIndex: CodecTypes['pg/int4@1']['output'];
+    originalKey: CodecTypes['pg/text@1']['output'] | null;
+    outputKey: CodecTypes['pg/text@1']['output'] | null;
     outputUrl: CodecTypes['pg/text@1']['output'] | null;
     processedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
     productOfferId: CodecTypes['pg/text@1']['output'];
@@ -467,6 +482,12 @@ type ContractBase = Omit<
                   };
                   readonly many: false;
                 };
+                readonly total_images: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
                 readonly updated_at: {
                   readonly dataType: 'pg/timestamptz';
                   readonly codecId: 'pg/timestamptz-temporal@1';
@@ -544,6 +565,18 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly many: false;
                 };
+                readonly original_key: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly output_key: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly output_url: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
@@ -586,7 +619,11 @@ type ContractBase = Omit<
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
-              uniques: readonly [{ readonly columns: readonly ['storage_key'] }];
+              uniques: readonly [
+                { readonly columns: readonly ['storage_key'] },
+                { readonly columns: readonly ['original_key'] },
+                { readonly columns: readonly ['output_key'] },
+              ];
               indexes: readonly [
                 {
                   readonly name: 'image_jobs_batch_id_idx_49ba28fa';
@@ -715,6 +752,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly totalImages: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
               readonly updatedAt: {
                 readonly nullable: false;
                 readonly type: {
@@ -761,6 +802,7 @@ type ContractBase = Omit<
                 readonly id: { readonly column: 'id' };
                 readonly organizationId: { readonly column: 'organization_id' };
                 readonly status: { readonly column: 'status' };
+                readonly totalImages: { readonly column: 'total_images' };
                 readonly updatedAt: { readonly column: 'updated_at' };
                 readonly watermarkConfig: { readonly column: 'watermark_config' };
               };
@@ -790,6 +832,14 @@ type ContractBase = Omit<
               readonly imageIndex: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly originalKey: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly outputKey: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly outputUrl: {
                 readonly nullable: true;
@@ -842,6 +892,8 @@ type ContractBase = Omit<
                 readonly errorMessage: { readonly column: 'error_message' };
                 readonly id: { readonly column: 'id' };
                 readonly imageIndex: { readonly column: 'image_index' };
+                readonly originalKey: { readonly column: 'original_key' };
+                readonly outputKey: { readonly column: 'output_key' };
                 readonly outputUrl: { readonly column: 'output_url' };
                 readonly processedAt: { readonly column: 'processed_at' };
                 readonly productOfferId: { readonly column: 'product_offer_id' };
