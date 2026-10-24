@@ -51,7 +51,7 @@ model ImageJob {
   outputUrl    String? @map("output_url")
   productOfferId  String @map("product_offer_id")
   imageIndex  Int @map("image_index")
-  storageKey   String @unique @map("storage_key")
+  storageKey   String? @unique @map("storage_key")
   status       ImageJobStatus @default(PENDING)
   errorMessage String? @map("error_message")
   createdAt    DateTime @default(now()) @map("created_at")

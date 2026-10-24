@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
 
 import { db } from '../../prisma/db.ts';
+import { Temporal } from 'temporal-polyfill';
 
 export type ImageJobStatus = 'PENDING' | 'PROCESSING' | 'SUCCEEDED' | 'FAILED';
+
 
 export interface NewImageJob {
   productOfferId: string;
@@ -12,7 +14,7 @@ export interface NewImageJob {
 
 @Injectable()
 export class ImageJobsRepository {
-  async  createMany(batchId: string, items: NewImageJob[]) {
+  async   createMany(batchId: string, items: NewImageJob[]) {
     const created = [];
     for (const item of items) {
       created.push(
@@ -47,7 +49,7 @@ export class ImageJobsRepository {
       status: 'SUCCEEDED',
       outputKey,
       errorMessage: null,
-      processedAt: new Date(),
+      processedAt: Temporal.Now.instant().toString(),
     });
   }
 
@@ -55,7 +57,7 @@ export class ImageJobsRepository {
     await db.orm.public.ImageJob.where({ id }).update({
       status: 'FAILED',
       errorMessage: errorMessage.slice(0, 1000),
-      processedAt: new Date(),
+      processedAt: Temporal.Now.instant().toString(),
     });
   }
 }

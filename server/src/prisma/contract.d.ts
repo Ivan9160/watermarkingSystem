@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'005f5b81f32dbf3126845868189d115e746af44d11e1d3b758dccecf7b45f0b4'>;
+  StorageHashBase<'6fb44ed66ea04bd4ce0147677df96bc6d19da32ad6b1719f100b5c399cfc2a25'>;
 export type ExecutionHash =
   ExecutionHashBase<'c7e1094373242d094521a589186384b9b075c967394a60098d6bd8aa5e5f4f66'>;
 export type ProfileHash =
@@ -257,7 +257,7 @@ export type FieldOutputTypes = {
       readonly productOfferId: CodecTypes['pg/text@1']['output'];
       readonly sourceUrl: CodecTypes['pg/text@1']['output'];
       readonly status: 'PENDING' | 'PROCESSING' | 'SUCCEEDED' | 'FAILED';
-      readonly storageKey: CodecTypes['pg/text@1']['output'];
+      readonly storageKey: CodecTypes['pg/text@1']['output'] | null;
     };
     readonly Organization: {
       readonly allegroUserId: CodecTypes['pg/int4@1']['output'];
@@ -293,7 +293,7 @@ export type FieldInputTypes = {
       readonly productOfferId: CodecTypes['pg/text@1']['input'];
       readonly sourceUrl: CodecTypes['pg/text@1']['input'];
       readonly status: 'PENDING' | 'PROCESSING' | 'SUCCEEDED' | 'FAILED';
-      readonly storageKey: CodecTypes['pg/text@1']['input'];
+      readonly storageKey: CodecTypes['pg/text@1']['input'] | null;
     };
     readonly Organization: {
       readonly allegroUserId: CodecTypes['pg/int4@1']['input'];
@@ -329,7 +329,7 @@ export type StorageColumnTypes = {
       readonly product_offer_id: CodecTypes['pg/text@1']['output'];
       readonly source_url: CodecTypes['pg/text@1']['output'];
       readonly status: 'PENDING' | 'PROCESSING' | 'SUCCEEDED' | 'FAILED';
-      readonly storage_key: CodecTypes['pg/text@1']['output'];
+      readonly storage_key: CodecTypes['pg/text@1']['output'] | null;
     };
     readonly organizations: {
       readonly allegro_user_id: CodecTypes['pg/int4@1']['output'];
@@ -365,7 +365,7 @@ export type StorageColumnInputTypes = {
       readonly product_offer_id: CodecTypes['pg/text@1']['input'];
       readonly source_url: CodecTypes['pg/text@1']['input'];
       readonly status: 'PENDING' | 'PROCESSING' | 'SUCCEEDED' | 'FAILED';
-      readonly storage_key: CodecTypes['pg/text@1']['input'];
+      readonly storage_key: CodecTypes['pg/text@1']['input'] | null;
     };
     readonly organizations: {
       readonly allegro_user_id: CodecTypes['pg/int4@1']['input'];
@@ -404,7 +404,7 @@ export namespace Models {
     productOfferId: CodecTypes['pg/text@1']['output'];
     sourceUrl: CodecTypes['pg/text@1']['output'];
     status: 'PENDING' | 'PROCESSING' | 'SUCCEEDED' | 'FAILED';
-    storageKey: CodecTypes['pg/text@1']['output'];
+    storageKey: CodecTypes['pg/text@1']['output'] | null;
     batch: public_Batch;
     readonly [RelationKeys]?: 'batch';
   };
@@ -614,7 +614,7 @@ type ContractBase = Omit<
                 readonly storage_key: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
-                  readonly nullable: false;
+                  readonly nullable: true;
                   readonly many: false;
                 };
               };
@@ -865,7 +865,7 @@ type ContractBase = Omit<
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly storageKey: {
-                readonly nullable: false;
+                readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
             };

@@ -57,3 +57,5 @@ run('storage', `"${RUSTFS_EXE}"`, [`"${DATA_DIR}"`], {
 });
 
 run('backend', 'npm', ['run', 'start:dev']);
+
+run('worker', 'npm', ['run', 'start:worker:dev']);
