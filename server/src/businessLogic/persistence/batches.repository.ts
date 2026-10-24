@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { db } from '../../prisma/db.ts';
+import { Temporal } from 'temporal-polyfill';
 
 export type BatchStatus = 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
 
@@ -40,7 +41,7 @@ export class BatchesRepository {
   async markFinished(id: string, status: Extract<BatchStatus, 'COMPLETED' | 'FAILED'>) {
     await db.orm.public.Batch
       .where({ id })
-      .update({ status, completedAt: new Date() });
+      .update({ status, completedAt: Temporal.Now.instant() });
   }
 
   async delete(id: string): Promise<void> {

@@ -7,9 +7,10 @@ import { MinioModule } from './businessLogic/minio/minio.module.ts';
 import { BatchesModule } from './api/batches/batches.module.ts';
 import { AllegroAuthModule } from './api/allegro-auth/allegro-auth.module.ts';
 import { BullModule } from '@nestjs/bullmq';
+import { ResultsModule } from './api/results/results.module.ts';
 
 @Module({
-  imports: [OrganizationsModule, PrismaModule, MinioModule, BatchesModule, AllegroAuthModule,
+  imports: [OrganizationsModule, PrismaModule, MinioModule, BatchesModule, AllegroAuthModule, ResultsModule,
     BullModule.forRoot({
       connection: {
         host: process.env['REDIS_HOST'] ?? '127.0.0.1',

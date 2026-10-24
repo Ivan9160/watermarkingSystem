@@ -44,7 +44,23 @@ function shutdown(code = 0) {
     }
   }
   process.exit(code);
+  
 }
+function redisIsUp() {
+  const res = spawnSync('wsl', ['-e', 'redis-cli', 'ping'], {
+    encoding: 'utf8',
+    shell: process.platform === 'win32',
+  });
+  return res.status === 0 && String(res.stdout).includes('PONG');
+}
+
+if (redisIsUp()) {
+  console.log('[redis] already running, skipping start');
+} else {
+  run('redis', 'wsl', ['-e', 'redis-server', '--save', '""', '--appendonly', 'no']);
+}
+
+
 process.on('SIGINT', () => shutdown(0));
 process.on('SIGTERM', () => shutdown(0));
 

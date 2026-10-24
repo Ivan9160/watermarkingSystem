@@ -1,21 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import { spawn } from 'node:child_process';
-import { writeFile } from 'node:fs/promises';
-import { dirname, join, resolve } from 'node:path';
+import { readFile, writeFile } from 'node:fs/promises';
+import { extname } from 'node:path';
+import { applyWatermark, type WatermarkParams } from './watermark.ts';
 
-const MAX_LOG_CHARS = 8_000;
-
-/**
- * Adapter to local CLI/EXE .
- * Contract: <engine> --input <file> --output <file> --config <json>
- * Exit code 0 = success. Adjust buildArgs to match your actual CLI.
- * 
- */
-
+const EXT_FORMAT: Record<string, WatermarkParams['format']> = {
+  '.jpg': 'jpeg',
+  '.jpeg': 'jpeg',
+  '.png': 'png',
+  '.webp': 'webp',
+};
 
 @Injectable()
 export class WatermarkEngineService {
-  private readonly executable = resolve(import.meta.dirname, '../../../', process.env['WATERMARK_ENGINE_PATH'] ?? './engine/watermark.exe');
   private readonly timeoutMs = Number(process.env['WATERMARK_ENGINE_TIMEOUT_MS'] ?? 60_000);
 
   async apply(params: {
@@ -23,61 +19,49 @@ export class WatermarkEngineService {
     outputPath: string;
     config: unknown;
   }): Promise<{ stdout: string; stderr: string }> {
-    if (!this.executable) {
-      throw new Error('WATERMARK_ENGINE_PATH is not configured');
-    }
+    const input = await readFile(params.inputPath);
+    const watermark = this.toParams(params.config);
 
-    const configPath = join(dirname(params.inputPath), 'config.json');
-    await writeFile(configPath, JSON.stringify(params.config ?? {}), 'utf8');
+    // формат результату має збігатися з розширенням outputPath, якщо він не заданий явно
+    watermark.format ??= EXT_FORMAT[extname(params.outputPath).toLowerCase()] ?? null;
 
-    return new Promise((resolve, reject) => {
-      const args = this.buildArgs(params.inputPath, params.outputPath, configPath);
-      const isScript = /\.(m?js|cjs)$/i.test(this.executable!);
+    const { buffer, width, height, format } = await this.withTimeout(
+      applyWatermark(input, watermark),
+    );
+    await writeFile(params.outputPath, buffer);
 
-      const child = spawn(
-        isScript ? process.execPath : this.executable!,   // process.execPath = node
-        isScript ? [this.executable!, ...args] : args,
-        {
-          stdio: ['ignore', 'pipe', 'pipe'],
-          shell: false,
-          windowsHide: true,
-          timeout: this.timeoutMs,
-          killSignal: 'SIGKILL',
-        },
-      );
-
-
-      // const child = spawn(
-      //   this.executable!,
-      //   this.buildArgs(params.inputPath, params.outputPath, configPath),
-      //   {
-      //     stdio: ['ignore', 'pipe', 'pipe'],
-      //     shell: false, 
-      //     windowsHide: true,
-      //     timeout: this.timeoutMs,
-      //     killSignal: 'SIGKILL',
-      //   },
-      // );
-
-      let stdout = '';
-      let stderr = '';
-      const tail = (acc: string, chunk: Buffer) => (acc + chunk.toString()).slice(-MAX_LOG_CHARS);
-
-      child.stdout.on('data', (c: Buffer) => (stdout = tail(stdout, c)));
-      child.stderr.on('data', (c: Buffer) => (stderr = tail(stderr, c)));
-      child.on('error', reject);
-      child.on('close', (code, signal) => {
-        if (code === 0) return resolve({ stdout, stderr });
-        reject(
-          new Error(
-            `Watermark engine failed (${code !== null ? `exit ${code}` : signal}): ${stderr.slice(-500)}`,
-          ),
-        );
-      });
-    });
+    return { stdout: `OK ${width}x${height} (${format})`, stderr: '' };
   }
 
-  private buildArgs(input: string, output: string, config: string): string[] {
-    return ['--input', input, '--output', output, '--config', config];
+  /** Бере з config (рядок batches у БД) лише відомі поля; решту валідує applyWatermark. */
+  private toParams(config: unknown): WatermarkParams {
+    if (!config || typeof config !== 'object') return {};
+    const c = config as Record<string, unknown>;
+    return {
+      text: c['text'] as string | undefined,
+      mode: c['mode'] as WatermarkParams['mode'],
+      position: c['position'] as WatermarkParams['position'],
+      opacity: c['opacity'] as number | undefined,
+      scale: c['scale'] as number | undefined,
+      margin: c['margin'] as number | undefined,
+      color: c['color'] as string | undefined,
+      angle: c['angle'] as number | undefined,
+      spacing: c['spacing'] as number | undefined,
+      stagger: c['stagger'] as boolean | undefined,
+      shadow: c['shadow'] as boolean | undefined,
+      format: c['format'] as WatermarkParams['format'],
+      quality: c['quality'] as number | undefined,
+    };
+  }
+
+  private withTimeout<T>(promise: Promise<T>): Promise<T> {
+    let timer: NodeJS.Timeout;
+    const timeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(
+        () => reject(new Error(`Watermark timed out after ${this.timeoutMs} ms`)),
+        this.timeoutMs,
+      );
+    });
+    return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
   }
 }

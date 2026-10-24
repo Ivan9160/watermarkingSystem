@@ -49,7 +49,7 @@ export class ImageJobsRepository {
       status: 'SUCCEEDED',
       outputKey,
       errorMessage: null,
-      processedAt: Temporal.Now.instant().toString(),
+      processedAt: Temporal.Now.instant(),
     });
   }
 
@@ -57,7 +57,7 @@ export class ImageJobsRepository {
     await db.orm.public.ImageJob.where({ id }).update({
       status: 'FAILED',
       errorMessage: errorMessage.slice(0, 1000),
-      processedAt: Temporal.Now.instant().toString(),
+      processedAt: Temporal.Now.instant(),
     });
   }
 }

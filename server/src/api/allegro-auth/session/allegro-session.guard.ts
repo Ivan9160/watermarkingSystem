@@ -64,7 +64,6 @@ export class AllegroSessionGuard implements CanActivate {
     }
 
     req.allegroSessionId = sessionId;
-
     return true;
   }
 }
