@@ -12,7 +12,7 @@ export interface NewImageJob {
 
 @Injectable()
 export class ImageJobsRepository {
-  async createMany(batchId: string, items: NewImageJob[]) {
+  async  createMany(batchId: string, items: NewImageJob[]) {
     const created = [];
     for (const item of items) {
       created.push(

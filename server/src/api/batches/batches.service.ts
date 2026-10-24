@@ -40,6 +40,7 @@ export class BatchesService {
       const jobs = await this.imageJobs.createMany(batch.id, items);
       await this.queues.enqueueDownloads(jobs.map((j) => j.id));
     } catch (error) {
+      console.error('Error creating image jobs or enqueueing downloads:', error);
       await this.batches.delete(batch.id).catch(() => undefined);
       throw error;
     }

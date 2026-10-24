@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'node:crypto';
-import { AllegroAuthService } from './allegro-auth.service.ts';
+import { AllegroAuthService } from '../allegro-auth.service.ts';
 
 export const SESSION_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -370,5 +370,16 @@ export class AllegroSessionService {
       return undefined;
     }
     return session;
+  }
+
+
+  async getAuthContext(id: string | undefined) {
+    const session = this.requireSession(id);
+    await this.ensureValidAccessToken(session);
+    return {
+      allegroUserId: Number(session.sellerId),
+      sellerName: session.sellerName,
+      accessToken: session.accessToken,
+    };
   }
 }

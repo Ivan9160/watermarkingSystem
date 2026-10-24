@@ -26,20 +26,15 @@ import { AllegroAuthService } from './allegro-auth.service.ts';
 import {
   AllegroSessionService,
   SESSION_MAX_AGE_MS,
-} from './allegro-session.service.ts';
+} from './session/allegro-session.service.ts';
 
-const OAUTH_STATE_COOKIE = 'waterm_allegro_oauth_state';
-const SESSION_COOKIE = 'waterm_allegro_session';
-const OAUTH_COOKIE_PATH = '/api/auth/allegro';
-const SECURE_COOKIE = process.env['NODE_ENV'] === 'production';
-
-function getCookie(req: Request, name: string): string | undefined {
-  const entry = req.headers.cookie
-    ?.split(';')
-    .map((value) => value.trim())
-    .find((value) => value.startsWith(`${name}=`));
-  return entry?.slice(name.length + 1);
-}
+import {
+  OAUTH_STATE_COOKIE,
+  OAUTH_COOKIE_PATH,
+  SECURE_COOKIE,
+  SESSION_COOKIE,
+} from './session/auth.constants.ts';
+import { getCookie } from './session/cookie.util.ts';
 
 @ApiTags('Allegro Authentication')
 @Controller('auth/allegro')
@@ -86,6 +81,7 @@ export class AllegroAuthController {
 
     const a = Buffer.from(expected ?? '', 'utf8');
     const b = Buffer.from(state ?? '', 'utf8');
+
     if (!expected || !state || a.length !== b.length || !timingSafeEqual(a, b)) {
       throw new UnauthorizedException('Invalid OAuth state cookie');
     }
@@ -102,7 +98,7 @@ export class AllegroAuthController {
       maxAge: SESSION_MAX_AGE_MS,
     });
 
-    return response.redirect('http://localhost:5173/?allegro=connected');
+    return response.redirect(`${process.env['FRONTEND_URL'] ?? 'http://localhost:5173'}/?allegro=connected`,);
   }
 
   @Get('status')

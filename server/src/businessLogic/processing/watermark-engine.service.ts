@@ -31,17 +31,33 @@ export class WatermarkEngineService {
     await writeFile(configPath, JSON.stringify(params.config ?? {}), 'utf8');
 
     return new Promise((resolve, reject) => {
+      const args = this.buildArgs(params.inputPath, params.outputPath, configPath);
+      const isScript = /\.(m?js|cjs)$/i.test(this.executable!);
+
       const child = spawn(
-        this.executable!,
-        this.buildArgs(params.inputPath, params.outputPath, configPath),
+        isScript ? process.execPath : this.executable!,   // process.execPath = node
+        isScript ? [this.executable!, ...args] : args,
         {
           stdio: ['ignore', 'pipe', 'pipe'],
-          shell: false, 
+          shell: false,
           windowsHide: true,
           timeout: this.timeoutMs,
           killSignal: 'SIGKILL',
         },
       );
+
+
+      // const child = spawn(
+      //   this.executable!,
+      //   this.buildArgs(params.inputPath, params.outputPath, configPath),
+      //   {
+      //     stdio: ['ignore', 'pipe', 'pipe'],
+      //     shell: false, 
+      //     windowsHide: true,
+      //     timeout: this.timeoutMs,
+      //     killSignal: 'SIGKILL',
+      //   },
+      // );
 
       let stdout = '';
       let stderr = '';

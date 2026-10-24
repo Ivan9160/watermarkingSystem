@@ -26,6 +26,7 @@ import {
 import { CreateBatchDto } from './dto/create-batch.dto.ts';
 import { AllegroAuthGuard } from '../allegro-auth/allegro-auth.guard.ts';
 import { BatchesService } from './batches.service.ts';
+import { AllegroSessionGuard } from '../allegro-auth/session/allegro-session.guard.ts';
 
 interface AllegroAuthenticatedRequest extends Request {
   allegroUser: {

@@ -4,16 +4,18 @@ import { BatchesController } from './batches.controller.ts';
 import { BatchesService } from './batches.service.ts';
 import { MinioModule } from '../../businessLogic/minio/minio.module.ts';
 import { PrismaModule } from '../../prisma/prisma.module.ts';
-import { JwtGuard } from '../auth/jwt.guard.ts';
 import { MinioStorageService } from '../../businessLogic/minio/minio-storage.service.ts';
 import { AllegroAuthModule } from '../allegro-auth/allegro-auth.module.ts';
-import { AllegroAuthGuard } from '../allegro-auth/allegro-auth.guard.ts';
 import { AllegroAuthService } from '../allegro-auth/allegro-auth.service.ts';
 import { ConfigService } from '@nestjs/config';
+import { PersistenceModule } from '../../businessLogic/persistence/persistence.module.ts';
+import { ImageQueueService } from '../../businessLogic/queues/image-queue.service.ts';
+import { QueuesModule } from '../../businessLogic/queues/queues.module.ts';
+import { AllegroSessionGuard } from '../allegro-auth/session/allegro-session.guard.ts';
 
 @Module({
-  imports: [MinioModule, PrismaModule, AllegroAuthModule],
+  imports: [MinioModule, PrismaModule, AllegroAuthModule, PersistenceModule, QueuesModule],
   controllers: [BatchesController],
-  providers: [BatchesService, JwtGuard, MinioStorageService, AllegroAuthGuard, AllegroAuthService, ConfigService],
+  providers: [BatchesService, MinioStorageService, AllegroSessionGuard, AllegroAuthService, ConfigService, ImageQueueService],
 })
 export class BatchesModule {}
