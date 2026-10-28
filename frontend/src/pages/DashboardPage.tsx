@@ -72,7 +72,7 @@ export function DashboardPage() {
                             <span className="stat-icon">✓</span>
                         </div>
                         <strong>{selectedIds.length}</strong>
-                        <small>Ready for batch preview</small>
+                        <small>Ready for batch</small>
                     </div>
 
                     <div className="stat-card">
