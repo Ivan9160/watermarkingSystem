@@ -316,10 +316,6 @@ export function IntegrationsPage() {
                             <p>Images appear in Library, ready to select and edit.</p>
                         </div>
                     </div>
-                    <p className="integration-note">
-                        Photos are shown using their Allegro image URLs. Disconnecting from WaterM
-                        does not sign you out of the Allegro website or delete original photos.
-                    </p>
                 </section>
             </div>
         </div>

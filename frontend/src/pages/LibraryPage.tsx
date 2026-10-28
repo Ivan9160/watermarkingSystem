@@ -241,7 +241,7 @@ export function LibraryPage() {
                 subtitle="Browse, filter and manage product photos"
                 actions={<>
                     <button className="btn btn-secondary" onClick={() => setPage('integrations')}>↗ Connect store</button>
-                    <button className="btn btn-primary" onClick={() => setPage('batch')}>Batch preview →</button>
+                    <button className="btn btn-primary" onClick={() => setPage('batch')}>Go to Batch →</button>
                 </>} />
 
             <div className="library-toolbar">

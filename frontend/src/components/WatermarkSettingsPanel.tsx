@@ -1,5 +1,4 @@
 import { useApp } from '../context/AppContext';
-import { TemplateControls } from './TemplateControls';
 import type { WatermarkPosition } from '../types';
 
 interface Props {
@@ -13,8 +12,7 @@ export function WatermarkSettingsPanel({ title = 'Watermark settings', includeTy
 
     return (
         <div className="panel settings-panel">
-            <div className="panel-heading"><h2>{title}</h2><span className="muted-label">TEMPLATES</span></div>
-            <TemplateControls />
+            <div className="panel-heading"><h2>{title}</h2><span className="muted-label">SETTINGS</span></div>
             {includeType && <label className="form-field">
                 <span>Type</span>
                 <select value={watermarkType} onChange={event => setWatermarkType(event.target.value as 'visible' | 'invisible')}>
@@ -59,7 +57,6 @@ export function WatermarkSettingsPanel({ title = 'Watermark settings', includeTy
                     </select>
                 </label>
             </fieldset>
-            <div className="settings-footnote"><span className="small-dot" /> Changes are previewed locally</div>
         </div>
     );
 }

@@ -222,7 +222,7 @@ export function TemplatesPage() {
                     </div>
                 )}
                 <p className="templates-storage-note">
-                    Templates are stored locally in this browser. They do not sync with other users or devices, and they do not modify Allegro photos.
+                    Templates are stored locally in this browser.
                 </p>
             </div>
         </div>

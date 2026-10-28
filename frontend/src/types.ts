@@ -56,3 +56,66 @@ export interface WorkspaceSession {
     workspace: { id: string; name: string };
     user: { displayName: string; email?: string };
 }
+
+// NestJS server batch API: server/src/api/batches and server/src/api/results
+export type ServerBatchStatus = 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+export type ServerWatermarkFormat = 'jpeg' | 'png' | 'webp';
+
+export interface ServerWatermarkConfig {
+    text: string;
+    mode: 'single' | 'tile';
+    position: WatermarkPosition;
+    color: string;
+    opacity: number; // 0..1, unlike Editor (0..100)
+    scale: number; // 0.05..1; fraction of output image width
+    angle: number;
+    spacing: number;
+    stagger: boolean;
+    shadow: boolean;
+    format: ServerWatermarkFormat;
+    quality: number;
+}
+
+export interface CreateBatchRequest {
+    watermarkConfig: ServerWatermarkConfig;
+    products: Array<{ offerId: string; images: string[] }>;
+}
+
+export interface CreateBatchResponse {
+    batchId: string;
+    status: 'QUEUED';
+    totalProducts: number;
+    totalImages: number;
+    statusUrl: string;
+    resultsUrl: string;
+}
+
+export interface BatchStatusResponse {
+    batchId: string;
+    status: ServerBatchStatus;
+    totalImages: number;
+    counts: {
+        pending: number;
+        processing: number;
+        succeeded: number;
+        failed: number;
+    };
+    createdAt: string;
+    completedAt: string | null;
+    resultsUrl: string;
+}
+
+export interface BatchResultsResponse {
+    batchId: string;
+    status: ServerBatchStatus;
+    products: Array<{
+        offerId: string;
+        images: Array<{
+            id: string;
+            index: number;
+            status: 'PENDING' | 'PROCESSING' | 'SUCCEEDED' | 'FAILED';
+            url: string | null;
+            error: string | null;
+        }>;
+    }>;
+}
