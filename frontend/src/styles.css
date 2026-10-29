@@ -1423,7 +1423,7 @@ a {
 }
 
 @media (min-width: 1101px) {
-    .batch-processing-page .watermark-workspace > .preview-panel {
+    .watermark-workspace > .preview-panel {
         position: relative;
         top: -56px;
         height: calc(100% + 56px);
@@ -2905,4 +2905,67 @@ a {
     .dashboard-lower { flex: 0 0 auto; }
     .dashboard-panel { min-height: 190px; overflow: visible; }
     .library-grid.library-empty { overflow-y: auto; }
+}
+/* WaterM hybrid preview */
+.hybrid-batch-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 920px;
+    min-height: 0;
+    gap: 8px;
+}
+.hybrid-preview-visual {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 0;
+}
+.hybrid-preview-visual .server-batch-preview { width: 100%; }
+.hybrid-preview-visual .preview-canvas {
+    width: 100%;
+    height: auto;
+    max-height: 100%;
+}
+.hybrid-preview-visual .batch-preview-warning { display: none; }
+.hybrid-sharp-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 2.6%;
+    background: #222b3a;
+    object-fit: contain;
+    box-sizing: border-box;
+    border-radius: 5px;
+}
+.hybrid-preview-status {
+    max-width: 100%;
+    font-size: 11px;
+    line-height: 1.4;
+    text-align: center;
+}
+.hybrid-preview-exact { color: #67dbab; }
+.hybrid-preview-pending { color: #a5b3c9; }
+.hybrid-preview-error { color: #f9a8ae; }
+/* WaterM: render confirmed Sharp previews without Canvas or layout jumps. */
+.hybrid-preview-visual {
+    aspect-ratio: 920 / 585;
+    width: 100%;
+    max-height: min(585px, 55vh);
+    overflow: hidden;
+    background: #222b3a;
+    border-radius: 5px;
+}
+.hybrid-preview-visual > .hybrid-preview-photo {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
 }

@@ -259,7 +259,22 @@ export async function applyWatermark(
 
   let layer: Layer;
   if (p.mode === 'tile') {
-    layer = { input: await buildTile(overlay, ow, oh, p), tile: true }; // sharp повторює плитку по всьому кадру
+    const tileBuffer = await buildTile(overlay, ow, oh, p);
+
+    const safeTileBuffer = await sharp(tileBuffer)
+      .resize({
+        width,
+        height,
+        fit: 'inside',
+        withoutEnlargement: true,
+      })
+      .png()
+      .toBuffer();
+
+    layer = {
+      input: safeTileBuffer,
+      tile: true,
+    };
   } else {
     const m = p.margin;
     const [left, top] = {

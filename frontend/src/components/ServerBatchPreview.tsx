@@ -19,7 +19,6 @@ function loadImage(src: string): Promise<HTMLImageElement> {
         const image = new Image();
         image.onload = () => resolve(image);
         image.onerror = () => reject(new Error('Failed to load preview image'));
-        // The Allegro image may not send CORS headers. We draw only; never export this canvas.
         image.src = src;
     });
 }
@@ -166,7 +165,7 @@ export function ServerBatchPreview({ imageSrc, config }: Props) {
                     paint.fillRect(0, 0, originalWidth, originalHeight);
                 }
             } else {
-                const margin = 20; // Backend's DEFAULTS.margin
+                const margin = 20;
                 let left = originalWidth - overlay.width - margin;
                 let top = originalHeight - overlay.height - margin;
                 if (config.position.includes('left')) left = margin;
@@ -198,8 +197,5 @@ export function ServerBatchPreview({ imageSrc, config }: Props) {
             aria-label="Browser simulation of the server watermark on the first selected Allegro image"
         />
         {error && <p className="batch-preview-warning" role="status">{error}</p>}
-        {sizeWarning && <p className="batch-preview-warning" role="status">
-            The watermark tile may exceed this image's dimensions. Sharp can reject this combination.
-        </p>}
     </div>;
 }

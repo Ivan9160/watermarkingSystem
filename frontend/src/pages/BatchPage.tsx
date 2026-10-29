@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { PageHeading } from '../components/PageHeading';
 import { PreviewCanvas } from '../components/PreviewCanvas';
 import { UploadToServiceModal } from '../components/UploadToServiceModal';
-import { ServerBatchPreview } from '../components/ServerBatchPreview';
+import { HybridBatchPreview } from '../components/HybridBatchPreview';
 import { WatermarkSettingsPanel } from '../components/WatermarkSettingsPanel';
 import { WatermarkTemplatePanel } from '../components/WatermarkTemplatePanel';
 import { useApp } from '../context/AppContext';
@@ -282,7 +282,7 @@ export function BatchPage() {
                                 alt="Actual watermarked output returned by the processing server"
                             />
                             : eligible[0] && watermarkType === 'visible' && settings.text.trim()
-                                ? <ServerBatchPreview imageSrc={eligible[0].src} config={serverConfig} />
+                                ? <HybridBatchPreview imageSrc={eligible[0].src} config={serverConfig} />
                                 : <PreviewCanvas templateOnly settings={settings} visible={watermarkType === 'visible'} />}
                     </div>
 

@@ -141,7 +141,7 @@ export function DashboardPage() {
                             >
                                 <span className="quick-icon">▤</span>
                                 <span>
-                                    <strong>Batch preview</strong>
+                                    <strong>Batch processing</strong>
                                     <small>
                                         One template for selected images
                                     </small>
