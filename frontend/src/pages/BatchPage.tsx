@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
+import { rememberBatch } from '../utils/batchHistory';
 import { PageHeading } from '../components/PageHeading';
 import { PreviewCanvas } from '../components/PreviewCanvas';
 import { UploadToServiceModal } from '../components/UploadToServiceModal';
@@ -156,6 +157,7 @@ export function BatchPage() {
         try {
             const created = await api.createBatch(payload);
             setStatus(null);
+            rememberBatch(created.batchId);
             setBatchId(created.batchId);
             try { localStorage.setItem(ACTIVE_BATCH_KEY, created.batchId); }
             catch { /* Not available in private browsing */ }
@@ -372,3 +374,4 @@ export function BatchPage() {
         </div>
     );
 }
+
