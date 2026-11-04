@@ -921,7 +921,7 @@ a {
     border: 0;
     padding: 0;
     color: #b5a8ff;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 650;
 }
 
@@ -929,8 +929,6 @@ a {
     text-decoration: underline;
 }
 
-/* Responsive product grid: number of columns follows the number of
-   filtered images (1..5). Every implicit row is as tall as its cards. */
 .library-grid {
     display: grid;
     flex: 1 1 auto;
@@ -3466,13 +3464,9 @@ a {
     .wm-dash-service .wm-dash-status { margin-left:58px; }
 }
 
-/* WaterM local upload batches v1 */
 .image-footer-meta { overflow-wrap: anywhere; }
 .library-upload-notice { line-height: 1.5; }
-/* End WaterM local upload batches v1 */
 
-
-/* WaterM Library upload feedback fix v1 */
 .wm-local-upload-error {
     display: flex;
     flex-direction: column;
@@ -3489,4 +3483,62 @@ a {
 .wm-local-upload-error strong { color: #ffcfb9; font-size: 12px; }
 .wm-local-upload-error .btn { align-self: flex-start; margin-top: 4px; }
 .library-upload-preview-status { overflow-wrap: anywhere; }
-/* End WaterM Library upload feedback fix v1 */
+
+.batch-processing-page .wm-local-batch-preview {
+    height: 100%; min-height: 0; width: 100%; gap: 9px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.batch-processing-page .wm-local-preview-area {
+    width: 100%; flex: 1 1 auto; min-height: 0; overflow: hidden;
+    display: flex; justify-content: center; align-items: center;
+}
+.batch-processing-page .wm-local-preview-svg {
+    display: block; width: auto; height: auto; max-width: 100%; max-height: 100%;
+    flex: 0 1 auto; border-radius: 5px; box-shadow: 0 14px 45px #0008;
+    user-select: none; -webkit-user-select: none;
+}
+.batch-processing-page .wm-local-watermark.is-editable { cursor: grab; touch-action: none; outline: none; }
+.batch-processing-page .wm-local-preview-svg.is-dragging .wm-local-watermark { cursor: grabbing; }
+.batch-processing-page .wm-local-watermark-boundary {
+    stroke: rgba(190, 173, 255, .36); stroke-dasharray: 8 6;
+    transition: stroke 100ms ease; pointer-events: all;
+}
+.batch-processing-page .wm-local-watermark.is-editable:hover .wm-local-watermark-boundary,
+.batch-processing-page .wm-local-watermark.is-editable:focus .wm-local-watermark-boundary,
+.batch-processing-page .wm-local-preview-svg.is-dragging .wm-local-watermark-boundary {
+    stroke: rgba(190, 173, 255, .93);
+}
+.batch-processing-page .wm-local-preview-status {
+    flex: 0 0 auto; font-size: 10px; color: #87d5b0; line-height: 1.4;
+    text-align: center; padding: 0 8px;
+}
+.batch-processing-page .wm-local-preview-message { font-size: 12px; color: #aeb9cd; text-align: center; }
+.batch-processing-page .wm-drag-watermark-hint {
+    display: flex; flex: 0 0 auto; align-items: center; gap: 10px;
+    background: #1e2535; border-top: 1px solid #374055;
+    padding: 9px 17px; color: #b9c6de; font-size: 11px; line-height: 1.45;
+}
+.batch-processing-page .wm-drag-watermark-hint strong { color: #f1edff; }
+.batch-processing-page .wm-drag-hint-symbol { font-size: 20px; color: #a991ff; }
+.batch-processing-page .wm-drag-reset {
+    flex: 0 0 auto; margin-left: auto; white-space: nowrap;
+    background: #2f2b49; color: #ded3ff; border: 1px solid #554a80;
+    border-radius: 7px; cursor: pointer; font-weight: 700; padding: 6px 10px; font-size: 10px;
+}
+.batch-processing-page .wm-drag-reset:disabled { opacity: .5; cursor: not-allowed; }
+.batch-processing-page .wm-drag-reset:hover:not(:disabled) { background: #413665; }
+@media (max-width: 680px) {
+    .batch-processing-page .wm-drag-watermark-hint { flex-wrap: wrap; gap: 6px; }
+    .batch-processing-page .wm-drag-reset { margin-left: 27px; }
+}
+
+/* WaterM Pattern drag / unclipped glyphs v2 */
+.batch-processing-page .wm-local-pattern-drag-target {
+    cursor: grab;
+    touch-action: none;
+}
+.batch-processing-page .wm-local-preview-svg.is-dragging .wm-local-pattern-drag-target {
+    cursor: grabbing;
+}
+/* Empty watermark text: photo remains visible, with watermark hidden. */
+/* End WaterM Pattern drag fix v2 */

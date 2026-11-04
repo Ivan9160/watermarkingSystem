@@ -3,7 +3,7 @@ import { rememberBatch } from '../utils/batchHistory';
 import { PageHeading } from '../components/PageHeading';
 import { PreviewCanvas } from '../components/PreviewCanvas';
 import { UploadToServiceModal } from '../components/UploadToServiceModal';
-import { HybridBatchPreview } from '../components/HybridBatchPreview';
+import { HybridBatchPreview, type DragPosition } from '../components/HybridBatchPreview';
 import { WatermarkSettingsPanel } from '../components/WatermarkSettingsPanel';
 import { WatermarkTemplatePanel } from '../components/WatermarkTemplatePanel';
 import { useApp } from '../context/AppContext';
@@ -67,6 +67,9 @@ export function BatchPage() {
 
     const [format, setFormat] = useState<ServerWatermarkFormat>('jpeg');
     const [quality, setQuality] = useState(90);
+    const [manualPosition, setManualPosition] = useState<DragPosition | null>(null);
+    const [manualPatternOffset, setManualPatternOffset] = useState<DragPosition | null>(null);
+    useEffect(() => { setManualPosition(null); setManualPatternOffset(null); }, [settings.position, settings.layout]);
 
     const [batchId, setBatchId] = useState<string | null>(() => {
         try { return localStorage.getItem(ACTIVE_BATCH_KEY); }
@@ -91,10 +94,11 @@ export function BatchPage() {
     const skipped = chosenImages.length - eligible.length;
     const products = useMemo(() => buildProducts(eligible), [eligible]);
     const imageCount = products.reduce((n, p) => n + p.images.length, 0);
-    const serverConfig = useMemo(
-        () => buildServerWatermarkConfig(settings, format, quality),
-        [settings, format, quality],
-    );
+    const serverConfig = useMemo(() => ({
+        ...buildServerWatermarkConfig(settings, format, quality),
+        ...(settings.layout === 'single' && manualPosition ? { customPosition: manualPosition } : {}),
+        ...(settings.layout === 'pattern' && manualPatternOffset ? { patternOffset: manualPatternOffset } : {}),
+    }), [settings, format, quality, manualPosition, manualPatternOffset]);
 
     const validationError = useMemo(() => {
         if (watermarkType !== 'visible') return 'Only visible watermarks are supported by the processing backend.';
@@ -281,8 +285,6 @@ export function BatchPage() {
                     <div className="panel-heading preview-header">
                         <h2>{Boolean(firstOutputUrl)
                             ? 'Processed image' : 'Batch preview'}</h2>
-                        <span className="muted-label">{Boolean(firstOutputUrl)
-                            ? 'Actual output from Sharp' : eligible.length ? 'First selected photo · Browser simulation' : 'Select a photo to preview'}</span>
                     </div>
                     <div className="preview-stage">
                         {firstOutputUrl
@@ -291,10 +293,23 @@ export function BatchPage() {
                                 src={firstOutputUrl}
                                 alt="Actual watermarked output returned by the processing server"
                             />
-                            : eligible[0] && watermarkType === 'visible' && settings.text.trim()
-                                ? <HybridBatchPreview imageSrc={eligible[0].src} previewInput={eligible[0].sourceRef} config={serverConfig} />
+                            : eligible[0] && watermarkType === 'visible'
+                                ? <HybridBatchPreview imageSrc={eligible[0].src} previewInput={eligible[0].sourceRef} config={watermarkType === 'visible' ? serverConfig : { ...serverConfig, text: '' }}
+                                    onPositionChange={setManualPosition} onPatternOffsetChange={setManualPatternOffset}
+                                    disabled={busy || active} />
                                 : <PreviewCanvas templateOnly settings={settings} visible={watermarkType === 'visible'} />}
                     </div>
+
+                    {!firstOutputUrl && eligible.length > 0 && watermarkType === 'visible' &&
+                        <div className="wm-drag-watermark-hint" role="note">
+                            <span className="wm-drag-hint-symbol" aria-hidden="true">✥</span>
+                            <span><strong>{settings.layout === 'pattern' ? 'Drag the pattern' : 'Drag the watermark'}</strong>
+                                {settings.layout === 'pattern' ? ' anywhere on the photo to reposition the entire pattern.' : ' to any place on the photo.'}
+                                {' '}Release to save. Changes remain local until Start processing.</span>
+                            {(settings.layout === 'single' ? manualPosition : manualPatternOffset) &&
+                                <button type="button" className="wm-drag-reset" disabled={busy || active}
+                                    onClick={() => settings.layout === 'single' ? setManualPosition(null) : setManualPatternOffset(null)}>Reset position</button>}
+                        </div>}
 
                     {batchId && <section className="batch-job-panel" aria-live="polite">
                         <div className="batch-job-heading">
@@ -331,7 +346,6 @@ export function BatchPage() {
                             <strong>Results ({resultImages.filter(image => image.url).length} ready)</strong>
                             <button type="button" className="subtle-link" onClick={() => setCheckVersion(x => x + 1)}>Refresh links</button>
                         </div>
-                        <p className="batch-note">Files are stored on RustFS. Download links expire; refresh them when needed.</p>
                         <div className="batch-results-list">
                             {resultImages.map(image => <div className="batch-result-item" key={image.id}>
                                 <span className="batch-result-name" title={`${image.offerId} · Image ${image.index + 1}`}>
