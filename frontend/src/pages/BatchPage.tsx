@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { rememberBatch } from '../utils/batchHistory';
 import { PageHeading } from '../components/PageHeading';
 import { PreviewCanvas } from '../components/PreviewCanvas';
@@ -26,7 +26,12 @@ function offerIdOf(image: ProductImage): string | null {
 }
 
 function canUseAsBatchSource(image: ProductImage): boolean {
-    if (image.source !== 'allegro' || !offerIdOf(image)) return false;
+    if (!offerIdOf(image)) return false;
+    if (image.source === 'local') {
+        return image.uploadStatus === 'ready' &&
+            /^waterm-local:[a-f0-9]{32}\.(?:jpg|png|webp)$/.test(image.sourceRef ?? '');
+    }
+    if (image.source !== 'allegro') return false;
     try {
         return new URL(image.src).protocol === 'https:';
     } catch {
@@ -40,7 +45,7 @@ function buildProducts(images: ProductImage[]) {
         const offerId = offerIdOf(image);
         if (!offerId) continue;
         const urls = grouped.get(offerId) ?? new Set<string>();
-        urls.add(image.src);
+        urls.add(image.source === 'local' ? image.sourceRef! : image.src);
         grouped.set(offerId, urls);
     }
     return Array.from(grouped, ([offerId, urls]) => ({ offerId, images: [...urls] }));
@@ -94,7 +99,7 @@ export function BatchPage() {
     const validationError = useMemo(() => {
         if (watermarkType !== 'visible') return 'Only visible watermarks are supported by the processing backend.';
         if (!settings.text.trim()) return 'Enter watermark text before processing.';
-        if (!imageCount) return 'Select Allegro images in Image Library first. Local uploads are not yet supported by this endpoint.';
+        if (!imageCount) return 'Select images in Library. Local files must finish uploading before processing.';
         if (imageCount > MAX_IMAGES) return `Too many images (${imageCount}). Maximum is ${MAX_IMAGES} per batch.`;
         if (products.length > MAX_PRODUCTS) return `Too many products (${products.length}). Maximum is ${MAX_PRODUCTS}.`;
         if (products.some(p => p.images.length > MAX_IMAGES_PER_PRODUCT)) {
@@ -155,7 +160,8 @@ export function BatchPage() {
         setResults(null);
         setDownloadProgress('');
         try {
-            const created = await api.createBatch(payload);
+            const hasLocal = eligible.some(image => image.source === 'local');
+            const created = hasLocal ? await api.createMixedBatch(payload) : await api.createBatch(payload);
             setStatus(null);
             rememberBatch(created.batchId);
             setBatchId(created.batchId);
@@ -201,6 +207,8 @@ export function BatchPage() {
     const resultImages = results?.products.flatMap(product =>
         product.images.map(image => ({ ...image, offerId: product.offerId }))) ?? [];
     const readyCount = countDownloadableImages(results);
+    // Synthetic LOCAL-* groups cannot be published as Allegro offer IDs.
+    const containsLocalResults = results?.products.some(p => p.offerId.startsWith('LOCAL-')) ?? false;
     const firstOutputUrl = resultImages.find(image => Boolean(image.url))?.url;
 
     async function downloadAll() {
@@ -244,7 +252,7 @@ export function BatchPage() {
                                 onClick={() => setPage('library')}>Choose images</button>
                         </div>
                         {skipped > 0 && <p className="batch-note">
-                            {skipped} selected image(s) cannot be processed by this endpoint (Allegro HTTPS images only).
+                            {skipped} selected image(s) cannot be processed (Allegro HTTPS sources or uploaded RustFS files only).
                         </p>}
                         {imageCount > 0 && <p className="batch-selected-summary">
                             {imageCount} ready for processing · {products.length} {products.length === 1 ? 'offer' : 'offers'}
@@ -284,7 +292,7 @@ export function BatchPage() {
                                 alt="Actual watermarked output returned by the processing server"
                             />
                             : eligible[0] && watermarkType === 'visible' && settings.text.trim()
-                                ? <HybridBatchPreview imageSrc={eligible[0].src} config={serverConfig} />
+                                ? <HybridBatchPreview imageSrc={eligible[0].src} previewInput={eligible[0].sourceRef} config={serverConfig} />
                                 : <PreviewCanvas templateOnly settings={settings} visible={watermarkType === 'visible'} />}
                     </div>
 
@@ -310,7 +318,8 @@ export function BatchPage() {
                                 {downloading ? 'Preparing ZIP…' : 'Download all'}
                             </button>
                             <button type="button" className="btn btn-secondary" onClick={() => setUploadOpen(true)}
-                                disabled={readyCount === 0}>
+                                disabled={readyCount === 0 || containsLocalResults}
+                                title={containsLocalResults ? "Local batches cannot be published to Allegro without linking real offers" : undefined}>
                                 Upload to service
                             </button>
                             {downloadProgress && <span className="batch-download-progress" role="status">{downloadProgress}</span>}

@@ -39,6 +39,10 @@ function dosDateTime(date: Date) {
     return { dateField, timeField };
 }
 
+function toBlobPart(bytes: Uint8Array): BlobPart {
+    return bytes as Uint8Array<ArrayBuffer>;
+}
+
 export function createZip(entries: Array<{ name: string; bytes: Uint8Array }>): Blob {
     if (entries.length > 0xffff) throw new Error('Too many files for a ZIP archive.');
     const prepared: ZipEntry[] = entries.map(entry => ({
@@ -88,7 +92,7 @@ export function createZip(entries: Array<{ name: string; bytes: Uint8Array }>): 
         c.setUint32(42, offset, true);
         header.set(name, 46);
 
-        chunks.push(local, entry.bytes);
+        chunks.push(toBlobPart(local), toBlobPart(entry.bytes));
         central.push(header);
         offset += local.length + length;
         if (offset > MAX_UINT32) throw new Error('Batch ZIP exceeds the 4 GB ZIP format limit.');
@@ -96,7 +100,10 @@ export function createZip(entries: Array<{ name: string; bytes: Uint8Array }>): 
 
     const centralOffset = offset;
     for (const header of central) {
-        chunks.push(header);
+        for (const header of central) {
+            chunks.push(toBlobPart(header));
+            offset += header.length;
+        }
         offset += header.length;
     }
     const centralSize = offset - centralOffset;
@@ -109,7 +116,7 @@ export function createZip(entries: Array<{ name: string; bytes: Uint8Array }>): 
     e.setUint16(10, prepared.length, true);
     e.setUint32(12, centralSize, true);
     e.setUint32(16, centralOffset, true);
-    chunks.push(end);
+    chunks.push(toBlobPart(end));
     return new Blob(chunks, { type: 'application/zip' });
 }
 

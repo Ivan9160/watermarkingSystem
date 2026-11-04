@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { AllegroAuthModule } from '../allegro-auth/allegro-auth.module.ts';
+import { MinioModule } from '../../businessLogic/minio/minio.module.ts';
 import { ImageDownloaderService } from '../../businessLogic/ingestion/image-downloader.service.ts';
 import { WatermarkPreviewController } from './watermark-preview.controller.ts';
 
 @Module({
-  imports: [AllegroAuthModule],
+  imports: [AllegroAuthModule, MinioModule],
   controllers: [WatermarkPreviewController],
   providers: [ImageDownloaderService],
 })

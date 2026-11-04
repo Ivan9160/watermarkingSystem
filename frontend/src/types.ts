@@ -17,6 +17,8 @@ export interface ProductImage {
     sizeBytes?: number;
     mimeType?: string;
     uploadedAt?: string;
+    sourceRef?: string; // Opaque RustFS reference for local PC uploads
+    uploadStatus?: 'uploading' | 'ready' | 'failed';
 }
 
 export interface WatermarkSettings {
@@ -118,4 +120,14 @@ export interface BatchResultsResponse {
             error: string | null;
         }>;
     }>;
+}
+
+
+export interface LocalUploadResponse {
+    sourceRef: string;
+    src: string;
+    offerId: string;
+    filename: string;
+    mimeType: string;
+    sizeBytes: number;
 }

@@ -107,12 +107,10 @@ export function ServerBatchPreview({ imageSrc, config }: Props) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [loaded, setLoaded] = useState<LoadedImage | null>(null);
     const [error, setError] = useState('');
-    const [sizeWarning, setSizeWarning] = useState(false);
 
     useEffect(() => {
         let active = true;
         setError('');
-        setSizeWarning(false);
         void loadImage(imageSrc)
             .then(image => { if (active) setLoaded({ src: imageSrc, image }); })
             .catch(() => { if (active) { setLoaded(null); setError('Cannot load this photo for preview.'); } });
@@ -181,7 +179,6 @@ export function ServerBatchPreview({ imageSrc, config }: Props) {
             if (cancelled) return;
             ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
             ctx.drawImage(offscreen, 0, 0);
-            setSizeWarning(oversized);
             setError('');
         })().catch(() => { if (!cancelled) setError('Could not build watermark preview.'); });
 

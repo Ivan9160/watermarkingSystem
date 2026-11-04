@@ -1,9 +1,25 @@
 import type {
     AllegroConnection, ImportProgress, ProductImage, WorkspaceSession,
-    CreateBatchRequest, CreateBatchResponse, BatchStatusResponse, BatchResultsResponse,
+    CreateBatchRequest, CreateBatchResponse, BatchStatusResponse, BatchResultsResponse, LocalUploadResponse,
 } from '../types';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '/api';
+async function uploadLocalImage(file: File, offerId: string): Promise<LocalUploadResponse> {
+    const form = new FormData();
+    form.append('file', file);
+    form.append('offerId', offerId);
+    const response = await fetch(`${API_BASE}/local-images`, {
+        method: 'POST', credentials: 'include', body: form,
+    });
+    if (!response.ok) {
+        const data: unknown = await response.json().catch(() => null);
+        const reason = data && typeof data === 'object' && 'message' in data
+            ? (data as { message?: unknown }).message : null;
+        throw new Error(typeof reason === 'string' ? reason : `Upload failed (${response.status})`);
+    }
+    return response.json() as Promise<LocalUploadResponse>;
+}
+
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
     const response = await fetch(`${API_BASE}${path}`, {
@@ -30,6 +46,14 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 export const api = {
+    uploadLocalImage,
+    getLocalImages: () => request<{ items: ProductImage[] }>('/local-images'),
+    deleteLocalImage: (ref: string) => request<{ removed: boolean }>(`/local-images/${encodeURIComponent(ref.replace(/^waterm-local:/, ''))}`, {
+        method: 'DELETE',
+    }),
+    createMixedBatch: (payload: CreateBatchRequest) => request<CreateBatchResponse>('/mixed-batches', {
+        method: 'POST', body: JSON.stringify(payload),
+    }),
     getSession: () => request<WorkspaceSession>('/session'),
     getImages: () => request<{ items: ProductImage[] }>('/images'),
 

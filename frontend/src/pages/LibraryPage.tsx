@@ -9,6 +9,7 @@ import {
 import { PageHeading } from '../components/PageHeading';
 import { useApp, type LibrarySourceFilter } from '../context/AppContext';
 import type { ProductImage } from '../types';
+import { api } from '../services/api';
 
 type FormatFilter = 'all' | 'jpeg' | 'png' | 'webp' | 'unknown';
 type ResolutionFilter = 'all' | 'small' | 'hd' | 'large' | 'unknown';
@@ -16,10 +17,10 @@ type SizeFilter = 'all' | 'under1' | 'from1to5' | 'over5' | 'unknown';
 type CountFilter = 'all' | 'multiple' | 'five';
 type SortOrder = 'asc' | 'desc';
 type Dimensions = { width: number; height: number };
-type UploadPreview = { id: string; name: string; url?: string; issue?: string };
+type UploadPreview = { id: string; name: string; url?: string; issue?: string; status?: string };
 
 const MB = 1024 * 1024;
-const MAX_FILE_BYTES = 25 * MB;
+const MAX_FILE_BYTES = 10 * MB;
 const VALID_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
 function getOfferId(image: ProductImage): string | undefined {
@@ -29,6 +30,7 @@ function getOfferId(image: ProductImage): string | undefined {
 }
 
 function productKey(image: ProductImage): string {
+    if (image.source === 'local' && image.offerId) return `local:${image.offerId}`;
     if (image.source === 'allegro') {
         const offerId = getOfferId(image);
         if (offerId) return `allegro:${offerId}`;
@@ -59,12 +61,13 @@ export function LibraryPage() {
     const {
         images, catalogLoading, catalogError, selectedIds, toggleImage,
         openEditor, setPage, clearSelection, selectImages, deselectImages,
-        addLocalImages, removeImages, librarySourceFilter,
+        addLocalImages, markLocalUploaded, markLocalUploadFailed, removeImages, librarySourceFilter,
         setLibrarySourceFilter,
     } = useApp();
 
     const fileInput = useRef<HTMLInputElement>(null);
     const previewUrls = useRef<string[]>([]);
+    const libraryGridRef = useRef<HTMLDivElement>(null);
     const [query, setQuery] = useState('');
     const [selectedOnly, setSelectedOnly] = useState(false);
     const [sort, setSort] = useState<SortOrder>('asc');
@@ -76,6 +79,8 @@ export function LibraryPage() {
     const [detailId, setDetailId] = useState<string | null>(null);
     const [uploadPreviews, setUploadPreviews] = useState<UploadPreview[]>([]);
     const [uploadNotice, setUploadNotice] = useState('');
+    const [uploadError, setUploadError] = useState('');
+    const [recentUploadIds, setRecentUploadIds] = useState<Set<string>>(() => new Set());
     const [showUploadDetails, setShowUploadDetails] = useState(false);
     const [dragOver, setDragOver] = useState(false);
 
@@ -133,9 +138,10 @@ export function LibraryPage() {
             const total = groupCounts.get(productKey(image)) ?? 1;
             return count === 'all' || (count === 'multiple' ? total >= 2 : total >= 5);
         })
-        .sort((a, b) => a.filename.localeCompare(b.filename, undefined, { numeric: true }) * (sort === 'asc' ? 1 : -1)),
+        .sort((a, b) => Number(recentUploadIds.has(b.id)) - Number(recentUploadIds.has(a.id)) ||
+            a.filename.localeCompare(b.filename, undefined, { numeric: true }) * (sort === 'asc' ? 1 : -1)),
     [images, query, librarySourceFilter, selectedOnly, selectedSet, format,
-        resolution, size, count, sort, dimensions, groupCounts]);
+        resolution, size, count, sort, dimensions, groupCounts, recentUploadIds]);
 
     const detailImage = images.find(image => image.id === detailId);
     const detailGroup = detailImage
@@ -156,27 +162,83 @@ export function LibraryPage() {
         });
     }
 
-    function importFiles(files: File[]) {
+    async function importFiles(files: File[]) {
         if (!files.length) return;
+        setUploadError('');
         previewUrls.current.forEach(url => URL.revokeObjectURL(url));
         previewUrls.current = [];
 
-        const previews = files.slice(0, 11).map(file => {
+        // Show the new photos immediately, even if a previous search or filter was active.
+        setQuery('');
+        setSelectedOnly(false);
+        setFormat('all');
+        setResolution('all');
+        setSize('all');
+        setCount('all');
+        setLibrarySourceFilter('all');
+
+        const { imported, skipped, accepted } = addLocalImages(files);
+        const byFile = new Map(accepted.map(item => [item.file, item.id]));
+        const previews: UploadPreview[] = files.slice(0, 11).map(file => {
             const issue = !VALID_TYPES.has(file.type)
-                ? 'Unsupported format'
+                ? 'Unsupported image format'
                 : file.size === 0 ? 'Empty file'
-                    : file.size > MAX_FILE_BYTES ? 'Over 25 MB' : undefined;
+                    : file.size > MAX_FILE_BYTES ? 'Over 10 MB' : undefined;
             const url = !issue ? URL.createObjectURL(file) : undefined;
             if (url) previewUrls.current.push(url);
-            return { id: crypto.randomUUID(), name: file.name, url, issue };
+            return {
+                id: byFile.get(file) ?? crypto.randomUUID(),
+                name: file.name,
+                url,
+                issue,
+                status: issue ? undefined : 'Uploading to RustFS…',
+            };
         });
-
         setUploadPreviews(previews);
-        setShowUploadDetails(false);
-        const { imported, skipped } = addLocalImages(files);
-        setUploadNotice(`${imported} added${skipped ? ` · ${skipped} skipped (format, empty or over 25 MB)` : ''}${files.length > 11 ? ' · showing first 11 files below' : ''}`);
-        setSelectedOnly(false);
-        if (imported > 0) setLibrarySourceFilter('all');
+        setShowUploadDetails(true);
+        setRecentUploadIds(new Set(accepted.map(item => item.id)));
+        setUploadNotice(`${imported} image(s) added to Library · uploading to RustFS…${skipped ? ` · ${skipped} skipped` : ''}`);
+        // The grid scroll is independent of the page scroll.
+        requestAnimationFrame(() => libraryGridRef.current?.scrollTo({ top: 0 }));
+
+        if (!accepted.length) {
+            setUploadError('No valid files selected. Choose JPG, PNG or WebP under 10 MB.');
+            return;
+        }
+
+        let completed = 0;
+        let uploadedCount = 0;
+        const failures: string[] = [];
+        for (let start = 0; start < accepted.length; start += 3) {
+            await Promise.all(accepted.slice(start, start + 3).map(async ({ id, file, offerId }) => {
+                try {
+                    const uploaded = await api.uploadLocalImage(file, offerId);
+                    markLocalUploaded(id, uploaded);
+                    uploadedCount++;
+                    setUploadPreviews(current => current.map(item => item.id === id
+                        ? { ...item, status: 'RustFS ready', issue: undefined } : item));
+                } catch (error) {
+                    const reason = error instanceof Error ? error.message : 'Unknown upload error';
+                    const message = /unauthori[sz]ed|connect allegro|401|session|invalid token/i.test(reason)
+                        ? 'Allegro session expired. Open Integrations and reconnect Allegro.'
+                        : reason;
+                    failures.push(`${file.name}: ${message}`);
+                    markLocalUploadFailed(id);
+                    setUploadPreviews(current => current.map(item => item.id === id
+                        ? { ...item, status: undefined, issue: `Failed: ${message}` } : item));
+                } finally {
+                    completed++;
+                    setUploadNotice(`${completed} / ${accepted.length} checked · ${uploadedCount} uploaded · ${failures.length} failed`);
+                }
+            }));
+        }
+
+        if (failures.length) {
+            setUploadError(`${failures.length} upload(s) failed. ${failures[0]}${failures.length > 1 ? ' (See image details for other errors.)' : ''}`);
+            setUploadNotice(`${uploadedCount} saved to RustFS · ${failures.length} failed`);
+        } else {
+            setUploadNotice(`${uploadedCount} photo(s) successfully saved to RustFS${skipped ? ` · ${skipped} skipped` : ''}`);
+        }
     }
 
     function handleInput(event: ChangeEvent<HTMLInputElement>) {
@@ -190,18 +252,25 @@ export function LibraryPage() {
         importFiles(Array.from(event.dataTransfer.files));
     }
 
-    function deleteImage(image: ProductImage) {
+    async function deleteImage(image: ProductImage) {
         const confirmed = window.confirm(
             `Remove "${image.filename}" from your WaterM library?\n\n` +
             'The original image will NOT be deleted from Allegro or your computer.'
         );
         if (!confirmed) return;
 
+        if (image.source === 'local' && image.sourceRef) {
+            try { await api.deleteLocalImage(image.sourceRef); }
+            catch (error) {
+                setUploadNotice(error instanceof Error ? error.message : 'Could not delete uploaded image from RustFS');
+                return;
+            }
+        }
         removeImages([image.id]);
         if (detailId === image.id) setDetailId(null);
     }
 
-    function deleteSelectedImages() {
+    async function deleteSelectedImages() {
         const presentIds = new Set(images.map(image => image.id));
         const ids = selectedIds.filter(id => presentIds.has(id));
         if (!ids.length) return;
@@ -212,8 +281,20 @@ export function LibraryPage() {
         );
         if (!confirmed) return;
 
-        removeImages(ids);
-        if (detailId !== null && ids.includes(detailId)) setDetailId(null);
+        const selected = images.filter(image => ids.includes(image.id));
+        const removedIds: string[] = [];
+        for (const image of selected) {
+            if (image.source === 'local' && image.sourceRef) {
+                try { await api.deleteLocalImage(image.sourceRef); }
+                catch (error) {
+                    setUploadNotice(error instanceof Error ? error.message : `Could not delete ${image.filename} from RustFS`);
+                    continue;
+                }
+            }
+            removedIds.push(image.id);
+        }
+        removeImages(removedIds);
+        if (detailId !== null && removedIds.includes(detailId)) setDetailId(null);
     }
 
     function resetFilters() {
@@ -320,7 +401,7 @@ export function LibraryPage() {
                     <span aria-hidden="true" className="library-upload-icon">⇪</span>
                     <div className="library-upload-copy">
                         <strong className="library-upload-title">Drop product photos anywhere on this page</strong>
-                        <div className="library-upload-description">JPG, PNG, WebP · up to 25 MB per image</div>
+                        <div className="library-upload-description">JPG, PNG, WebP · up to 10 MB per image</div>
                     </div>
                     <button className="btn btn-secondary" onClick={() => fileInput.current?.click()}>Choose files</button>
                 </div>
@@ -331,18 +412,25 @@ export function LibraryPage() {
                         {showUploadDetails ? 'Hide details' : 'Show upload details'}
                     </button>}
                 </div>}
+                {uploadError && <div className="wm-local-upload-error" role="alert">
+                    <strong>Local image upload failed</strong>
+                    <span>{uploadError}</span>
+                    {/unauthori[sz]ed|reconnect allegro|401|session/i.test(uploadError) &&
+                        <button type="button" className="btn btn-secondary"
+                            onClick={() => setPage('integrations')}>Reconnect Allegro</button>}
+                </div>}
                 {showUploadDetails && uploadPreviews.length > 0 && <div className="library-upload-preview-list">
                     {uploadPreviews.map(item => <div key={item.id} className="library-upload-preview-item">
                         <div className="library-upload-preview-image">
                             {item.url ? <img src={item.url} alt="" /> : <span>⚠</span>}
                         </div>
                         <div title={item.name} className="library-upload-preview-name">{item.name}</div>
-                        <div className={`library-upload-preview-status${item.issue ? ' library-upload-preview-status--error' : ''}`}>{item.issue ?? 'Added'}</div>
+                        <div className={`library-upload-preview-status${item.issue ? ' library-upload-preview-status--error' : ''}`}>{item.issue ?? item.status ?? 'Uploading…'}</div>
                     </div>)}
                 </div>}
             </div>
 
-            <div className={`library-grid library-grid--${gridColumns} scrollable-content${dragOver ? ' library-drag-active' : ''}${visible.length === 0 ? ' library-empty' : ''}`}>
+            <div ref={libraryGridRef} className={`library-grid library-grid--${gridColumns} scrollable-content${dragOver ? ' library-drag-active' : ''}${visible.length === 0 ? ' library-empty' : ''}`}>
                 {catalogLoading && <div className="empty-library">Loading images...</div>}
                 {catalogError && <div className="empty-library" role="alert">Remote catalog unavailable: {catalogError}</div>}
                 {visible.map(image => {
@@ -361,7 +449,7 @@ export function LibraryPage() {
                         <div className="image-footer">
                             <div className="image-footer-title" title={image.filename}>{image.filename}</div>
                             <div className="image-footer-meta" title={image.productName}>
-                                {image.productName ?? 'Local upload'} · {width && height ? `${width}×${height}` : 'Resolution loading'}
+                                {image.source === 'local' ? (image.uploadStatus === 'ready' ? 'RustFS ready' : image.uploadStatus === 'failed' ? 'Upload failed' : 'Uploading…') : (image.productName ?? 'Allegro')} · {width && height ? `${width}×${height}` : 'Resolution loading'}
                             </div>
                             <div className="card-actions">
                                 <button type="button" onClick={() => setDetailId(image.id)}>Details</button>
@@ -403,7 +491,7 @@ export function LibraryPage() {
                             ['Filename', detailImage.filename],
                             ['Product', detailImage.productName ?? '—'],
                             ['Source', detailImage.source === 'allegro' ? 'Allegro' : detailImage.source === 'local' ? 'Local upload' : 'Catalog'],
-                            ['Allegro Offer ID', getOfferId(detailImage) ?? '—'],
+                            ['Offer / local group ID', getOfferId(detailImage) ?? '—'],
                             ['Product photos', String(detailGroup.length)],
                             ['Format', getFormat(detailImage).toUpperCase()],
                             ['Resolution', detailImage.width && detailImage.height

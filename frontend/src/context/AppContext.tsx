@@ -8,13 +8,15 @@ import type {Page, ProductImage, WatermarkSettings, WatermarkType, WorkspaceSess
 
 const IS_BACKEND = import.meta.env.VITE_DATA_SOURCE === 'backend';
 
-const MAX_FILE_BYTES = 25 * 1024 * 1024;
+const MAX_FILE_BYTES = 10 * 1024 * 1024;
 
 const VALID_TYPES = new Set([
     'image/jpeg',
     'image/png',
     'image/webp',
 ]);
+
+type LocalAccepted = { id: string; file: File; offerId: string };
 
 type Scope = 'all' | 'selected';
 
@@ -23,6 +25,7 @@ export type LibrarySourceFilter = 'all' | 'local' | 'allegro';
 interface ImportResult {
     imported: number;
     skipped: number;
+    accepted: LocalAccepted[];
 }
 
 interface AppContextValue {
@@ -43,6 +46,8 @@ interface AppContextValue {
     setLibrarySourceFilter: (filter: LibrarySourceFilter) => void;
 
     addLocalImages: (files: File[]) => ImportResult;
+    markLocalUploaded: (id: string, data: import('../types').LocalUploadResponse) => void;
+    markLocalUploadFailed: (id: string) => void;
     removeLocalImage: (imageId: string) => void;
     removeImages: (imageIds: string[]) => void;
 
@@ -103,6 +108,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     const [session, setSession] = useState<WorkspaceSession>(DEMO_SESSION);
     const [images, setImages] = useState<ProductImage[]>([]);
+    // Restore all server-stored local images after reload (requires Allegro session).
+    useEffect(() => {
+        let active = true;
+        void api.getLocalImages()
+            .then(({ items }) => {
+                if (!active) return;
+                setImages(current => {
+                    const ids = new Set(current.map(image => image.sourceRef));
+                    return [...current, ...items.filter(image => !ids.has(image.sourceRef))];
+                });
+            })
+            .catch(() => { /* Not signed in: images can be loaded after reconnect. */ });
+        return () => { active = false; };
+    }, []);
+
     const [catalogLoading, setCatalogLoading] = useState(IS_BACKEND);
     const [catalogError, setCatalogError] = useState<string | null>(null);
     const [librarySourceFilter, setLibrarySourceFilter] = useState<LibrarySourceFilter>('all');
@@ -244,6 +264,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     function addLocalImages(files: File[]): ImportResult {
         const accepted: ProductImage[] = [];
+        const acceptedUploads: LocalAccepted[] = [];
+        const groupId = `LOCAL-${crypto.randomUUID().replace(/-/g, '').slice(0, 12).toUpperCase()}`;
         const pendingDimensions: Array<{
             id: string;
             url: string;
@@ -263,6 +285,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
             const id = `local-${crypto.randomUUID()}`;
             const src = URL.createObjectURL(file);
+            const offerId = `${groupId}-${Math.floor(accepted.length / 20) + 1}`;
+            acceptedUploads.push({ id, file, offerId });
 
             localUrls.current.set(id, src);
 
@@ -271,6 +295,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 filename: file.name,
                 src,
                 source: 'local',
+                offerId,
+                productName: 'PC upload',
+                uploadStatus: 'uploading',
                 sizeBytes: file.size,
                 mimeType: file.type,
                 uploadedAt: new Date().toISOString(),
@@ -294,10 +321,34 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return {
             imported: accepted.length,
             skipped,
+            accepted: acceptedUploads,
         };
     }
 
     
+
+    function markLocalUploaded(id: string, data: import('../types').LocalUploadResponse) {
+        const oldUrl = localUrls.current.get(id);
+        setImages(current => current.map(image => image.id === id ? {
+            ...image,
+            sourceRef: data.sourceRef,
+            src: data.src,
+            offerId: data.offerId,
+            uploadStatus: 'ready' as const,
+        } : image));
+        if (oldUrl) {
+            localUrls.current.delete(id);
+            URL.revokeObjectURL(oldUrl);
+        }
+    }
+
+    function markLocalUploadFailed(id: string) {
+        setImages(current => current.map(image => image.id === id ? {
+            ...image,
+            uploadStatus: 'failed' as const,
+        } : image));
+    }
+
     function removeImages(imageIds: string[]) {
         const idsToRemove = new Set(imageIds);
 
@@ -410,6 +461,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 setLibrarySourceFilter,
 
                 addLocalImages,
+                markLocalUploaded,
+                markLocalUploadFailed,
                 removeLocalImage,
                 removeImages,
 
