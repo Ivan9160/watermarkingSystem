@@ -60,4 +60,10 @@ export class ImageJobsRepository {
       processedAt: Temporal.Now.instant(),
     });
   }
+
+  async saveWatermarkId(id: string, watermarkId: string): Promise<void> {
+    await db.orm.public.ImageJob
+      .where({ id })
+      .update({ watermarkId } as any);
+  }
 }

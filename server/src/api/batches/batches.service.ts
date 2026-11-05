@@ -8,6 +8,7 @@ import { ImageDownloadError } from '../../businessLogic/common/image-download.er
 import { parseAllowedImageUrl } from '../../businessLogic/common/image-url.policy.ts';
 import { BatchesRepository } from '../../businessLogic/persistence/batches.repository.ts';
 import { ImageJobsRepository, type NewImageJob } from '../../businessLogic/persistence/image-jobs.repository.ts';
+import { assertBatchWatermarkConfig } from '../../businessLogic/processing/watermark-config.ts';
 import { ImageQueueService } from '../../businessLogic/queues/image-queue.service.ts';
 import { CreateBatchDto } from './dto/create-batch.dto.ts';
 
@@ -29,10 +30,10 @@ export class BatchesService {
     if (!organization) {
       throw new NotFoundException('Create an organization before creating a batch');
     }
-
+    assertBatchWatermarkConfig(dto.watermarkConfig);
     const batch = await this.batches.create({
       organizationId: organization.id,
-      watermarkConfig: dto.watermarkConfig ?? {},
+      watermarkConfig: this.validateWatermarkConfig(dto.watermarkConfig),
       totalImages: items.length,
     });
 
@@ -101,5 +102,46 @@ export class BatchesService {
       throw new BadRequestException(`Maximum ${MAX_IMAGES_PER_BATCH} images per batch`);
     }
     return items;
+  }
+
+
+  private validateWatermarkConfig(
+    config: CreateBatchDto['watermarkConfig'],
+  ) {
+    const value = (config ?? {}) as Record<string, unknown>;
+    const type = value['type'] ?? 'visible';
+
+    if (type === 'visible') {
+      return value;
+    }
+
+    if (type === 'invisible') {
+      const method = value['method'] ?? 'pixelseal';
+      const keyId = value['keyId'] ?? 'default';
+
+      if (method !== 'pixelseal') {
+        throw new BadRequestException(
+          'Only pixelseal is supported for invisible watermarking',
+        );
+      }
+
+      if (
+        typeof keyId !== 'string' ||
+        !/^[A-Za-z0-9_-]{1,64}$/.test(keyId)
+      ) {
+        throw new BadRequestException('Invalid watermark keyId');
+      }
+
+      return {
+        ...value,
+        type: 'invisible',
+        method: 'pixelseal',
+        keyId,
+      };
+    }
+
+    throw new BadRequestException(
+      `Unsupported watermark type: ${String(type)}`,
+    );
   }
 }

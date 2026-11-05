@@ -1,0 +1,44 @@
+[
+  {
+    "id": "column.public.image_jobs.watermark_id",
+    "label": "Add column \"watermark_id\" to \"image_jobs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "watermark_id",
+        "table": "image_jobs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"watermark_id\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "watermark_id"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"watermark_id\"",
+        "sql": "ALTER TABLE \"public\".\"image_jobs\" ADD COLUMN \"watermark_id\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"watermark_id\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "image_jobs",
+          "watermark_id"
+        ]
+      }
+    ]
+  }
+]

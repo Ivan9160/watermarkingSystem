@@ -45,7 +45,7 @@ type Resolved = Required<Omit<WatermarkParams, 'logo' | 'format' | 'customPositi
 };
 
 export const DEFAULTS: Resolved = {
-  text: 'WATERMARK',
+  text: 'WATERMARK FRON JS SCRIPT',
   logo: null,
   mode: 'single',
   position: 'bottom-right',
@@ -240,7 +240,7 @@ export async function applyWatermark(
   const p = normalizeParams(params);
 
   const meta = await sharp(input).metadata();
-  const swap = (meta.orientation ?? 1) >= 5; // EXIF-поворот міняє ширину і висоту
+  const swap = (meta.orientation ?? 1) >= 5; 
   const width = swap ? meta.height : meta.width;
   const height = swap ? meta.width : meta.height;
   if (!width || !height) throw new Error('Cannot read image size');

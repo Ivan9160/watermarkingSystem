@@ -90,9 +90,10 @@ export class CreateBatchDto {
       opacity: 0.5,
     },
   })
-  @IsOptional()
   @IsObject()
-  watermarkConfig?: { [key: string]: JsonValue };
+  watermarkConfig: {
+    [key: string]: JsonValue;
+  }; 
 
 
 }
