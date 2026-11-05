@@ -13,6 +13,9 @@ export interface WatermarkParams {
   logo?: Buffer | null;
   mode?: WatermarkMode;
   position?: WatermarkPosition;
+  customPosition?: { x: number; y: number } | null;
+  /** 0..1 fraction of one pattern period, used only in tile mode. */
+  patternOffset?: { x: number; y: number } | null;
   opacity?: number;
   scale?: number;
   margin?: number;
@@ -34,7 +37,9 @@ export interface WatermarkResult {
 
 type Layer = Parameters<ReturnType<typeof sharp>['composite']>[0][number];
 
-type Resolved = Required<Omit<WatermarkParams, 'logo' | 'format'>> & {
+type Resolved = Required<Omit<WatermarkParams, 'logo' | 'format' | 'customPosition' | 'patternOffset'>> & {
+  customPosition: { x: number; y: number } | null;
+  patternOffset: { x: number; y: number } | null;
   logo: Buffer | null;
   format: WatermarkFormat | null;
 };
@@ -44,6 +49,8 @@ export const DEFAULTS: Resolved = {
   logo: null,
   mode: 'single',
   position: 'bottom-right',
+  customPosition: null,
+  patternOffset: null,
   opacity: 0.5,
   scale: 0.25,
   margin: 20,
@@ -56,6 +63,7 @@ export const DEFAULTS: Resolved = {
   quality: 90,
 };
 
+// ---------- parameter validation ----------
 
 const HEX = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
 const TRANSPARENT = { r: 0, g: 0, b: 0, alpha: 0 } as const;
@@ -80,6 +88,17 @@ function oneOf<T extends string>(value: unknown, list: readonly T[], name: strin
     throw new Error(`${name} must be one of: ${list.join(', ')}`);
   }
   return value as T;
+}
+
+function parseRelativePosition(raw: unknown): { x: number; y: number } {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    throw new Error('customPosition must contain x and y between 0 and 1');
+  }
+  const value = raw as Record<string, unknown>;
+  return {
+    x: num(value['x'], 'customPosition.x', 0, 1),
+    y: num(value['y'], 'customPosition.y', 0, 1),
+  };
 }
 
 export function normalizeParams(raw: WatermarkParams = {}): Resolved {
@@ -110,6 +129,12 @@ export function normalizeParams(raw: WatermarkParams = {}): Resolved {
     logo,
     mode: oneOf(merged['mode'], MODES, 'mode'),
     position: oneOf(merged['position'], POSITIONS, 'position'),
+    customPosition: merged['customPosition'] === null
+      ? null
+      : parseRelativePosition(merged['customPosition']),
+    patternOffset: merged['patternOffset'] === null
+      ? null
+      : parseRelativePosition(merged['patternOffset']),
     opacity: num(merged['opacity'], 'opacity', 0, 1),
     scale: num(merged['scale'], 'scale', 0.05, 1),
     margin: num(merged['margin'], 'margin', 0, 10_000),
@@ -122,7 +147,6 @@ export function normalizeParams(raw: WatermarkParams = {}): Resolved {
     quality: Math.round(num(merged['quality'], 'quality', 1, 100)),
   };
 }
-
 
 const XML_ESCAPES: Record<string, string> = {
   '<': '&lt;',
@@ -185,7 +209,6 @@ async function rotateOverlay(buffer: Buffer, angle: number): Promise<Buffer> {
   return sharp(buffer).rotate(angle, { background: TRANSPARENT }).png().toBuffer();
 }
 
-
 async function buildTile(overlay: Buffer, ow: number, oh: number, p: Resolved): Promise<Buffer> {
   const gapX = Math.round(ow * p.spacing);
   const gapY = Math.round(oh * p.spacing);
@@ -208,6 +231,7 @@ async function buildTile(overlay: Buffer, ow: number, oh: number, p: Resolved): 
     .toBuffer();
 }
 
+// ---------- main function ----------
 
 export async function applyWatermark(
   input: Buffer | string,
@@ -233,8 +257,33 @@ export async function applyWatermark(
   const ow = o.width ?? targetWidth;
   const oh = o.height ?? targetWidth;
 
-  let layer: Layer;
-  if (p.mode === 'tile') {
+  let layers: Layer[];
+  if (p.mode === 'tile' && !p.logo) {
+    // WaterM tile shift and complete stamps v2:
+    // Never place partly visible text; this also avoids clipping at tile seams.
+    const gapX = Math.round(ow * p.spacing);
+    const gapY = Math.round(oh * p.spacing);
+    const cellW = ow + gapX;
+    const cellH = oh + gapY;
+    const periodW = cellW * (p.stagger ? 2 : 1);
+    const periodH = cellH * (p.stagger ? 2 : 1);
+    const originX = (p.patternOffset?.x ?? 0) * periodW;
+    const originY = (p.patternOffset?.y ?? 0) * periodH;
+    const anchors = p.stagger ? [[0, 0], [cellW, cellH]] : [[0, 0]];
+    const completeMarks: Layer[] = [];
+    for (let row = -2; row <= Math.ceil(height / periodH) + 1; row++) {
+      for (let col = -2; col <= Math.ceil(width / periodW) + 1; col++) {
+        for (const [ax, ay] of anchors) {
+          const left = Math.round(col * periodW + ax + originX);
+          const top = Math.round(row * periodH + ay + originY);
+          if (left >= 0 && top >= 0 && left + ow <= width && top + oh <= height) {
+            completeMarks.push({ input: overlay, left, top });
+          }
+        }
+      }
+    }
+    layers = completeMarks;
+  } else if (p.mode === 'tile') {
     const tileBuffer = await buildTile(overlay, ow, oh, p);
 
     const safeTileBuffer = await sharp(tileBuffer)
@@ -247,10 +296,10 @@ export async function applyWatermark(
       .png()
       .toBuffer();
 
-    layer = {
+    layers = [{
       input: safeTileBuffer,
       tile: true,
-    };
+    }];
   } else {
     const m = p.margin;
     const [left, top] = {
@@ -260,11 +309,14 @@ export async function applyWatermark(
       'bottom-right': [width - ow - m, height - oh - m],
       center: [(width - ow) / 2, (height - oh) / 2],
     }[p.position] as [number, number];
-    layer = {
+
+    const customLeft = p.customPosition ? (width - ow) * p.customPosition.x : left;
+    const customTop = p.customPosition ? (height - oh) * p.customPosition.y : top;
+    layers = [{
       input: overlay,
-      left: Math.max(0, Math.round(left)),
-      top: Math.max(0, Math.round(top)),
-    };
+      left: Math.max(0, Math.min(Math.max(0, width - ow), Math.round(customLeft))),
+      top: Math.max(0, Math.min(Math.max(0, height - oh), Math.round(customTop))),
+    }];
   }
 
   const format: WatermarkFormat =
@@ -273,7 +325,7 @@ export async function applyWatermark(
 
   const buffer = await sharp(input)
     .rotate()
-    .composite([layer])
+    .composite([layers].flat())
     .toFormat(format, encoderOptions)
     .toBuffer();
 

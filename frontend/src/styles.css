@@ -1,4 +1,4 @@
-﻿/* Frontend styles*/
+/* Frontend styles*/
 
 /* ===== 01. Theme, reset and application shell ===== */
 
@@ -921,7 +921,7 @@ a {
     border: 0;
     padding: 0;
     color: #b5a8ff;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 650;
 }
 
@@ -929,8 +929,6 @@ a {
     text-decoration: underline;
 }
 
-/* Responsive product grid: number of columns follows the number of
-   filtered images (1..5). Every implicit row is as tall as its cards. */
 .library-grid {
     display: grid;
     flex: 1 1 auto;
@@ -2065,6 +2063,300 @@ a {
     white-space: normal;
 }
 
+/* Upload modal */
+.upload-dialog-backdrop {
+    padding: 18px;
+    background: rgba(3, 7, 17, .78);
+    backdrop-filter: blur(6px);
+}
+
+.upload-dialog.upload-dialog-publish {
+    display: flex;
+    flex-direction: column;
+    width: min(100%, 620px);
+    max-height: min(90dvh, 840px);
+    overflow: hidden;
+    border: 1px solid #344054;
+    border-radius: 16px;
+    background: #161e2d;
+    box-shadow: 0 28px 80px rgba(0, 0, 0, .5);
+    color: #e6ebf5;
+}
+
+.upload-dialog-publish .upload-dialog-head {
+    flex: 0 0 auto;
+    gap: 16px;
+    padding: 19px 22px 16px;
+    border-bottom: 1px solid #303b4e;
+}
+.upload-dialog-publish .upload-dialog-head h2 {
+    margin: 0;
+    font-size: 19px;
+    line-height: 1.3;
+    font-weight: 750;
+}
+.upload-dialog-publish .upload-dialog-head p {
+    margin: 5px 0 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #9caac0;
+}
+.upload-dialog-publish .upload-dialog-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+}
+.upload-dialog-publish .upload-dialog-close:disabled { opacity: .55; cursor: wait; }
+
+.upload-dialog-publish .upload-dialog-body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 15px;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 17px 22px 20px;
+}
+.upload-dialog-publish .upload-dialog-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 0;
+    min-height: 24px;
+    font-size: 12px;
+    line-height: 1.5;
+}
+.upload-dialog-publish .upload-dialog-summary strong { font-size: 12px; font-weight: 700; }
+.upload-dialog-publish .upload-dialog-summary span { font-size: 11px; color: #93a2b9; }
+
+.upload-dialog-publish .upload-provider-list { display: grid; gap: 8px; }
+.upload-dialog-publish .upload-provider-option {
+    display: grid;
+    grid-template-columns: 38px minmax(0, 1fr) 16px;
+    align-items: center;
+    gap: 12px;
+    min-height: 70px;
+    width: 100%;
+    padding: 11px 13px;
+    border-radius: 11px;
+    border: 1px solid #44516a;
+    background: #20283b;
+    text-align: left;
+}
+.upload-dialog-publish .upload-provider-option:hover,
+.upload-dialog-publish .upload-provider-option.is-selected {
+    border-color: #8272f4;
+    background: #252b44;
+}
+.upload-dialog-publish .upload-provider-option:disabled { opacity: 1; cursor: default; }
+.upload-dialog-publish .upload-provider-logo {
+    width: 38px;
+    height: 38px;
+    border-radius: 9px;
+    background: #f77827;
+    font-size: 21px;
+}
+.upload-dialog-publish .upload-provider-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    line-height: 1.35;
+}
+.upload-dialog-publish .upload-provider-info strong { font-size: 13px; line-height: 1.35; }
+.upload-dialog-publish .upload-provider-info > span {
+    font-size: 11px;
+    line-height: 1.4;
+    color: #aebbd0;
+}
+.upload-dialog-publish .upload-provider-state { font-size: 10px; line-height: 1.35; }
+.upload-dialog-publish .upload-provider-radio { width: 15px; height: 15px; }
+.upload-dialog-publish .upload-provider-option.is-selected .upload-provider-radio { border-width: 4px; }
+
+.upload-dialog-publish .wm-publish-review,
+.upload-dialog-publish .wm-publish-result {
+    margin: 0;
+    padding: 14px;
+    border: 1px solid #344157;
+    border-radius: 11px;
+    background: #192334;
+    min-width: 0;
+}
+.upload-dialog-publish .wm-publish-section-head,
+.upload-dialog-publish .wm-publish-result-head,
+.upload-dialog-publish .wm-publish-offer-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-width: 0;
+}
+.upload-dialog-publish .wm-publish-section-head strong,
+.upload-dialog-publish .wm-publish-result-head > strong {
+    font-size: 13px;
+    line-height: 1.4;
+    font-weight: 700;
+    color: #edf0fa;
+}
+.upload-dialog-publish .wm-publish-section-head > span,
+.upload-dialog-publish .wm-publish-muted {
+    font-size: 11px;
+    line-height: 1.5;
+    color: #97a7bc;
+}
+.upload-dialog-publish .wm-publish-counts {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 11px 0;
+}
+.upload-dialog-publish .wm-publish-counts > span {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 9px;
+    border: 1px solid #44516b;
+    border-radius: 7px;
+    color: #c3cce0;
+    font-size: 11px;
+    line-height: 1.4;
+}
+.upload-dialog-publish .wm-publish-offers {
+    display: grid;
+    gap: 8px;
+    max-height: 180px;
+    overflow-y: auto;
+    margin: 12px 0 0;
+}
+.upload-dialog-publish .wm-publish-offer {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+    padding: 10px 12px;
+    border: 1px solid #37465d;
+    border-radius: 9px;
+    background: #202b3c;
+}
+.upload-dialog-publish .wm-publish-offer > strong,
+.upload-dialog-publish .wm-publish-offer-top > strong {
+    font-size: 12px;
+    line-height: 1.4;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+.upload-dialog-publish .wm-publish-offer small {
+    display: block;
+    font-size: 11px;
+    line-height: 1.55;
+    color: #a4b2c8;
+    overflow-wrap: anywhere;
+}
+
+.upload-dialog-publish .upload-dialog-notice,
+.upload-dialog-publish {
+    margin: 0;
+    padding: 12px 14px;
+    border: 1px solid #5a4e70;
+    border-radius: 10px;
+    background: #29263b;
+}
+.upload-dialog-publish .upload-dialog-notice strong { font-size: 12px; line-height: 1.45; color: #ddd1ff; }
+.upload-dialog-publish .upload-dialog-notice p {
+    margin: 6px 0 0;
+    font-size: 11px;
+    line-height: 1.6;
+    color: #c3bad7;
+}
+.upload-dialog-publish .wm-publish-confirm {
+    display: grid;
+    grid-template-columns: 17px minmax(0, 1fr);
+    align-items: start;
+    gap: 10px;
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #dde4f2;
+    cursor: pointer;
+}
+.upload-dialog-publish .wm-publish-confirm input {
+    width: 16px;
+    height: 16px;
+    margin: 1px 0 0;
+    accent-color: #8373fa;
+}
+.upload-dialog-publish .wm-publish-confirm span { display: block; min-width: 0; }
+.upload-dialog-publish  { border-color: #9a784e; background: #342c27; }
+.upload-dialog-publish  > strong { color: #f0cf9f; font-size: 12px; line-height: 1.5; }
+.upload-dialog-publish  p { color: #e0c9ae; font-size: 11px; line-height: 1.6; margin: 6px 0 12px; }
+.upload-dialog-publish .wm-publish-error,
+.upload-dialog-publish .wm-publish-hint { overflow-wrap: anywhere; font-size: 11px; line-height: 1.6; }
+.upload-dialog-publish .wm-publish-server-error { margin: 0; padding: 10px 12px; }
+.upload-dialog-publish .wm-publish-progress { margin: 0; color: #c7c1ff; font-size: 12px; line-height: 1.5; }
+
+.upload-dialog-publish .wm-publish-result-head { margin-bottom: 13px; }
+.upload-dialog-publish .wm-publish-state {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    padding: 4px 8px;
+    font-size: 10px;
+    line-height: 1.3;
+    border-radius: 7px;
+    border: 1px solid #5a667b;
+}
+.upload-dialog-publish .wm-publish-state.is-applied { color: #8fe6bd; background: #1d382f; border-color: #337d5c; }
+.upload-dialog-publish .wm-publish-state.is-partial { color: #f6cb91; background: #3b3024; border-color: #947242; }
+.upload-dialog-publish .wm-publish-state.is-failed { color: #ffc3ca; background: #3c2830; border-color: #945268; }
+.upload-dialog-publish .wm-publish-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0 0 12px;
+}
+.upload-dialog-publish .wm-publish-metrics > span {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+    padding: 9px;
+    border: 1px solid #3c4b60;
+    border-radius: 8px;
+    background: #202c3d;
+    color: #aebbd0;
+    font-size: 10px;
+    line-height: 1.3;
+}
+.upload-dialog-publish .wm-publish-metrics strong { color: #f2f5fe; font-size: 19px; line-height: 1.1; }
+.upload-dialog-publish .wm-publish-muted { margin: 0; }
+.upload-dialog-publish .wm-publish-skipped { margin-top: 12px; }
+.upload-dialog-publish .wm-publish-hint { margin: 12px 0 0; }
+
+.upload-dialog-publish .upload-dialog-footer {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 9px;
+    padding: 14px 22px;
+    border-top: 1px solid #303b4e;
+}
+.upload-dialog-publish .upload-dialog-footer .btn { min-height: 38px; padding: 8px 13px; font-size: 11px; }
+.upload-dialog-publish .upload-dialog-footer .btn:disabled { opacity: .55; cursor: not-allowed; }
+
+@media (max-width: 560px) {
+    .upload-dialog-backdrop { padding: 10px; }
+    .upload-dialog.upload-dialog-publish { max-height: 94dvh; border-radius: 12px; }
+    .upload-dialog-publish .upload-dialog-head { padding: 16px; }
+    .upload-dialog-publish .upload-dialog-body { padding: 16px; gap: 12px; }
+    .upload-dialog-publish .upload-dialog-footer { padding: 12px 16px; }
+    .upload-dialog-publish .wm-publish-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .upload-dialog-publish .upload-provider-option { gap: 10px; padding: 10px; }
+    .upload-dialog-publish .upload-dialog-footer .btn { flex: 1 1 auto; }
+}
+
 /* ===== 05. Watermark template manager ===== */
 
 .watermark-template-panel {
@@ -3171,5 +3463,82 @@ a {
     .wm-dash-service-name { flex-basis:calc(100% - 60px); }
     .wm-dash-service .wm-dash-status { margin-left:58px; }
 }
-/* ===== End WaterM Workspace + E-commerce Dashboard ===== */
 
+.image-footer-meta { overflow-wrap: anywhere; }
+.library-upload-notice { line-height: 1.5; }
+
+.wm-local-upload-error {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 14px;
+    margin-top: 10px;
+    border: 1px solid rgba(245, 143, 106, .45);
+    border-radius: 10px;
+    background: rgba(185, 72, 48, .12);
+    color: #f2bba7;
+    font-size: 12px;
+    line-height: 1.5;
+}
+.wm-local-upload-error strong { color: #ffcfb9; font-size: 12px; }
+.wm-local-upload-error .btn { align-self: flex-start; margin-top: 4px; }
+.library-upload-preview-status { overflow-wrap: anywhere; }
+
+.batch-processing-page .wm-local-batch-preview {
+    height: 100%; min-height: 0; width: 100%; gap: 9px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.batch-processing-page .wm-local-preview-area {
+    width: 100%; flex: 1 1 auto; min-height: 0; overflow: hidden;
+    display: flex; justify-content: center; align-items: center;
+}
+.batch-processing-page .wm-local-preview-svg {
+    display: block; width: auto; height: auto; max-width: 100%; max-height: 100%;
+    flex: 0 1 auto; border-radius: 5px; box-shadow: 0 14px 45px #0008;
+    user-select: none; -webkit-user-select: none;
+}
+.batch-processing-page .wm-local-watermark.is-editable { cursor: grab; touch-action: none; outline: none; }
+.batch-processing-page .wm-local-preview-svg.is-dragging .wm-local-watermark { cursor: grabbing; }
+.batch-processing-page .wm-local-watermark-boundary {
+    stroke: rgba(190, 173, 255, .36); stroke-dasharray: 8 6;
+    transition: stroke 100ms ease; pointer-events: all;
+}
+.batch-processing-page .wm-local-watermark.is-editable:hover .wm-local-watermark-boundary,
+.batch-processing-page .wm-local-watermark.is-editable:focus .wm-local-watermark-boundary,
+.batch-processing-page .wm-local-preview-svg.is-dragging .wm-local-watermark-boundary {
+    stroke: rgba(190, 173, 255, .93);
+}
+.batch-processing-page .wm-local-preview-status {
+    flex: 0 0 auto; font-size: 10px; color: #87d5b0; line-height: 1.4;
+    text-align: center; padding: 0 8px;
+}
+.batch-processing-page .wm-local-preview-message { font-size: 12px; color: #aeb9cd; text-align: center; }
+.batch-processing-page .wm-drag-watermark-hint {
+    display: flex; flex: 0 0 auto; align-items: center; gap: 10px;
+    background: #1e2535; border-top: 1px solid #374055;
+    padding: 9px 17px; color: #b9c6de; font-size: 11px; line-height: 1.45;
+}
+.batch-processing-page .wm-drag-watermark-hint strong { color: #f1edff; }
+.batch-processing-page .wm-drag-hint-symbol { font-size: 20px; color: #a991ff; }
+.batch-processing-page .wm-drag-reset {
+    flex: 0 0 auto; margin-left: auto; white-space: nowrap;
+    background: #2f2b49; color: #ded3ff; border: 1px solid #554a80;
+    border-radius: 7px; cursor: pointer; font-weight: 700; padding: 6px 10px; font-size: 10px;
+}
+.batch-processing-page .wm-drag-reset:disabled { opacity: .5; cursor: not-allowed; }
+.batch-processing-page .wm-drag-reset:hover:not(:disabled) { background: #413665; }
+@media (max-width: 680px) {
+    .batch-processing-page .wm-drag-watermark-hint { flex-wrap: wrap; gap: 6px; }
+    .batch-processing-page .wm-drag-reset { margin-left: 27px; }
+}
+
+/* WaterM Pattern drag / unclipped glyphs v2 */
+.batch-processing-page .wm-local-pattern-drag-target {
+    cursor: grab;
+    touch-action: none;
+}
+.batch-processing-page .wm-local-preview-svg.is-dragging .wm-local-pattern-drag-target {
+    cursor: grabbing;
+}
+/* Empty watermark text: photo remains visible, with watermark hidden. */
+/* End WaterM Pattern drag fix v2 */

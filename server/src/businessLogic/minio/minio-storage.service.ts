@@ -34,9 +34,10 @@ export class MinioStorageService implements OnModuleInit {
     }
   }
 
-  async upload(key: string, buffer: Buffer, contentType: string): Promise<void> {
+  async upload(key: string, buffer: Buffer, contentType: string, extraMetadata: Record<string, string> = {}): Promise<void> {
     await this.client.putObject(this.bucket, key, buffer, buffer.length, {
       'Content-Type': contentType,
+      ...extraMetadata,
     });
   }
 
@@ -52,6 +53,59 @@ export class MinioStorageService implements OnModuleInit {
 
   async getDownloadUrl(key: string): Promise<string> {
     return this.client.presignedGetObject(this.bucket, key, this.urlExpirySeconds);
+  }
+
+
+  /** Test object ownership/existence before referencing a local file in a job. */
+  async exists(key: string): Promise<boolean> {
+    try {
+      await this.client.statObject(this.bucket, key);
+      return true;
+    } catch (error: unknown) {
+      const e = error as { code?: string; statusCode?: number };
+      if (e.statusCode === 404 || ['NotFound', 'NoSuchKey', 'NoSuchObject'].includes(e.code ?? '')) return false;
+      throw error;
+    }
+  }
+
+  /** Read a private upload. The application serves it via authenticated same-origin URL. */
+  async getBuffer(key: string): Promise<Buffer> {
+    const stream = await this.client.getObject(this.bucket, key);
+    const chunks: Buffer[] = [];
+    let total = 0;
+    for await (const part of stream) {
+      const buf = Buffer.from(part);
+      total += buf.length;
+      if (total > 10 * 1024 * 1024) throw new Error('Uploaded image exceeds size limit');
+      chunks.push(buf);
+    }
+    return Buffer.concat(chunks);
+  }
+
+  /** List user-scoped private uploads; do not expose other users' objects. */
+  async listObjects(prefix: string): Promise<Array<{
+    key: string; size: number; lastModified: Date; metadata: Record<string, string>;
+  }>> {
+    const rows: Array<{ key: string; size: number; lastModified: Date }> = [];
+    await new Promise<void>((resolve, reject) => {
+      const stream = this.client.listObjectsV2(this.bucket, prefix, true);
+      stream.on('data', (entry: { name?: string; size?: number; lastModified?: Date }) => {
+        if (entry.name && rows.length < 300) {
+          rows.push({ key: entry.name, size: entry.size ?? 0,
+            lastModified: entry.lastModified ? new Date(entry.lastModified) : new Date() });
+        }
+      });
+      stream.on('error', reject);
+      stream.on('end', resolve);
+    });
+    const result = await Promise.all(rows.map(async entry => {
+      const stat = await this.client.statObject(this.bucket, entry.key);
+      const metadata = Object.fromEntries(
+        Object.entries(stat.metaData ?? {}).map(([key, value]) => [key.toLowerCase(), String(value)]),
+      );
+      return { ...entry, metadata };
+    }));
+    return result.sort((a, b) => b.lastModified.getTime() - a.lastModified.getTime());
   }
 
   async remove(key: string): Promise<void> {

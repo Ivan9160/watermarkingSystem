@@ -9,6 +9,10 @@ import {
   UseGuards,
   Res,
 } from '@nestjs/common';
+import { Req } from '@nestjs/common';
+import type { Request } from 'express';
+import { MinioStorageService } from '../../businessLogic/minio/minio-storage.service.ts';
+import { isLocalRef, localKeyFor } from '../local-images/local-image-source.ts';
 import type { Response } from 'express';
 import { AllegroAuthGuard } from '../allegro-auth/allegro-auth.guard.ts';
 import { ImageDownloaderService } from '../../businessLogic/ingestion/image-downloader.service.ts';
@@ -17,8 +21,6 @@ import {
   type WatermarkParams,
 } from '../../businessLogic/processing/watermark.ts';
 
-// Allow only known image-CDN hosts. NEVER fetch arbitrary user-supplied URLs
-// from a public endpoint (SSRF). Extend with PREVIEW_ALLOWED_HOSTS if necessary.
 const DEFAULT_HOSTS = 'a.allegroimg.allegrosandbox.pl,a.allegroimg.pl,a.allegroimg.com';
 
 function assertImageUrl(value: unknown): string {
@@ -55,33 +57,43 @@ function assertImageUrl(value: unknown): string {
 @Controller('watermarks')
 @UseGuards(AllegroAuthGuard)
 export class WatermarkPreviewController {
-  constructor(private readonly downloader: ImageDownloaderService) {}
+  constructor(private readonly downloader: ImageDownloaderService, private readonly storage: MinioStorageService) {}
 
   @Post('preview')
   @HttpCode(HttpStatus.OK)
-  async preview(@Body() body: unknown, @Res() response: Response): Promise<void> {
+  async preview(@Body() body: unknown, @Res() response: Response, @Req() req: Request & { allegroUser: { id: number } }): Promise<void> {
     if (!body || typeof body !== 'object' || Array.isArray(body)) {
       throw new BadRequestException('Invalid preview request');
     }
 
     const request = body as Record<string, unknown>;
-    const imageUrl = assertImageUrl(request['imageUrl']);
+    const rawImage = request['imageUrl'];
+    const localKey = typeof rawImage === 'string' && isLocalRef(rawImage)
+      ? localKeyFor(req.allegroUser.id, rawImage) : null;
+    if (typeof rawImage !== 'string' || (isLocalRef(rawImage) && !localKey)) {
+      throw new BadRequestException('Invalid local image reference');
+    }
+    const imageUrl = localKey ? null : assertImageUrl(rawImage);
     const rawConfig = request['watermarkConfig'];
     if (!rawConfig || typeof rawConfig !== 'object' || Array.isArray(rawConfig)) {
       throw new BadRequestException('watermarkConfig must be an object');
     }
 
-    // Same downloader as ingestion worker (10 MB limit, signature checks,
-    // 15-second timeout and redirect rejection).
     let downloaded;
     try {
-      downloaded = await this.downloader.download(imageUrl);
+      if (localKey) {
+        if (!(await this.storage.exists(localKey))) throw new Error('Local image missing');
+        const data = await this.storage.getBuffer(localKey);
+        if (data.length > 10 * 1024 * 1024) throw new Error('Image exceeds 10 MB');
+        downloaded = { buffer: data };
+      } else {
+        downloaded = await this.downloader.download(imageUrl!);
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Could not download image';
       throw new UnprocessableEntityException(message);
     }
 
-    // Crucially: the exact same Sharp algorithm as Batch Processing.
     let result;
     try {
       result = await applyWatermark(downloaded.buffer, rawConfig as WatermarkParams);

@@ -17,6 +17,8 @@ export interface ProductImage {
     sizeBytes?: number;
     mimeType?: string;
     uploadedAt?: string;
+    sourceRef?: string; // Opaque RustFS reference for local PC uploads
+    uploadStatus?: 'uploading' | 'ready' | 'failed';
 }
 
 export interface WatermarkSettings {
@@ -62,12 +64,15 @@ export type ServerBatchStatus = 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED'
 export type ServerWatermarkFormat = 'jpeg' | 'png' | 'webp';
 
 export interface ServerWatermarkConfig {
+    customPosition?: { x: number; y: number };
+    /** Offset of a pattern cycle, 0..1 on each axis. */
+    patternOffset?: { x: number; y: number };
     text: string;
     mode: 'single' | 'tile';
     position: WatermarkPosition;
     color: string;
-    opacity: number; // 0..1, unlike Editor (0..100)
-    scale: number; // 0.05..1; fraction of output image width
+    opacity: number;
+    scale: number;
     angle: number;
     spacing: number;
     stagger: boolean;
@@ -118,4 +123,14 @@ export interface BatchResultsResponse {
             error: string | null;
         }>;
     }>;
+}
+
+
+export interface LocalUploadResponse {
+    sourceRef: string;
+    src: string;
+    offerId: string;
+    filename: string;
+    mimeType: string;
+    sizeBytes: number;
 }
