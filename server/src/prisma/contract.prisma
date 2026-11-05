@@ -49,6 +49,7 @@ model ImageJob {
   batchId      String @map("batch_id")
   sourceUrl    String @map("source_url")
   outputUrl    String? @map("output_url")
+  watermarkId String? @map("watermark_id")
   productOfferId  String @map("product_offer_id")
   imageIndex  Int @map("image_index")
   storageKey   String? @unique @map("storage_key")

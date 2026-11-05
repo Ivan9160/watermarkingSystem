@@ -22,7 +22,6 @@ export class WatermarkEngineService {
     const input = await readFile(params.inputPath);
     const watermark = this.toParams(params.config);
 
-    // формат результату має збігатися з розширенням outputPath, якщо він не заданий явно
     watermark.format ??= EXT_FORMAT[extname(params.outputPath).toLowerCase()] ?? null;
 
     const { buffer, width, height, format } = await this.withTimeout(
@@ -33,7 +32,6 @@ export class WatermarkEngineService {
     return { stdout: `OK ${width}x${height} (${format})`, stderr: '' };
   }
 
-  /** Бере з config (рядок batches у БД) лише відомі поля; решту валідує applyWatermark. */
   private toParams(config: unknown): WatermarkParams {
     if (!config || typeof config !== 'object') return {};
     const c = config as Record<string, unknown>;

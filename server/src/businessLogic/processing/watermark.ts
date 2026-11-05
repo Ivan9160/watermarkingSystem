@@ -9,33 +9,19 @@ export type WatermarkMode = (typeof MODES)[number];
 export type WatermarkFormat = (typeof FORMATS)[number];
 
 export interface WatermarkParams {
-  /** Текст знака (якщо не задано logo). */
   text?: string;
-  /** Логотип як Buffer. Шлях із зовнішнього вводу сюди не передавай. */
   logo?: Buffer | null;
-  /** 'single' = один знак, 'tile' = заповнити все зображення. */
   mode?: WatermarkMode;
-  /** Лише для single. */
   position?: WatermarkPosition;
-  /** 0..1 */
   opacity?: number;
-  /** Ширина одного знака відносно ширини зображення, 0.05..1 */
   scale?: number;
-  /** px, лише для single */
   margin?: number;
-  /** #rgb або #rrggbb */
   color?: string;
-  /** Градуси, -180..180 (для tile зазвичай -30) */
   angle?: number;
-  /** Відступ між знаками в tile, частка розміру знака, 0..5 */
   spacing?: number;
-  /** Зсув кожного другого ряду в tile */
   stagger?: boolean;
-  /** Тінь для читабельності */
   shadow?: boolean;
-  /** null = як у вхідного файлу */
   format?: WatermarkFormat | null;
-  /** 1..100 для jpeg/webp */
   quality?: number;
 }
 
@@ -46,7 +32,6 @@ export interface WatermarkResult {
   format: WatermarkFormat;
 }
 
-// тип шару виводимо зі значення sharp, щоб не залежати від namespace 'sharp'
 type Layer = Parameters<ReturnType<typeof sharp>['composite']>[0][number];
 
 type Resolved = Required<Omit<WatermarkParams, 'logo' | 'format'>> & {
@@ -55,7 +40,7 @@ type Resolved = Required<Omit<WatermarkParams, 'logo' | 'format'>> & {
 };
 
 export const DEFAULTS: Resolved = {
-  text: 'WATERMARK',
+  text: 'WATERMARK FRON JS SCRIPT',
   logo: null,
   mode: 'single',
   position: 'bottom-right',
@@ -71,7 +56,6 @@ export const DEFAULTS: Resolved = {
   quality: 90,
 };
 
-// ---------- валідація параметрів ----------
 
 const HEX = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
 const TRANSPARENT = { r: 0, g: 0, b: 0, alpha: 0 } as const;
@@ -100,12 +84,10 @@ function oneOf<T extends string>(value: unknown, list: readonly T[], name: strin
 
 export function normalizeParams(raw: WatermarkParams = {}): Resolved {
   const merged: Record<string, unknown> = { ...DEFAULTS };
-  // undefined / null / '' ігноруємо, щоб порожнє поле запиту не затирало дефолт
   for (const [k, v] of Object.entries(raw)) {
     if (k in DEFAULTS && v !== undefined && v !== null && v !== '') merged[k] = v;
   }
 
-  // колір вставляється в SVG, тому приймаємо лише строгий hex (захист від інʼєкцій)
   if (typeof merged['color'] !== 'string' || !HEX.test(merged['color'])) {
     throw new Error('color must be a hex value like #fff or #ffffff');
   }
@@ -141,7 +123,6 @@ export function normalizeParams(raw: WatermarkParams = {}): Resolved {
   };
 }
 
-// ---------- побудова одного знака ----------
 
 const XML_ESCAPES: Record<string, string> = {
   '<': '&lt;',
@@ -158,13 +139,11 @@ function shadowColorFor(hex: string): string {
   const h = raw.length === 3 ? raw.split('').map((c) => c + c).join('') : raw;
   const [r, g, b] = [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)) as [number, number, number];
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  // світлий текст отримує темну тінь, темний світлу
   return luminance > 0.5 ? '#000000' : '#ffffff';
 }
 
 async function buildTextOverlay(p: Resolved, targetWidth: number): Promise<Buffer> {
   const text = escapeXml(p.text);
-  // жирний Arial: великі літери до ~0.78em, плюс запас по краях, щоб текст не обрізався
   const fontSize = Math.max(8, Math.round((targetWidth * 0.94) / (p.text.length * 0.78)));
   const height = Math.round(fontSize * 1.5);
   const y = Math.round(fontSize * 1.1);
@@ -206,7 +185,6 @@ async function rotateOverlay(buffer: Buffer, angle: number): Promise<Buffer> {
   return sharp(buffer).rotate(angle, { background: TRANSPARENT }).png().toBuffer();
 }
 
-// ---------- плитка для заповнення всього зображення ----------
 
 async function buildTile(overlay: Buffer, ow: number, oh: number, p: Resolved): Promise<Buffer> {
   const gapX = Math.round(ow * p.spacing);
@@ -214,7 +192,6 @@ async function buildTile(overlay: Buffer, ow: number, oh: number, p: Resolved): 
   const cellW = ow + gapX;
   const cellH = oh + gapY;
 
-  // stagger: плитка 2x2 клітинки, знаки по діагоналі, тож без зшивання країв
   const layers: Layer[] = [{ input: overlay, left: 0, top: 0 }];
   if (p.stagger) layers.push({ input: overlay, left: cellW, top: cellH });
 
@@ -231,7 +208,6 @@ async function buildTile(overlay: Buffer, ow: number, oh: number, p: Resolved): 
     .toBuffer();
 }
 
-// ---------- головна функція ----------
 
 export async function applyWatermark(
   input: Buffer | string,
@@ -240,7 +216,7 @@ export async function applyWatermark(
   const p = normalizeParams(params);
 
   const meta = await sharp(input).metadata();
-  const swap = (meta.orientation ?? 1) >= 5; // EXIF-поворот міняє ширину і висоту
+  const swap = (meta.orientation ?? 1) >= 5; 
   const width = swap ? meta.height : meta.width;
   const height = swap ? meta.width : meta.height;
   if (!width || !height) throw new Error('Cannot read image size');

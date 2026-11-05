@@ -34,6 +34,7 @@ export class ResultsService {
           id: job.id,
           index: job.imageIndex,
           status: job.status,
+          watermarkId: job.watermarkId ?? null,
           url:
             job.status === 'SUCCEEDED' && job.outputKey
               ? await this.storage.getDownloadUrl(job.outputKey)

@@ -5,3 +5,4 @@ server/dist/
 frontend/dist/
 server/storage-data/
 server/.env
+server/storage-data/
