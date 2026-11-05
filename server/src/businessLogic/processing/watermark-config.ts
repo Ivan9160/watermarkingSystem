@@ -6,8 +6,9 @@ export interface VisibleWatermarkConfig {
 
 export interface InvisibleWatermarkConfig {
   method?: 'pixelseal';
-  /** Exactly 10 hexadecimal characters. */
-  id: string;
+  /** Exactly 10 hexadecimal characters. */  id: string;
+  /** Use per-ImageJob IDs (keeps original 'id' fallback contract intact). */
+  idStrategy?: 'per-image';
   /** Optional selector for WM_KEY_<KEYID>. */
   keyId?: string;
   selfCheck?: boolean;
@@ -91,6 +92,11 @@ export function assertBatchWatermarkConfig(
       throw new BadRequestException(
         'watermarkConfig.invisibleWatermarkConfig.id must contain exactly 10 hexadecimal characters.',
       );
+    }
+
+    const idStrategy = invisible['idStrategy'];
+    if (idStrategy !== undefined && idStrategy !== 'per-image') {
+      throw new BadRequestException('invisibleWatermarkConfig.idStrategy must be "per-image".');
     }
 
     const keyId = invisible['keyId'];

@@ -39,6 +39,8 @@ export class WatermarkEngineService {
       text: c['text'] as string | undefined,
       mode: c['mode'] as WatermarkParams['mode'],
       position: c['position'] as WatermarkParams['position'],
+      customPosition: c['customPosition'] as WatermarkParams['customPosition'],
+      patternOffset: c['patternOffset'] as WatermarkParams['patternOffset'],
       opacity: c['opacity'] as number | undefined,
       scale: c['scale'] as number | undefined,
       margin: c['margin'] as number | undefined,

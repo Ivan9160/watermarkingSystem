@@ -152,11 +152,9 @@ export function ServerBatchPreview({ imageSrc, config }: Props) {
 
             const overlay = await createServerOverlay(config, originalWidth);
             if (cancelled) return;
-            let oversized = false;
 
             if (config.mode === 'tile') {
                 const tile = makeTile(overlay, config);
-                oversized = tile.width > originalWidth || tile.height > originalHeight;
                 const pattern = paint.createPattern(tile, 'repeat');
                 if (pattern) {
                     paint.fillStyle = pattern;
@@ -172,7 +170,6 @@ export function ServerBatchPreview({ imageSrc, config }: Props) {
                     left = (originalWidth - overlay.width) / 2;
                     top = (originalHeight - overlay.height) / 2;
                 }
-                oversized = overlay.width > originalWidth || overlay.height > originalHeight;
                 paint.drawImage(overlay, Math.max(0, Math.round(left)), Math.max(0, Math.round(top)));
             }
             paint.restore();

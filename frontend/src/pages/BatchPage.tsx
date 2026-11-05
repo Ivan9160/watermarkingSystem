@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import { rememberBatch } from '../utils/batchHistory';
 import { PageHeading } from '../components/PageHeading';
 import { PreviewCanvas } from '../components/PreviewCanvas';
@@ -6,12 +6,14 @@ import { UploadToServiceModal } from '../components/UploadToServiceModal';
 import { HybridBatchPreview, type DragPosition } from '../components/HybridBatchPreview';
 import { WatermarkSettingsPanel } from '../components/WatermarkSettingsPanel';
 import { WatermarkTemplatePanel } from '../components/WatermarkTemplatePanel';
+import { BatchWatermarkModes } from '../components/BatchWatermarkModes';
+import { createPixelSealId } from '../utils/pixelSealId';
 import { useApp } from '../context/AppContext';
 import { api } from '../services/api';
 import { buildServerWatermarkConfig } from '../utils/serverWatermarkConfig';
 import { countDownloadableImages, downloadBatchZip } from '../utils/downloadBatchZip';
 import type {
-    BatchResultsResponse, BatchStatusResponse, CreateBatchRequest,
+    BatchResultsResponse, BatchStatusResponse, CreateBatchRequest, BatchWatermarkConfig,
     ProductImage, ServerWatermarkFormat,
 } from '../types';
 
@@ -62,11 +64,14 @@ function isFinished(status: string) {
 export function BatchPage() {
     const {
         images, selectedIds,
-        settings, watermarkType, setPage,
+        settings, setPage,
     } = useApp();
 
     const [format, setFormat] = useState<ServerWatermarkFormat>('jpeg');
     const [quality, setQuality] = useState(90);
+    const [visibleEnabled, setVisibleEnabled] = useState(true);
+    const [invisibleEnabled, setInvisibleEnabled] = useState(false);
+    const [pixelSealId, setPixelSealId] = useState(createPixelSealId);
     const [manualPosition, setManualPosition] = useState<DragPosition | null>(null);
     const [manualPatternOffset, setManualPatternOffset] = useState<DragPosition | null>(null);
     useEffect(() => { setManualPosition(null); setManualPatternOffset(null); }, [settings.position, settings.layout]);
@@ -101,8 +106,9 @@ export function BatchPage() {
     }), [settings, format, quality, manualPosition, manualPatternOffset]);
 
     const validationError = useMemo(() => {
-        if (watermarkType !== 'visible') return 'Only visible watermarks are supported by the processing backend.';
-        if (!settings.text.trim()) return 'Enter watermark text before processing.';
+        if (!visibleEnabled && !invisibleEnabled) return 'Choose at least one watermark method';
+
+        if (visibleEnabled && !settings.text.trim()) return 'Enter watermark text before processing.';
         if (!imageCount) return 'Select images in Library. Local files must finish uploading before processing.';
         if (imageCount > MAX_IMAGES) return `Too many images (${imageCount}). Maximum is ${MAX_IMAGES} per batch.`;
         if (products.length > MAX_PRODUCTS) return `Too many products (${products.length}). Maximum is ${MAX_PRODUCTS}.`;
@@ -110,7 +116,7 @@ export function BatchPage() {
             return `A product has over ${MAX_IMAGES_PER_PRODUCT} images. Reduce the selection.`;
         }
         return null;
-    }, [watermarkType, settings.text, imageCount, products]);
+    }, [invisibleEnabled, visibleEnabled, settings.text, imageCount, products]);
 
     const finished = Boolean(status && isFinished(status.status));
     const active = Boolean(batchId && !finished);
@@ -154,10 +160,25 @@ export function BatchPage() {
 
     async function startBatch() {
         if (validationError || busy || active) return;
-        const payload: CreateBatchRequest = {
-            products,
-            watermarkConfig: serverConfig,
+        const watermarkConfig: BatchWatermarkConfig = {
+            applyVisibleWatermark: visibleEnabled,
+            ...(visibleEnabled ? {
+                visibleWatermarkConfig: {
+                    ...serverConfig,
+                    ...(invisibleEnabled ? { format: 'png' as const } : {}),
+                },
+            } : {}),
+            applyInvisibleWatermark: invisibleEnabled,
+            ...(invisibleEnabled ? {
+                invisibleWatermarkConfig: {
+                    method: 'pixelseal' as const,
+                    id: pixelSealId,
+                    idStrategy: 'per-image' as const,
+                    selfCheck: true,
+                },
+            } : {}),
         };
+        const payload: CreateBatchRequest = { products, watermarkConfig };
         setBusy(true);
         setMessage('');
         setNeedsOrganization(false);
@@ -203,8 +224,8 @@ export function BatchPage() {
         setStatus(null);
         setResults(null);
         setMessage('');
-        setDownloadProgress('');
-        setUploadOpen(false);
+        setDownloadProgress('');        setUploadOpen(false);
+        setPixelSealId(createPixelSealId());
         try { localStorage.removeItem(ACTIVE_BATCH_KEY); } catch { /* ignored */ }
     }
 
@@ -226,7 +247,7 @@ export function BatchPage() {
             setResults(latestResults);
             const count = countDownloadableImages(latestResults);
             if (!count) throw new Error('There are no downloadable results.');
-            await downloadBatchZip(batchId, latestResults, format, (current, total) => {
+            await downloadBatchZip(batchId, latestResults, invisibleEnabled ? 'png' : format, (current, total) => {
                 setDownloadProgress(`Downloading ${current} / ${total} images…`);
             });
             setDownloadProgress(`ZIP created with ${count} images.`);
@@ -266,19 +287,22 @@ export function BatchPage() {
                         <h3 className="batch-options-subtitle">Server output</h3>
                         <div className="batch-options-grid">
                             <label className="form-field"><span>Output format</span>
-                                <select value={format} onChange={e => setFormat(e.target.value as ServerWatermarkFormat)}>
+                                <select value={invisibleEnabled ? 'png' : format} disabled={invisibleEnabled}
+                                    onChange={e => setFormat(e.target.value as ServerWatermarkFormat)}>
                                     <option value="jpeg">JPEG</option>
                                     <option value="png">PNG</option>
                                     <option value="webp">WebP</option>
                                 </select>
                             </label>
-                            {format !== 'png' && <label className="form-field"><span>Quality ({quality})</span>
+                            {!invisibleEnabled && format !== 'png' && <label className="form-field"><span>Quality ({quality})</span>
                                 <input type="range" min="1" max="100" value={quality}
                                     onChange={e => setQuality(Number(e.target.value))} />
                             </label>}
                         </div>
                     </section>
-                    <WatermarkSettingsPanel title="Shared watermark" includeType />
+                    <BatchWatermarkModes visible={visibleEnabled} invisible={invisibleEnabled}
+                        onVisibleChange={setVisibleEnabled} onInvisibleChange={setInvisibleEnabled} />
+                    {visibleEnabled && <WatermarkSettingsPanel title="Visible watermark" forceVisible />}
                 </div>
 
                 <div className="panel preview-panel">
@@ -293,14 +317,14 @@ export function BatchPage() {
                                 src={firstOutputUrl}
                                 alt="Actual watermarked output returned by the processing server"
                             />
-                            : eligible[0] && watermarkType === 'visible'
-                                ? <HybridBatchPreview imageSrc={eligible[0].src} previewInput={eligible[0].sourceRef} config={watermarkType === 'visible' ? serverConfig : { ...serverConfig, text: '' }}
+                            : eligible[0]
+                                ? <HybridBatchPreview imageSrc={eligible[0].src} previewInput={eligible[0].sourceRef} config={visibleEnabled ? serverConfig : { ...serverConfig, text: '' }}
                                     onPositionChange={setManualPosition} onPatternOffsetChange={setManualPatternOffset}
-                                    disabled={busy || active} />
-                                : <PreviewCanvas templateOnly settings={settings} visible={watermarkType === 'visible'} />}
+                                    disabled={busy || active || !visibleEnabled} />
+                                : <PreviewCanvas templateOnly settings={settings} visible={visibleEnabled} />}
                     </div>
 
-                    {!firstOutputUrl && eligible.length > 0 && watermarkType === 'visible' &&
+                    {!firstOutputUrl && eligible.length > 0 && visibleEnabled &&
                         <div className="wm-drag-watermark-hint" role="note">
                             <span className="wm-drag-hint-symbol" aria-hidden="true">✥</span>
                             <span><strong>{settings.layout === 'pattern' ? 'Drag the pattern' : 'Drag the watermark'}</strong>
@@ -352,6 +376,7 @@ export function BatchPage() {
                                     {image.offerId} · #{image.index + 1}
                                 </span>
                                 <span className="batch-result-status">{image.status}</span>
+                                {image.watermarkId && image.status === 'SUCCEEDED' && <span className="wm-batch-result-id" title="PixelSeal watermark ID">ID {image.watermarkId}</span>}
                                 {image.url ? <a className="batch-result-link" href={image.url}
                                     target="_blank" rel="noopener noreferrer">Preview</a>
                                     : image.error ? <span className="batch-result-error" title={image.error}>{image.error}</span> : null}
@@ -386,7 +411,7 @@ export function BatchPage() {
 
                     </div>
                 </div>
-                <WatermarkTemplatePanel />
+                {visibleEnabled && <WatermarkTemplatePanel />}
             </div>
             {uploadOpen && batchId && <UploadToServiceModal
                 batchId={batchId}

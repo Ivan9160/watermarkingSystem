@@ -14,7 +14,6 @@ export interface WatermarkParams {
   mode?: WatermarkMode;
   position?: WatermarkPosition;
   customPosition?: { x: number; y: number } | null;
-  /** 0..1 fraction of one pattern period, used only in tile mode. */
   patternOffset?: { x: number; y: number } | null;
   opacity?: number;
   scale?: number;
@@ -45,7 +44,7 @@ type Resolved = Required<Omit<WatermarkParams, 'logo' | 'format' | 'customPositi
 };
 
 export const DEFAULTS: Resolved = {
-  text: 'WATERMARK FRON JS SCRIPT',
+  text: 'WATERMARK',
   logo: null,
   mode: 'single',
   position: 'bottom-right',
@@ -240,7 +239,7 @@ export async function applyWatermark(
   const p = normalizeParams(params);
 
   const meta = await sharp(input).metadata();
-  const swap = (meta.orientation ?? 1) >= 5; 
+  const swap = (meta.orientation ?? 1) >= 5; // EXIF-поворот міняє ширину і висоту
   const width = swap ? meta.height : meta.width;
   const height = swap ? meta.width : meta.height;
   if (!width || !height) throw new Error('Cannot read image size');
@@ -259,8 +258,6 @@ export async function applyWatermark(
 
   let layers: Layer[];
   if (p.mode === 'tile' && !p.logo) {
-    // WaterM tile shift and complete stamps v2:
-    // Never place partly visible text; this also avoids clipping at tile seams.
     const gapX = Math.round(ow * p.spacing);
     const gapY = Math.round(oh * p.spacing);
     const cellW = ow + gapX;

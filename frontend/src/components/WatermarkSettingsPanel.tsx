@@ -4,11 +4,12 @@ import type { WatermarkPosition } from '../types';
 interface Props {
     title?: string;
     includeType?: boolean;
+    forceVisible?: boolean;
 }
 
-export function WatermarkSettingsPanel({ title = 'Watermark settings', includeType = false }: Props) {
+export function WatermarkSettingsPanel({ title = 'Watermark settings', includeType = false, forceVisible = false }: Props) {
     const { settings, updateSettings, watermarkType, setWatermarkType } = useApp();
-    const unavailable = watermarkType === 'invisible';
+    const unavailable = !forceVisible && watermarkType === 'invisible';
 
     return (
         <div className="panel settings-panel">

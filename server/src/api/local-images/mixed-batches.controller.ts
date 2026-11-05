@@ -13,6 +13,7 @@ import { BatchesRepository } from '../../businessLogic/persistence/batches.repos
 import { ImageJobsRepository } from '../../businessLogic/persistence/image-jobs.repository.ts';
 import { ImageQueueService } from '../../businessLogic/queues/image-queue.service.ts';
 import { MinioStorageService } from '../../businessLogic/minio/minio-storage.service.ts';
+import { assertBatchWatermarkConfig } from '../../businessLogic/processing/watermark-config.ts';
 import { AllegroAuthGuard } from '../allegro-auth/allegro-auth.guard.ts';
 import { isLocalRef, LOCAL_GROUP_PATTERN, localKeyFor } from './local-image-source.ts';
 
@@ -57,6 +58,7 @@ export class MixedBatchesController {
     if (!watermarkConfig || typeof watermarkConfig !== 'object' || Array.isArray(watermarkConfig)) {
       throw new BadRequestException('watermarkConfig must be an object');
     }
+    assertBatchWatermarkConfig(watermarkConfig);
     if (!Array.isArray(rawProducts) || !rawProducts.length || rawProducts.length > 20) {
       throw new BadRequestException('Select between 1 and 20 product groups');
     }

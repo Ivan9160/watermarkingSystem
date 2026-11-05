@@ -12,6 +12,7 @@ import {
   rm,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
+import { randomBytes } from 'node:crypto';
 import {
   extname,
   join,
@@ -113,10 +114,11 @@ export class ProcessingProcessor extends WorkerHost {
         throw new UnrecoverableError(
           'invisibleWatermarkConfig is missing',
         );
-      }
-
-      const watermarkId =
-        image.watermarkId ?? invisibleConfig.id;
+      }      const watermarkId = image.watermarkId ?? (
+        invisibleConfig.idStrategy === 'per-image'
+          ? randomBytes(5).toString('hex')
+          : invisibleConfig.id
+      );
 
       if (!image.watermarkId) {
         await this.imageJobs.saveWatermarkId(

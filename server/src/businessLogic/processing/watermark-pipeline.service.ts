@@ -58,7 +58,9 @@ export class WatermarkPipelineService {
         await this.visibleEngine.apply({
           inputPath: currentInputPath,
           outputPath: visibleOutputPath,
-          config: config.visibleWatermarkConfig,
+          config: config.applyInvisibleWatermark
+            ? { ...(config.visibleWatermarkConfig ?? {}), format: 'png' }
+            : config.visibleWatermarkConfig,
         });
 
         await this.assertOutputExists(

@@ -1,4 +1,4 @@
-/* Frontend styles*/
+﻿/* Frontend styles*/
 
 /* ===== 01. Theme, reset and application shell ===== */
 
@@ -1399,24 +1399,25 @@ a {
 }
 
 
-/* ===== 04. Watermark editor and batch preview ===== */
+/* ===== 04. Watermark workspace: Editor + Batch ===== */
 
 .work-layout {
     flex: 1;
     min-height: 0;
     display: grid;
-    grid-template-columns: 294px minmax(0,1fr);
-    gap: 17px;
+    grid-template-columns: 294px minmax(0, 1fr);
+    gap: 14px;
 }
 
 .watermark-workspace {
     grid-template-columns: minmax(235px, 280px) minmax(0, 1fr) minmax(235px, 275px);
-    gap: 14px;
+    gap: 12px;
 }
 
 .watermark-workspace > .settings-panel,
 .watermark-workspace > .settings-column,
-.watermark-workspace > .preview-panel {
+.watermark-workspace > .preview-panel,
+.watermark-workspace > .watermark-template-panel {
     min-width: 0;
 }
 
@@ -1430,15 +1431,15 @@ a {
 
 .settings-panel {
     min-height: 0;
-    padding: 18px;
+    padding: 16px;
     overflow-y: auto;
 }
 
 .form-field {
     display: flex;
     flex-direction: column;
-    margin-top: 14px;
-    gap: 7px;
+    margin-top: 12px;
+    gap: 6px;
     font-size: 12px;
     font-weight: 650;
     color: #c3cfdd;
@@ -1558,12 +1559,15 @@ a {
 }
 
 .preview-stage {
+    position: relative;
+    min-width: 0;
     min-height: 0;
     flex: 1;
-    padding: 21px;
+    padding: clamp(10px, 1.4vw, 21px);
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
     background: #101722;
 }
 
@@ -1576,6 +1580,47 @@ a {
     object-fit: contain;
     border-radius: 5px;
     box-shadow: 0 17px 50px #0006;
+}
+
+.watermark-workspace .preview-stage > :is(
+    .preview-canvas,
+    .wm-preview-viewport,
+    .wm-interactive-preview,
+    .hybrid-batch-preview,
+    .batch-actual-result
+) {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.watermark-workspace .wm-preview-viewport,
+.watermark-workspace .wm-interactive-preview {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+}
+
+.watermark-workspace .wm-preview-media,
+.watermark-workspace .wm-preview-viewport > :is(img, canvas, svg) {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.watermark-workspace .wm-preview-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.watermark-workspace .wm-preview-layer.is-interactive {
+    pointer-events: auto;
+    touch-action: none;
 }
 
 .preview-bottom {
@@ -1594,11 +1639,12 @@ a {
 }
 
 .settings-column {
+    min-width: 0;
     min-height: 0;
-    overflow: auto;
+    overflow: visible;
     display: flex;
     flex-direction: column;
-    gap: 11px;
+    gap: 9px;
 }
 
 .settings-column .settings-panel {
@@ -1673,8 +1719,124 @@ a {
     flex-shrink: 0;
 }
 
+.batch-processing-page .settings-column {
+    gap: 8px;
+    overflow: visible;
+}
+
+.batch-processing-page .settings-column .settings-panel {
+    padding: 11px 13px;
+    overflow: visible;
+}
+
+.batch-processing-page .settings-column .settings-panel > .panel-heading {
+    margin-bottom: 8px;
+}
+
+.batch-processing-page .settings-column .settings-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 9px;
+}
+
+.batch-processing-page .settings-column .settings-fields > .form-field {
+    min-width: 0;
+    margin: 0;
+    gap: 4px;
+    font-size: 11px;
+}
+
+.batch-processing-page .settings-column .settings-fields > .form-field:nth-child(-n + 2) {
+    grid-column: 1 / -1;
+}
+
+.batch-processing-page .settings-column .form-field input:not([type=range]):not([type=color]),
+.batch-processing-page .settings-column .form-field select {
+    min-height: 30px;
+    padding: 5px 8px;
+    font-size: 11px;
+}
+
+.batch-processing-page .settings-column .form-field input[type=color] {
+    height: 29px;
+    width: 40px;
+}
+
+.batch-processing-page .settings-column .range-field output {
+    font-size: 10px;
+}
+
+.batch-processing-page .wm-batch-modes {
+    padding: 10px 13px 11px;
+    flex-shrink: 0;
+}
+
+.batch-processing-page .wm-batch-modes > .panel-heading {
+    margin-bottom: 8px;
+}
+
+.batch-processing-page .wm-batch-modes-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.batch-processing-page .wm-batch-mode {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+    min-height: 40px;
+    padding: 7px 9px;
+    border: 1px solid #35415a;
+    border-radius: 9px;
+    background: #1c2638;
+    color: #b6c4d9;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 650;
+}
+
+.batch-processing-page .wm-batch-mode.is-on {
+    border-color: #8170e5;
+    background: #282942;
+    color: #edeaff;
+}
+
+.batch-processing-page .wm-batch-mode input {
+    width: 14px;
+    height: 14px;
+    flex: 0 0 14px;
+    accent-color: #8878fa;
+}
+
+.batch-processing-page .wm-batch-mode small {
+    display: block;
+    margin-top: 1px;
+    color: #a6aeca;
+    font-size: 10px;
+    font-weight: 400;
+}
+
+.batch-processing-page .wm-batch-mode:has(input:focus-visible) {
+    outline: 2px solid #9d91ff;
+    outline-offset: 2px;
+}
+
+.batch-processing-page .wm-batch-modes-note {
+    margin: 7px 1px 0;
+    color: #9ca8bc;
+    font-size: 10px;
+}
+
+.batch-processing-page .wm-batch-result-id {
+    color: #bbb2ff;
+    font-size: 10px;
+    font-family: ui-monospace, Consolas, monospace;
+}
+
 .batch-options-panel {
-    padding: 16px 18px;
+    padding: 11px 13px;
     flex-shrink: 0;
 }
 
@@ -1684,7 +1846,7 @@ a {
     justify-content: space-between;
     gap: 10px;
     flex-wrap: wrap;
-    margin-top: 12px;
+    margin-top: 7px;
 }
 
 .batch-selection-count {
@@ -1697,20 +1859,20 @@ a {
 
 .batch-selection-count strong {
     color: #eae5ff;
-    font-size: 23px;
+    font-size: 21px;
     font-weight: 750;
     line-height: 1;
 }
 
 .batch-choose-images {
-    min-height: 34px;
-    padding: 7px 11px;
+    min-height: 31px;
+    padding: 6px 10px;
     font-size: 11px;
     white-space: nowrap;
 }
 
 .batch-selected-summary {
-    margin: 8px 0 0;
+    margin: 6px 0 0;
     font-size: 11px;
     color: #94bda9;
 }
@@ -1718,7 +1880,7 @@ a {
 .batch-options-divider {
     height: 1px;
     background: var(--border);
-    margin: 15px 0 12px;
+    margin: 9px 0 7px;
 }
 
 .batch-options-subtitle {
@@ -1729,18 +1891,60 @@ a {
 }
 
 .batch-options-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: end;
+    gap: 9px;
 }
 
 .batch-options-grid .form-field {
-    margin-top: 9px;
+    min-width: 0;
+    margin-top: 6px;
+    gap: 4px;
+    font-size: 11px;
+}
+
+.batch-options-grid .form-field select {
+    min-height: 31px;
+    padding: 5px 7px;
 }
 
 .batch-options-grid input[type=range] {
     width: 100%;
     accent-color: var(--accent);
+}
+
+@media (min-width: 1101px) {
+    .batch-processing-page {
+        overflow-y: auto;
+    }
+
+    .batch-processing-page .watermark-workspace {
+        min-height: min-content;
+    }
+}
+
+@media (min-width: 1101px) and (max-height: 760px) {
+    .batch-processing-page .settings-column {
+        gap: 6px;
+    }
+
+    .batch-processing-page .batch-options-panel,
+    .batch-processing-page .settings-column .settings-panel,
+    .batch-processing-page .wm-batch-modes {
+        padding: 9px 11px;
+    }
+
+    .batch-processing-page .settings-column .settings-fields {
+        gap: 6px 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .batch-processing-page .wm-batch-modes-row,
+    .batch-processing-page .batch-options-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
 }
 
 .batch-note {
@@ -1808,12 +2012,13 @@ a {
 
 .batch-job-actions {
     display: flex;
+    align-items: center;
     flex-wrap: wrap;
     gap: 8px;
     margin-top: 13px;
 }
 
-.batch-job-actions .btn { min-height: 30px; padding: 5px 10px; font-size: 11px; }
+.batch-job-actions .btn { min-height: 35px; padding: 7px 12px; font-size: 11px; }
 
 .batch-results {
     background: #121925;
@@ -1880,15 +2085,6 @@ a {
     border-radius: 8px;
 }
 
-.batch-job-actions {
-    align-items: center;
-}
-
-.batch-job-actions .btn {
-    min-height: 35px;
-    padding: 7px 12px;
-}
-
 .batch-download-progress {
     flex-basis: 100%;
     color: #a5b6d0;
@@ -1903,8 +2099,8 @@ a {
     align-items: center;
     justify-content: center;
     padding: 18px;
-    background: rgba(5, 9, 18, .77);
-    backdrop-filter: blur(5px);
+    background: rgba(3, 7, 17, .78);
+    backdrop-filter: blur(6px);
 }
 
 .upload-dialog {
@@ -2063,13 +2259,7 @@ a {
     white-space: normal;
 }
 
-/* Upload modal */
-.upload-dialog-backdrop {
-    padding: 18px;
-    background: rgba(3, 7, 17, .78);
-    backdrop-filter: blur(6px);
-}
-
+/* Allegro publication modal: scoped overrides only. */
 .upload-dialog.upload-dialog-publish {
     display: flex;
     flex-direction: column;
@@ -2254,8 +2444,7 @@ a {
     overflow-wrap: anywhere;
 }
 
-.upload-dialog-publish .upload-dialog-notice,
-.upload-dialog-publish {
+.upload-dialog-publish .upload-dialog-notice {
     margin: 0;
     padding: 12px 14px;
     border: 1px solid #5a4e70;
@@ -2287,9 +2476,6 @@ a {
     accent-color: #8373fa;
 }
 .upload-dialog-publish .wm-publish-confirm span { display: block; min-width: 0; }
-.upload-dialog-publish  { border-color: #9a784e; background: #342c27; }
-.upload-dialog-publish  > strong { color: #f0cf9f; font-size: 12px; line-height: 1.5; }
-.upload-dialog-publish  p { color: #e0c9ae; font-size: 11px; line-height: 1.6; margin: 6px 0 12px; }
 .upload-dialog-publish .wm-publish-error,
 .upload-dialog-publish .wm-publish-hint { overflow-wrap: anywhere; font-size: 11px; line-height: 1.6; }
 .upload-dialog-publish .wm-publish-server-error { margin: 0; padding: 10px 12px; }
@@ -3532,7 +3718,6 @@ a {
     .batch-processing-page .wm-drag-reset { margin-left: 27px; }
 }
 
-/* WaterM Pattern drag / unclipped glyphs v2 */
 .batch-processing-page .wm-local-pattern-drag-target {
     cursor: grab;
     touch-action: none;
@@ -3540,5 +3725,20 @@ a {
 .batch-processing-page .wm-local-preview-svg.is-dragging .wm-local-pattern-drag-target {
     cursor: grabbing;
 }
-/* Empty watermark text: photo remains visible, with watermark hidden. */
-/* End WaterM Pattern drag fix v2 */
+
+/* WaterM PixelSeal batch methods */
+.batch-processing-page .wm-batch-modes { padding: 0 16px 14px; flex-shrink: 0; }
+.batch-processing-page .wm-batch-modes > .panel-heading { padding: 14px 0 12px; }
+.batch-processing-page .wm-batch-modes-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+.batch-processing-page .wm-batch-mode {
+    display: flex; align-items: center; gap: 9px; min-height: 44px; padding: 10px 11px;
+    border: 1px solid #35415a; border-radius: 10px; background: #1c2638;
+    color: #b6c4d9; cursor: pointer; font-weight: 650; font-size: 12px;
+}
+.batch-processing-page .wm-batch-mode.is-on { border-color: #8170e5; background: #282942; color: #edeaff; }
+.batch-processing-page .wm-batch-mode input { width: 15px; height: 15px; flex: 0 0 15px; accent-color: #8878fa; }
+.batch-processing-page .wm-batch-mode small { display: block; font-size: 10px; font-weight: 400; color: #a6aeca; margin-top: 2px; }
+.batch-processing-page .wm-batch-mode:has(input:focus-visible) { outline: 2px solid #9d91ff; outline-offset: 2px; }
+.batch-processing-page .wm-batch-modes-note { margin: 10px 1px 0; color: #9ca8bc; font-size: 11px; }
+.batch-processing-page .wm-batch-result-id { font-size: 10px; color: #bbb2ff; font-family: ui-monospace,Consolas,monospace; }
+@media (max-width: 480px) { .batch-processing-page .wm-batch-modes-row { grid-template-columns: 1fr; } }

@@ -58,7 +58,7 @@ model ImageJob {
   createdAt    DateTime @default(now()) @map("created_at")
   processedAt  DateTime? @map("processed_at")
 
-  originalKey    String?        @unique @map("original_key")
+  originalKey    String?                @map("original_key")
   outputKey      String?        @unique @map("output_key")
 
   batch Batch @relation(fields: [batchId], references: [id], onDelete: Cascade)

@@ -81,8 +81,20 @@ export interface ServerWatermarkConfig {
     quality: number;
 }
 
+export interface BatchWatermarkConfig {
+    applyVisibleWatermark: boolean;
+    visibleWatermarkConfig?: ServerWatermarkConfig;
+    applyInvisibleWatermark: boolean;
+    invisibleWatermarkConfig?: {
+        method: 'pixelseal';
+        id: string;
+        idStrategy: 'per-image';
+        selfCheck: boolean;
+    };
+}
+
 export interface CreateBatchRequest {
-    watermarkConfig: ServerWatermarkConfig;
+    watermarkConfig: BatchWatermarkConfig;
     products: Array<{ offerId: string; images: string[] }>;
 }
 
@@ -119,6 +131,7 @@ export interface BatchResultsResponse {
             id: string;
             index: number;
             status: 'PENDING' | 'PROCESSING' | 'SUCCEEDED' | 'FAILED';
+            watermarkId?: string | null;
             url: string | null;
             error: string | null;
         }>;
