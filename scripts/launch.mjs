@@ -184,10 +184,10 @@ async function main() {
   log(`Project: ${ROOT}`);
 
   // Frontend
-  startNpm(FRONTEND_DIR, 'dev', 'Frontend');
+  startNpm(FRONTEND_DIR, 'prod', 'Frontend');
 
   // NestJS backend + worker
-  startNpm(BACKEND_DIR, 'dev:all', 'Backend');
+  startNpm(BACKEND_DIR, 'prod:all', 'Backend');
 
   // Reverse proxy
   startNginx();

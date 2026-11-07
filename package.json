@@ -5,5 +5,10 @@
   },
   "devDependencies": {
     "prisma": "^8.0.0-rc.22"
+  },
+  "scripts": {
+    "build:server": "npm --prefix server run build",
+    "build:client": "npm --prefix frontend run build",
+    "build:all": "npm run build:server && npm run build:client"
   }
 }
