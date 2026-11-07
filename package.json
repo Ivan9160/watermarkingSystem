@@ -1,6 +1,7 @@
 {
   "dependencies": {
-    "@nestjs/mapped-types": "*"
+    "@nestjs/mapped-types": "*",
+    "mkcert": "^3.2.0"
   },
   "devDependencies": {
     "prisma": "^8.0.0-rc.22"

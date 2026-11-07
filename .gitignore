@@ -6,3 +6,6 @@ frontend/dist/
 server/storage-data/
 server/.env
 server/storage-data/
+.local-certs
+nginx/logs/
+nginx/temp
