@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'a3d4be1bc267dea8c37d1c2e0fd3517a2202bb4196f56073d1fa98182ce4f07a'>;
+  StorageHashBase<'c40887dab6004d51702f1d61a0f515733a13b559d92f61d89fb5571d93612b5d'>;
 export type ExecutionHash =
   ExecutionHashBase<'c7e1094373242d094521a589186384b9b075c967394a60098d6bd8aa5e5f4f66'>;
 export type ProfileHash =
@@ -250,6 +250,7 @@ export type FieldOutputTypes = {
       readonly errorMessage: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly imageIndex: CodecTypes['pg/int4@1']['output'];
+      readonly offerImageIndex: CodecTypes['pg/int4@1']['output'];
       readonly originalKey: CodecTypes['pg/text@1']['output'] | null;
       readonly outputKey: CodecTypes['pg/text@1']['output'] | null;
       readonly outputUrl: CodecTypes['pg/text@1']['output'] | null;
@@ -287,6 +288,7 @@ export type FieldInputTypes = {
       readonly errorMessage: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly imageIndex: CodecTypes['pg/int4@1']['input'];
+      readonly offerImageIndex: CodecTypes['pg/int4@1']['input'];
       readonly originalKey: CodecTypes['pg/text@1']['input'] | null;
       readonly outputKey: CodecTypes['pg/text@1']['input'] | null;
       readonly outputUrl: CodecTypes['pg/text@1']['input'] | null;
@@ -324,6 +326,7 @@ export type StorageColumnTypes = {
       readonly error_message: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly image_index: CodecTypes['pg/int4@1']['output'];
+      readonly offer_image_index: CodecTypes['pg/int4@1']['output'];
       readonly original_key: CodecTypes['pg/text@1']['output'] | null;
       readonly output_key: CodecTypes['pg/text@1']['output'] | null;
       readonly output_url: CodecTypes['pg/text@1']['output'] | null;
@@ -361,6 +364,7 @@ export type StorageColumnInputTypes = {
       readonly error_message: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly image_index: CodecTypes['pg/int4@1']['input'];
+      readonly offer_image_index: CodecTypes['pg/int4@1']['input'];
       readonly original_key: CodecTypes['pg/text@1']['input'] | null;
       readonly output_key: CodecTypes['pg/text@1']['input'] | null;
       readonly output_url: CodecTypes['pg/text@1']['input'] | null;
@@ -401,6 +405,7 @@ export namespace Models {
     errorMessage: CodecTypes['pg/text@1']['output'] | null;
     id: CodecTypes['pg/text@1']['output'];
     imageIndex: CodecTypes['pg/int4@1']['output'];
+    offerImageIndex: CodecTypes['pg/int4@1']['output'];
     originalKey: CodecTypes['pg/text@1']['output'] | null;
     outputKey: CodecTypes['pg/text@1']['output'] | null;
     outputUrl: CodecTypes['pg/text@1']['output'] | null;
@@ -565,6 +570,12 @@ type ContractBase = Omit<
                   readonly many: false;
                 };
                 readonly image_index: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly offer_image_index: {
                   readonly dataType: 'pg/int4';
                   readonly codecId: 'pg/int4@1';
                   readonly nullable: false;
@@ -843,6 +854,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
+              readonly offerImageIndex: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
               readonly originalKey: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -906,6 +921,7 @@ type ContractBase = Omit<
                 readonly errorMessage: { readonly column: 'error_message' };
                 readonly id: { readonly column: 'id' };
                 readonly imageIndex: { readonly column: 'image_index' };
+                readonly offerImageIndex: { readonly column: 'offer_image_index' };
                 readonly originalKey: { readonly column: 'original_key' };
                 readonly outputKey: { readonly column: 'output_key' };
                 readonly outputUrl: { readonly column: 'output_url' };

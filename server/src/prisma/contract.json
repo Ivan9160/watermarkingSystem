@@ -231,6 +231,13 @@
                   "kind": "scalar"
                 }
               },
+              "offerImageIndex": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "originalKey": {
                 "nullable": true,
                 "type": {
@@ -335,6 +342,9 @@
                 },
                 "imageIndex": {
                   "column": "image_index"
+                },
+                "offerImageIndex": {
+                  "column": "offer_image_index"
                 },
                 "originalKey": {
                   "column": "original_key"
@@ -604,6 +614,11 @@
                   "dataType": "pg/int4",
                   "nullable": false
                 },
+                "offer_image_index": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
                 "original_key": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
@@ -792,7 +807,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "a3d4be1bc267dea8c37d1c2e0fd3517a2202bb4196f56073d1fa98182ce4f07a"
+    "storageHash": "c40887dab6004d51702f1d61a0f515733a13b559d92f61d89fb5571d93612b5d"
   },
   "execution": {
     "executionHash": "c7e1094373242d094521a589186384b9b075c967394a60098d6bd8aa5e5f4f66",

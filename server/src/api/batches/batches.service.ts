@@ -86,14 +86,14 @@ export class BatchesService {
 
     const items: NewImageJob[] = [];
     for (const product of dto.products) {
-      product.images.forEach((sourceUrl, imageIndex) => {
+      product.images.forEach((productImage, imageIndex) => {
         try {
-          parseAllowedImageUrl(sourceUrl);
+          parseAllowedImageUrl(productImage.url);
         } catch (e) {
           if (e instanceof ImageDownloadError) throw new BadRequestException(e.message);
           throw e;
         }
-        items.push({ productOfferId: product.offerId, imageIndex, sourceUrl });
+        items.push({ productOfferId: product.offerId, imageIndex, sourceUrl: productImage.url, offerImageIndex: productImage.offerImageIndex });
       });
     }
 

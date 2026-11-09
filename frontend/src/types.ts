@@ -94,8 +94,14 @@ export interface BatchWatermarkConfig {
 }
 
 export interface CreateBatchRequest {
-    watermarkConfig: BatchWatermarkConfig;
-    products: Array<{ offerId: string; images: string[] }>;
+    products: {
+        offerId: string;
+        images: {
+            url: string;
+            offerImageIndex: number;
+        }[];
+    }[];
+    watermarkConfig?: BatchWatermarkConfig;
 }
 
 export interface CreateBatchResponse {
