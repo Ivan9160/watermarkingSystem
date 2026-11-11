@@ -401,6 +401,16 @@
                   "kind": "scalar"
                 }
               },
+              "invisibleWatermarkId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sql/varchar@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "length": 10
+                  }
+                }
+              },
               "name": {
                 "nullable": false,
                 "type": {
@@ -443,6 +453,9 @@
                 },
                 "id": {
                   "column": "id"
+                },
+                "invisibleWatermarkId": {
+                  "column": "invisible_watermark_id"
                 },
                 "name": {
                   "column": "name"
@@ -755,6 +768,14 @@
                   "dataType": "pg/text",
                   "nullable": false
                 },
+                "invisible_watermark_id": {
+                  "codecId": "sql/varchar@1",
+                  "dataType": "pg/varchar",
+                  "nullable": true,
+                  "typeParams": {
+                    "length": 10
+                  }
+                },
                 "name": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
@@ -777,6 +798,11 @@
                 {
                   "columns": [
                     "allegro_user_id"
+                  ]
+                },
+                {
+                  "columns": [
+                    "invisible_watermark_id"
                   ]
                 }
               ]
@@ -807,7 +833,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "c40887dab6004d51702f1d61a0f515733a13b559d92f61d89fb5571d93612b5d"
+    "storageHash": "7ee56c174c68b3c7562f7ef79a2f7c12407afd04c1e54782d87e977a955cae3e"
   },
   "execution": {
     "executionHash": "c7e1094373242d094521a589186384b9b075c967394a60098d6bd8aa5e5f4f66",

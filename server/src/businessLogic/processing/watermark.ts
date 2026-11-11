@@ -62,7 +62,7 @@ export const DEFAULTS: Resolved = {
   quality: 90,
 };
 
-// ---------- parameter validation ----------
+
 
 const HEX = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
 const TRANSPARENT = { r: 0, g: 0, b: 0, alpha: 0 } as const;
@@ -230,7 +230,6 @@ async function buildTile(overlay: Buffer, ow: number, oh: number, p: Resolved): 
     .toBuffer();
 }
 
-// ---------- main function ----------
 
 export async function applyWatermark(
   input: Buffer | string,
@@ -239,7 +238,7 @@ export async function applyWatermark(
   const p = normalizeParams(params);
 
   const meta = await sharp(input).metadata();
-  const swap = (meta.orientation ?? 1) >= 5; // EXIF-поворот міняє ширину і висоту
+  const swap = (meta.orientation ?? 1) >= 5; 
   const width = swap ? meta.height : meta.width;
   const height = swap ? meta.width : meta.height;
   if (!width || !height) throw new Error('Cannot read image size');

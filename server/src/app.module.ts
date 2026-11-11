@@ -10,9 +10,10 @@ import { BullModule } from '@nestjs/bullmq';
 import { ResultsModule } from './api/results/results.module.ts';
 import { WatermarkPreviewModule } from './api/watermark-preview/watermark-preview.module.ts';
 import { LocalImagesModule } from './api/local-images/local-images.module.ts';
+import { WatermarksModule } from './api/watermarks/watermarks.module.ts';
 
 @Module({
-  imports: [LocalImagesModule, WatermarkPreviewModule, OrganizationsModule, PrismaModule, MinioModule, BatchesModule, AllegroAuthModule, ResultsModule,
+  imports: [WatermarksModule, LocalImagesModule, WatermarkPreviewModule, OrganizationsModule, PrismaModule, MinioModule, BatchesModule, AllegroAuthModule, ResultsModule,
     BullModule.forRoot({
       connection: {
         host: process.env['REDIS_HOST'] ?? '127.0.0.1',

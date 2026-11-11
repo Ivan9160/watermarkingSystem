@@ -18,6 +18,7 @@ model Organization {
   id        String @id @default(cuid(2))
   allegroUserId  Int @unique @map("allegro_user_id")
   name      String
+  invisibleWatermarkId VarChar(10)? @unique @map("invisible_watermark_id")
 
   batches Batch[]
 

@@ -7,7 +7,6 @@ import { HybridBatchPreview, type DragPosition } from '../components/HybridBatch
 import { WatermarkSettingsPanel } from '../components/WatermarkSettingsPanel';
 import { WatermarkTemplatePanel } from '../components/WatermarkTemplatePanel';
 import { BatchWatermarkModes } from '../components/BatchWatermarkModes';
-import { createPixelSealId } from '../utils/pixelSealId';
 import { useApp } from '../context/AppContext';
 import { api } from '../services/api';
 import { buildServerWatermarkConfig } from '../utils/serverWatermarkConfig';
@@ -140,7 +139,6 @@ export function BatchPage() {
     const [quality, setQuality] = useState(90);
     const [visibleEnabled, setVisibleEnabled] = useState(true);
     const [invisibleEnabled, setInvisibleEnabled] = useState(false);
-    const [pixelSealId, setPixelSealId] = useState(createPixelSealId);
     const [manualPosition, setManualPosition] = useState<DragPosition | null>(null);
     const [manualPatternOffset, setManualPatternOffset] = useState<DragPosition | null>(null);
     useEffect(() => { setManualPosition(null); setManualPatternOffset(null); }, [settings.position, settings.layout]);
@@ -241,8 +239,6 @@ export function BatchPage() {
             ...(invisibleEnabled ? {
                 invisibleWatermarkConfig: {
                     method: 'pixelseal' as const,
-                    id: pixelSealId,
-                    idStrategy: 'per-image' as const,
                     selfCheck: true,
                 },
             } : {}),
@@ -294,7 +290,6 @@ export function BatchPage() {
         setResults(null);
         setMessage('');
         setDownloadProgress('');        setUploadOpen(false);
-        setPixelSealId(createPixelSealId());
         try { localStorage.removeItem(ACTIVE_BATCH_KEY); } catch { /* ignored */ }
     }
 
