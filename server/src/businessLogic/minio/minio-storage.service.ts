@@ -4,21 +4,43 @@ import { Client } from 'minio';
 @Injectable()
 export class MinioStorageService implements OnModuleInit {
   private readonly client: Client;
+  private readonly signer: Client;
+  private readonly publicPrefix: string;
   private readonly bucket: string;
   private readonly urlExpirySeconds: number;
 
   constructor() {
     this.bucket = process.env['MINIO_BUCKET'] ?? 'watermark-images';
-    // short-lived signed URLs (за замовчуванням 15 хв)
     this.urlExpirySeconds = Number(process.env['MINIO_URL_EXPIRY_SECONDS'] ?? 900);
+
+    const accessKey = process.env['MINIO_ACCESS_KEY'] ?? 'minioadmin';
+    const secretKey = process.env['MINIO_SECRET_KEY'] ?? 'minioadmin';
 
     this.client = new Client({
       endPoint: process.env['MINIO_ENDPOINT'] ?? '127.0.0.1',
       port: Number(process.env['MINIO_PORT'] ?? 9000),
       useSSL: process.env['MINIO_USE_SSL'] === 'true',
-      accessKey: process.env['MINIO_ACCESS_KEY'] ?? 'minioadmin',
-      secretKey: process.env['MINIO_SECRET_KEY'] ?? 'minioadmin',
+      accessKey,
+      secretKey,
     });
+
+    const publicUrl = process.env['MINIO_PUBLIC_URL'];
+    if (publicUrl) {
+      const u = new URL(publicUrl);
+      const useSSL = u.protocol === 'https:';
+      this.publicPrefix = u.pathname.replace(/\/+$/, ''); 
+      this.signer = new Client({
+        endPoint: u.hostname,
+        port: u.port ? Number(u.port) : useSSL ? 443 : 80,
+        useSSL,
+        accessKey,
+        secretKey,
+        region: process.env['MINIO_REGION'] ?? 'us-east-1',
+      });
+    } else {
+      this.signer = this.client;
+      this.publicPrefix = '';
+    }
   }
 
   async onModuleInit(): Promise<void> {
@@ -26,6 +48,20 @@ export class MinioStorageService implements OnModuleInit {
       try {
         const exists = await this.client.bucketExists(this.bucket);
         if (!exists) await this.client.makeBucket(this.bucket, 'us-east-1');
+
+        const policy = {
+          Version: '2012-10-17',
+          Statement: [
+            {
+              Effect: 'Allow',
+              Principal: { AWS: ['*'] },
+              Action: ['s3:GetObject'],
+              Resource: [`arn:aws:s3:::${this.bucket}/*`],
+            },
+          ],
+        };
+        await this.client.setBucketPolicy(this.bucket, JSON.stringify(policy));
+
         return;
       } catch (e: any) {
         if (attempt >= 10 || e?.code !== 'ECONNREFUSED') throw e;
@@ -51,12 +87,14 @@ export class MinioStorageService implements OnModuleInit {
     await this.client.fGetObject(this.bucket, key, filePath);
   }
 
-  async getDownloadUrl(key: string): Promise<string> {
+ async getDownloadUrl(key: string): Promise<string> {
+    const publicUrl = process.env['MINIO_PUBLIC_URL'];
+    if (publicUrl) {
+      return `${publicUrl.replace(/\/+$/, '')}/${this.bucket}/${encodeURI(key)}`;
+    }
     return this.client.presignedGetObject(this.bucket, key, this.urlExpirySeconds);
   }
 
-
-  /** Test object ownership/existence before referencing a local file in a job. */
   async exists(key: string): Promise<boolean> {
     try {
       await this.client.statObject(this.bucket, key);
@@ -68,7 +106,6 @@ export class MinioStorageService implements OnModuleInit {
     }
   }
 
-  /** Read a private upload. The application serves it via authenticated same-origin URL. */
   async getBuffer(key: string): Promise<Buffer> {
     const stream = await this.client.getObject(this.bucket, key);
     const chunks: Buffer[] = [];
@@ -82,7 +119,6 @@ export class MinioStorageService implements OnModuleInit {
     return Buffer.concat(chunks);
   }
 
-  /** List user-scoped private uploads; do not expose other users' objects. */
   async listObjects(prefix: string): Promise<Array<{
     key: string; size: number; lastModified: Date; metadata: Record<string, string>;
   }>> {

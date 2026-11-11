@@ -7,7 +7,6 @@ import { HybridBatchPreview, type DragPosition } from '../components/HybridBatch
 import { WatermarkSettingsPanel } from '../components/WatermarkSettingsPanel';
 import { WatermarkTemplatePanel } from '../components/WatermarkTemplatePanel';
 import { BatchWatermarkModes } from '../components/BatchWatermarkModes';
-import { createPixelSealId } from '../utils/pixelSealId';
 import { useApp } from '../context/AppContext';
 import { api } from '../services/api';
 import { buildServerWatermarkConfig } from '../utils/serverWatermarkConfig';
@@ -29,11 +28,15 @@ function offerIdOf(image: ProductImage): string | null {
 
 function canUseAsBatchSource(image: ProductImage): boolean {
     if (!offerIdOf(image)) return false;
+    if (offerImageIndexOf(image) === null) return false;
+
     if (image.source === 'local') {
         return image.uploadStatus === 'ready' &&
             /^waterm-local:[a-f0-9]{32}\.(?:jpg|png|webp)$/.test(image.sourceRef ?? '');
     }
+
     if (image.source !== 'allegro') return false;
+
     try {
         return new URL(image.src).protocol === 'https:';
     } catch {
@@ -42,15 +45,52 @@ function canUseAsBatchSource(image: ProductImage): boolean {
 }
 
 function buildProducts(images: ProductImage[]) {
-    const grouped = new Map<string, Set<string>>();
+    const grouped = new Map<
+        string,
+        {
+            images: {
+                url: string;
+                offerImageIndex: number;
+            }[];
+            seenUrls: Set<string>;
+        }
+    >();
+
     for (const image of images) {
         const offerId = offerIdOf(image);
-        if (!offerId) continue;
-        const urls = grouped.get(offerId) ?? new Set<string>();
-        urls.add(image.source === 'local' ? image.sourceRef! : image.src);
-        grouped.set(offerId, urls);
+        const offerImageIndex = offerImageIndexOf(image);
+
+        if (!offerId || offerImageIndex === null) continue;
+
+        const url = image.source === 'local'
+            ? image.sourceRef!
+            : image.src;
+
+        let product = grouped.get(offerId);
+
+        if (!product) {
+            product = {
+                images: [],
+                seenUrls: new Set<string>(),
+            };
+
+            grouped.set(offerId, product);
+        }
+
+        if (product.seenUrls.has(url)) continue;
+
+        product.seenUrls.add(url);
+
+        product.images.push({
+            url,
+            offerImageIndex,
+        });
     }
-    return Array.from(grouped, ([offerId, urls]) => ({ offerId, images: [...urls] }));
+
+    return Array.from(grouped, ([offerId, product]) => ({
+        offerId,
+        images: product.images,
+    }));
 }
 
 function getMessage(error: unknown) {
@@ -59,6 +99,34 @@ function getMessage(error: unknown) {
 
 function isFinished(status: string) {
     return status === 'COMPLETED' || status === 'FAILED';
+}
+
+function offerImageIndexOf(image: ProductImage): number | null {
+    const filename = image.filename;
+
+    const extensionIndex = filename.lastIndexOf('.');
+    if (extensionIndex <= 0) return null;
+
+    const nameWithoutExtension = filename.slice(0, extensionIndex);
+
+    const separatorIndex = nameWithoutExtension.lastIndexOf('-');
+    if (separatorIndex === -1) return null;
+
+    const numberText = nameWithoutExtension.slice(separatorIndex + 1);
+
+    if (numberText.length !== 2) return null;
+
+    const imageNumber = Number(numberText);
+
+    if (
+        !Number.isInteger(imageNumber) ||
+        imageNumber < 1 ||
+        String(imageNumber).padStart(2, '0') !== numberText
+    ) {
+        return null;
+    }
+
+    return imageNumber -1;
 }
 
 export function BatchPage() {
@@ -71,7 +139,6 @@ export function BatchPage() {
     const [quality, setQuality] = useState(90);
     const [visibleEnabled, setVisibleEnabled] = useState(true);
     const [invisibleEnabled, setInvisibleEnabled] = useState(false);
-    const [pixelSealId, setPixelSealId] = useState(createPixelSealId);
     const [manualPosition, setManualPosition] = useState<DragPosition | null>(null);
     const [manualPatternOffset, setManualPatternOffset] = useState<DragPosition | null>(null);
     useEffect(() => { setManualPosition(null); setManualPatternOffset(null); }, [settings.position, settings.layout]);
@@ -172,8 +239,6 @@ export function BatchPage() {
             ...(invisibleEnabled ? {
                 invisibleWatermarkConfig: {
                     method: 'pixelseal' as const,
-                    id: pixelSealId,
-                    idStrategy: 'per-image' as const,
                     selfCheck: true,
                 },
             } : {}),
@@ -225,7 +290,6 @@ export function BatchPage() {
         setResults(null);
         setMessage('');
         setDownloadProgress('');        setUploadOpen(false);
-        setPixelSealId(createPixelSealId());
         try { localStorage.removeItem(ACTIVE_BATCH_KEY); } catch { /* ignored */ }
     }
 

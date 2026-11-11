@@ -3,13 +3,15 @@ import {
   ArrayMaxSize,
   ArrayMinSize,
   IsArray,
+  IsInt,
   IsNotEmpty,
-  IsNumber,
   IsObject,
   IsOptional,
   IsString,
   IsUrl,
+  Max,
   MaxLength,
+  Min,
   ValidateNested,
 } from 'class-validator';
 import {
@@ -17,6 +19,31 @@ import {
   ApiPropertyOptional,
 } from '@nestjs/swagger';
 import type { JsonValue } from '@prisma/orm-postgres/contract/types';
+
+export class OfferImageDto {
+  @ApiProperty({
+    description: 'HTTPS URL of the product image.',
+    example: 'https://example.com/images/product-4.jpg',
+  })
+  @IsString()
+  @IsNotEmpty()
+  @IsUrl(
+    { protocols: ['https'], require_protocol: true },
+  )
+  url!: string;
+
+  @ApiProperty({
+    description:
+      'Zero-based index of the original image in the Allegro offer.',
+    example: 3,
+    minimum: 0,
+    maximum: 19,
+  })
+  @IsInt()
+  @Min(0)
+  @Max(19)
+  offerImageIndex!: number;
+}
 
 export class ProductImagesDto {
   @ApiProperty({
@@ -30,29 +57,39 @@ export class ProductImagesDto {
   offerId!: string;
 
   @ApiProperty({
-    description: 'HTTPS URLs of the product images. Provide between 1 and 20 images.',
-    type: [String],
+    description:
+      'Product images with their URLs and original indexes in the Allegro offer.',
+    type: () => OfferImageDto,
+    isArray: true,
     minItems: 1,
     maxItems: 20,
     example: [
-      'https://example.com/images/product-1.jpg',
-      'https://example.com/images/product-2.jpg',
+      {
+        url: 'https://example.com/images/product-4.jpg',
+        offerImageIndex: 3,
+      },
+      {
+        url: 'https://example.com/images/product-5.jpg',
+        offerImageIndex: 4,
+      },
+      {
+        url: 'https://example.com/images/product-6.jpg',
+        offerImageIndex: 5,
+      },
     ],
   })
   @IsArray()
   @ArrayMinSize(1)
   @ArrayMaxSize(20)
-  @IsUrl(
-    { protocols: ['https'], require_protocol: true },
-    { each: true },
-  )
-  images!: string[];
+  @ValidateNested({ each: true })
+  @Type(() => OfferImageDto)
+  images!: OfferImageDto[];
 }
 
 export class CreateBatchDto {
   @ApiProperty({
     description:
-      'Products included in the batch. Each product must contain an offer ID and between 1 and 20 HTTPS image URLs.',
+      'Products included in the batch. Each product must contain an offer ID and between 1 and 20 images.',
     type: () => ProductImagesDto,
     isArray: true,
     minItems: 1,
@@ -61,14 +98,23 @@ export class CreateBatchDto {
       {
         offerId: '123456789',
         images: [
-          'https://example.com/images/product-1.jpg',
-          'https://example.com/images/product-2.jpg',
+          {
+            url: 'https://example.com/images/product-4.jpg',
+            offerImageIndex: 3,
+          },
+          {
+            url: 'https://example.com/images/product-5.jpg',
+            offerImageIndex: 4,
+          },
         ],
       },
       {
         offerId: '987654321',
         images: [
-          'https://example.com/images/product-3.jpg',
+          {
+            url: 'https://example.com/images/product-3.jpg',
+            offerImageIndex: 2,
+          },
         ],
       },
     ],
@@ -90,11 +136,9 @@ export class CreateBatchDto {
       opacity: 0.5,
     },
   })
+  @IsOptional()
   @IsObject()
-  watermarkConfig: {
+  watermarkConfig?: {
     [key: string]: JsonValue;
-  }; 
-
-
+  };
 }
-

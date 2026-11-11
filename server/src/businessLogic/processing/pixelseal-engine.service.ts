@@ -3,6 +3,8 @@ import {
   Injectable,
   Logger,
   OnModuleDestroy,
+  NotFoundException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 
 import {
@@ -15,6 +17,7 @@ import { join, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 
 import type { InvisibleWatermarkConfig } from './watermark-config.ts';
+import { db } from '../../prisma/db.ts';
 
 interface PixelSealEmbedRequest {
   op: 'embed';
@@ -27,11 +30,23 @@ interface PixelSealEmbedRequest {
   jobId: string;
 }
 
+interface PixelSealVerifyRequest {
+    op: 'verify';
+    method: 'pixelseal';
+    input: string;
+    keyId?: string;
+    jobId: string;
+}
+
+type PixelSealRequest =
+    | PixelSealEmbedRequest
+    | PixelSealVerifyRequest;
+
 interface PixelSealResponse {
   ok: boolean;
   op?: string;
   method?: string;
-  id?: string;
+  id?: string | null;
   keyId?: string | null;
   width?: number;
   height?: number;
@@ -41,7 +56,15 @@ interface PixelSealResponse {
   jobId?: string;
   error?: string;
   message?: string;
+  found?: boolean;
+  tagDistance?: number | null;
   [key: string]: unknown;
+}
+
+export interface PixelSealVerificationResult extends PixelSealResponse {
+  found: boolean;
+  id: string | null;
+  tagDistance: number | null;
 }
 
 interface PendingRequest {
@@ -66,42 +89,67 @@ export class PixelSealEngineService implements OnModuleDestroy {
   private queue: Promise<unknown> = Promise.resolve();
 
   async embed(args: {
+    organizationId: string;
     inputPath: string;
     outputPath: string;
     config: InvisibleWatermarkConfig;
     jobId?: string;
-  }): Promise<PixelSealResponse> {
+}): Promise<PixelSealResponse> {
     const jobId = args.jobId ?? randomUUID();
 
+    const watermarkId = await this.getOrganizationWatermarkId(
+        args.organizationId,
+    );
+
     const request: PixelSealEmbedRequest = {
-      op: 'embed',
-      method: args.config.method ?? 'pixelseal',
+        op: 'embed',
+        method: args.config.method ?? 'pixelseal',
+        input: resolve(args.inputPath),
+        output: resolve(args.outputPath),
+        id: watermarkId,
+
+        ...(args.config.keyId
+            ? { keyId: args.config.keyId }
+            : {}),
+
+        selfCheck: args.config.selfCheck ?? true,
+        jobId,
+    };
+
+    return this.enqueue(request);
+}
+
+  async verify(args: {
+    inputPath: string;
+    keyId?: string;
+    jobId?: string;
+  }): Promise<PixelSealVerificationResult> {
+    const jobId = args.jobId ?? randomUUID();
+
+    const request: PixelSealVerifyRequest = {
+      op: 'verify',
+      method: 'pixelseal',
       input: resolve(args.inputPath),
-      output: resolve(args.outputPath),
-      id: args.config.id,
-
-      ...(args.config.keyId
-        ? { keyId: args.config.keyId }
-        : {}),
-
-      selfCheck: args.config.selfCheck ?? true,
+      ...(args.keyId ? { keyId: args.keyId } : {}),
       jobId,
     };
 
-    const task = this.queue.then(
-      () => this.sendOne(request),
-    );
+    const response = await this.enqueue(request);
 
-    this.queue = task.then(
-      () => undefined,
-      () => undefined,
-    );
-
-    return task;
+    return {
+      ...response,
+      found: response.found === true,
+      id: typeof response.id === 'string'
+        ? response.id.toLowerCase()
+        : null,
+      tagDistance: typeof response.tagDistance === 'number'
+        ? response.tagDistance
+        : null,
+    };
   }
 
   private sendOne(
-    request: PixelSealEmbedRequest,
+    request: PixelSealRequest,
   ): Promise<PixelSealResponse> {
     const child = this.getOrStartProcess();
     const timeoutMs = this.getTimeoutMs();
@@ -409,5 +457,48 @@ export class PixelSealEngineService implements OnModuleDestroy {
     }
 
     child?.kill();
+  }
+
+  private async getOrganizationWatermarkId(
+      organizationId: string,
+  ): Promise<string> {
+      const organization = await db.orm.public.Organization
+          .where({ id: organizationId })
+          .select('invisibleWatermarkId')
+          .first();
+
+      if (!organization) {
+          throw new NotFoundException(
+              `Organization ${organizationId} not found`,
+          );
+      }
+
+      const watermarkId = organization.invisibleWatermarkId;
+
+      if (
+          typeof watermarkId !== 'string' ||
+          !/^[0-9a-f]{10}$/i.test(watermarkId)
+      ) {
+          throw new InternalServerErrorException(
+              `Organization ${organizationId} has an invalid invisible watermark ID`,
+          );
+      }
+
+      return watermarkId.toLowerCase();
+  }
+
+  private enqueue(
+      request: PixelSealRequest,
+  ): Promise<PixelSealResponse> {
+      const task = this.queue.then(
+          () => this.sendOne(request),
+      );
+
+      this.queue = task.then(
+          () => undefined,
+          () => undefined,
+      );
+
+      return task;
   }
 }

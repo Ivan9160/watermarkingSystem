@@ -12,7 +12,6 @@ import {
   rm,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { randomBytes } from 'node:crypto';
 import {
   extname,
   join,
@@ -102,38 +101,17 @@ export class ProcessingProcessor extends WorkerHost {
       );
     }
 
-    // Preserve the invisible watermark ID between retries.
-    // The configured ID is used for a new ImageJob.
-    let pipelineConfig = watermarkConfig;
+    // The invisible watermark ID belongs to the batch organization.
+    // PixelSealEngineService resolves it from Organization.invisibleWatermarkId.
+    const pipelineConfig = watermarkConfig;
 
-    if (watermarkConfig.applyInvisibleWatermark) {
-      const invisibleConfig =
-        watermarkConfig.invisibleWatermarkConfig;
-
-      if (!invisibleConfig) {
-        throw new UnrecoverableError(
-          'invisibleWatermarkConfig is missing',
-        );
-      }      const watermarkId = image.watermarkId ?? (
-        invisibleConfig.idStrategy === 'per-image'
-          ? randomBytes(5).toString('hex')
-          : invisibleConfig.id
+    if (
+      watermarkConfig.applyInvisibleWatermark &&
+      !watermarkConfig.invisibleWatermarkConfig
+    ) {
+      throw new UnrecoverableError(
+        'invisibleWatermarkConfig is missing',
       );
-
-      if (!image.watermarkId) {
-        await this.imageJobs.saveWatermarkId(
-          image.id,
-          watermarkId,
-        );
-      }
-
-      pipelineConfig = {
-        ...watermarkConfig,
-        invisibleWatermarkConfig: {
-          ...invisibleConfig,
-          id: watermarkId,
-        },
-      };
     }
 
     const originalExt =
@@ -149,7 +127,6 @@ export class ProcessingProcessor extends WorkerHost {
         `input${originalExt}`,
       );
 
-      // The pipeline changes this to PNG when PixelSeal is enabled.
       const requestedOutputPath = join(
         workDir,
         `output${originalExt}`,
@@ -160,17 +137,10 @@ export class ProcessingProcessor extends WorkerHost {
         inputPath,
       );
 
-      // Executes visible and/or invisible watermark
-      // according to watermarkConfig.
-      //
-      // Both enabled:
-      // visible -> PixelSeal
-      //
-      // Only one enabled:
-      // executes only that engine.
       const finalOutputPath =
         await this.watermarkPipeline.apply({
           inputPath,
+          organizationId: batch.organizationId,
           outputPath: requestedOutputPath,
           config: pipelineConfig,
           jobId: image.id,
@@ -182,8 +152,6 @@ export class ProcessingProcessor extends WorkerHost {
         );
       });
 
-      // Use the actual output extension.
-      // PixelSeal output is PNG, even if the original was JPEG.
       const outputExt =
         extname(finalOutputPath).toLowerCase();
 

@@ -18,6 +18,7 @@ model Organization {
   id        String @id @default(cuid(2))
   allegroUserId  Int @unique @map("allegro_user_id")
   name      String
+  invisibleWatermarkId VarChar(10)? @unique @map("invisible_watermark_id")
 
   batches Batch[]
 
@@ -52,6 +53,8 @@ model ImageJob {
   watermarkId String? @map("watermark_id")
   productOfferId  String @map("product_offer_id")
   imageIndex  Int @map("image_index")
+  offerImageIndex Int @map("offer_image_index")
+
   storageKey   String? @unique @map("storage_key")
   status       ImageJobStatus @default(PENDING)
   errorMessage String? @map("error_message")

@@ -87,15 +87,20 @@ export interface BatchWatermarkConfig {
     applyInvisibleWatermark: boolean;
     invisibleWatermarkConfig?: {
         method: 'pixelseal';
-        id: string;
-        idStrategy: 'per-image';
-        selfCheck: boolean;
+        keyId?: string;
+        selfCheck?: boolean;
     };
 }
 
 export interface CreateBatchRequest {
-    watermarkConfig: BatchWatermarkConfig;
-    products: Array<{ offerId: string; images: string[] }>;
+    products: {
+        offerId: string;
+        images: {
+            url: string;
+            offerImageIndex: number;
+        }[];
+    }[];
+    watermarkConfig?: BatchWatermarkConfig;
 }
 
 export interface CreateBatchResponse {
@@ -146,4 +151,35 @@ export interface LocalUploadResponse {
     filename: string;
     mimeType: string;
     sizeBytes: number;
+}
+
+
+export type WatermarkVerificationStatus =
+    | 'verified'
+    | 'unknown_organization'
+    | 'invalid_signature'
+    | 'not_detected';
+
+export type WatermarkOwnership = 'own' | 'other' | null;
+
+export interface WatermarkVerificationResponse {
+    status: WatermarkVerificationStatus;
+    found: boolean;
+    ownership: WatermarkOwnership;
+
+    organization: {
+        name: string;
+    } | null;
+
+    watermark?: {
+        id: string;
+        tagDistance: number | null;
+    } | null;
+
+    image: {
+        width: number;
+        height: number;
+    };
+
+    verificationId?: string;
 }

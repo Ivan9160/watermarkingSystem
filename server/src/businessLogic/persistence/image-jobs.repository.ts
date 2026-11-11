@@ -10,6 +10,7 @@ export interface NewImageJob {
   productOfferId: string;
   imageIndex: number;
   sourceUrl: string;
+  offerImageIndex: number;
 }
 
 @Injectable()
