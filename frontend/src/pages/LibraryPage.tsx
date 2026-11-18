@@ -337,7 +337,7 @@ export function LibraryPage() {
 
     async function deleteImage(image: ProductImage) {
         const confirmed = window.confirm(
-            `Remove "${image.filename}" from your WaterM library?\n\n` +
+            `Remove "${image.filename}" from your WatermarkOS library?\n\n` +
             'The original image will NOT be deleted from Allegro or your computer.'
         );
         if (!confirmed) return;
@@ -379,7 +379,7 @@ export function LibraryPage() {
         const selected = images.filter(image => ids.includes(image.id));
         await removeWithConfirm(
             selected,
-            `Remove ${ids.length} selected image${ids.length === 1 ? '' : 's'} from WaterM?\n\n` +
+            `Remove ${ids.length} selected image${ids.length === 1 ? '' : 's'} from WatermarkOS?\n\n` +
             'The original files on Allegro and your computer will NOT be deleted.'
         );
     }
@@ -387,7 +387,7 @@ export function LibraryPage() {
     async function deleteGroup(group: ImageGroup) {
         await removeWithConfirm(
             group.images,
-            `Remove all ${group.images.length} photo${group.images.length === 1 ? '' : 's'} of "${group.title}" from WaterM?\n\n` +
+            `Remove all ${group.images.length} photo${group.images.length === 1 ? '' : 's'} of "${group.title}" from WatermarkOS?\n\n` +
             'The original files on Allegro and your computer will NOT be deleted.'
         );
     }
@@ -598,7 +598,7 @@ export function LibraryPage() {
                                         Watermark →
                                     </button>
                                     <button type="button" className="btn btn-secondary btn-danger"
-                                        title="Remove this product's photos from WaterM only"
+                                        title="Remove this product's photos from WatermarkOS only"
                                         onClick={() => deleteGroup(group)}>
                                         Delete group
                                     </button>
@@ -699,8 +699,8 @@ export function LibraryPage() {
                                                         <button
                                                             type="button"
                                                             className="remove-local"
-                                                            title="Remove from WaterM only"
-                                                            aria-label={`Delete ${image.filename} from WaterM`}
+                                                            title="Remove from WatermarkOS only"
+                                                            aria-label={`Delete ${image.filename} from WatermarkOS`}
                                                             onClick={() => deleteImage(image)}
                                                         >
                                                             Delete
@@ -792,7 +792,7 @@ export function LibraryPage() {
                         <button className="btn btn-secondary" onClick={() => selectImages(detailGroup.map(item => item.id))}>Select all {detailGroup.length} photos of this product</button>
                         <button className="btn btn-secondary" onClick={() => deselectImages(detailGroup.map(item => item.id))}>Deselect product photos</button>
                         <button className="btn btn-secondary btn-danger"
-                            onClick={() => deleteImage(detailImage)}>Delete from WaterM</button>
+                            onClick={() => deleteImage(detailImage)}>Delete from WatermarkOS</button>
                     </div>
                     <p className="image-details-note">Allegro file size may be unavailable until the backend provides it. Offer ID is inferred from the current filename when not supplied directly.</p>
                 </aside>

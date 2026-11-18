@@ -57,4 +57,11 @@ export class OrganizationsService {
         .select("id", "name", "allegroUserId")
         .first();
   }
+
+  async findByAllegroUserId(allegroUserId: number) {
+    return db.orm.public.Organization
+      .where({ allegroUserId: allegroUserId })
+      .select("id", "name", "invisibleWatermarkId")
+      .first();
+  }
 }

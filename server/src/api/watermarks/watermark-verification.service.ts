@@ -1,9 +1,10 @@
-
 import {
     BadGatewayException,
     BadRequestException,
+    ConflictException,
     Injectable,
     NotFoundException,
+    OnModuleDestroy,
     PayloadTooLargeException,
 } from '@nestjs/common';
 
@@ -14,8 +15,12 @@ import {
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { extname, join } from 'node:path';
+import { randomUUID } from 'node:crypto';
 
-import { PixelSealEngineService } from '../../businessLogic/processing/pixelseal-engine.service.ts';
+import {
+    PixelSealEngineService,
+    type PixelSealFootprintResult,
+} from '../../businessLogic/processing/pixelseal-engine.service.ts';
 import { MinioStorageService } from '../../businessLogic/minio/minio-storage.service.ts';
 import { ImageDownloaderService } from '../../businessLogic/ingestion/image-downloader.service.ts';
 import { ImageDownloadError } from '../../businessLogic/common/image-download.error.ts';
@@ -28,6 +33,8 @@ import { localKeyForFileId } from '../local-images/local-image-source.ts';
 import { VerifyWatermarkResponseDto } from './dto/verify-watermark.response.dto.ts';
 
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+const FOOTPRINT_JOB_TTL_MS = 60 * 60 * 1000;
+const FOOTPRINT_CLEANUP_INTERVAL_MS = 10 * 60 * 1000;
 
 const MIME_EXTENSIONS: Record<string, string> = {
     'image/jpeg': 'jpg',
@@ -40,15 +47,54 @@ const SUPPORTED_EXTENSIONS = new Set(['jpg', 'png', 'webp']);
 const LOCAL_LIBRARY_ID =
     /^local-server-([0-9a-f]{32}\.(?:jpg|png|webp))$/i;
 
+export type FootprintJobStatus =
+    | 'QUEUED'
+    | 'RUNNING'
+    | 'COMPLETED'
+    | 'FAILED';
+
+export interface FootprintJobView {
+    jobId: string;
+    status: FootprintJobStatus;
+    error: string | null;
+    result: PixelSealFootprintResult | null;
+}
+
+export interface FootprintUpload {
+    buffer: Buffer;
+    mimetype: string;
+    size: number;
+}
+
+interface FootprintJob extends FootprintJobView {
+    allegroUserId: number;
+    createdAt: number;
+}
+
 @Injectable()
-export class WatermarkVerificationService {
+export class WatermarkVerificationService implements OnModuleDestroy {
+    private readonly footprintJobs = new Map<string, FootprintJob>();
+
+    private readonly footprintCleanupTimer: NodeJS.Timeout;
+
     constructor(
         private readonly pixelSeal: PixelSealEngineService,
         private readonly organizations: OrganizationsService,
         private readonly storage: MinioStorageService,
         private readonly allegroSessions: AllegroSessionService,
         private readonly imageDownloader: ImageDownloaderService,
-    ) {}
+    ) {
+        this.footprintCleanupTimer = setInterval(
+            () => this.removeExpiredFootprintJobs(),
+            FOOTPRINT_CLEANUP_INTERVAL_MS,
+        );
+
+        this.footprintCleanupTimer.unref();
+    }
+
+    onModuleDestroy(): void {
+        clearInterval(this.footprintCleanupTimer);
+    }
 
     async verifyUploadedImage(args: {
         buffer: Buffer;
@@ -144,6 +190,208 @@ export class WatermarkVerificationService {
         }
     }
 
+    async startFootprintCheck(args: {
+        allegroUserId: number;
+        original: FootprintUpload | undefined;
+        suspect: FootprintUpload | undefined;
+        master: FootprintUpload | undefined;
+        nulls?: number;
+        threshold?: number;
+    }): Promise<{ jobId: string }> {
+        if (!args.original) {
+            throw new BadRequestException('Original image is required.');
+        }
+
+        if (!args.suspect) {
+            throw new BadRequestException('Suspect image is required.');
+        }
+
+        if (!process.env['WM_KEY']?.trim()) {
+            throw new Error(
+                'WM_KEY is not configured. Add WM_KEY to the backend .env file.',
+            );
+        }
+
+        const original = this.validateFootprintImage(args.original, 'Original');
+        const suspect = this.validateFootprintImage(args.suspect, 'Suspect');
+        const master = args.master
+            ? this.validateFootprintImage(args.master, 'Watermarked')
+            : undefined;
+
+        const hasActive = [...this.footprintJobs.values()].some(
+            job =>
+                job.allegroUserId === args.allegroUserId &&
+                (job.status === 'QUEUED' || job.status === 'RUNNING'),
+        );
+
+        if (hasActive) {
+            throw new ConflictException(
+                'Another overlay check is still running. Wait for it to finish.',
+            );
+        }
+
+        const organization = await this.organizations.findByAllegroUserId(
+            args.allegroUserId,
+        );
+
+        if (!organization) {
+            throw new NotFoundException(
+                'No organization is linked to your account.',
+            );
+        }
+
+        const workDir = await mkdtemp(join(tmpdir(), 'footprint-job-'));
+
+        try {
+            const originalPath = join(workDir, `original.${original.extension}`);
+            const suspectPath = join(workDir, `suspect.${suspect.extension}`);
+            const masterPath = master
+                ? join(workDir, `master.${master.extension}`)
+                : undefined;
+
+            await writeFile(originalPath, original.buffer);
+            await writeFile(suspectPath, suspect.buffer);
+
+            if (master && masterPath) {
+                await writeFile(masterPath, master.buffer);
+            }
+
+            const jobId = randomUUID();
+
+            this.footprintJobs.set(jobId, {
+                jobId,
+                allegroUserId: args.allegroUserId,
+                createdAt: Date.now(),
+                status: 'QUEUED',
+                error: null,
+                result: null,
+            });
+
+            void this.runFootprintJob({
+                jobId,
+                workDir,
+                organizationId: organization.id,
+                originalPath,
+                suspectPath,
+                masterPath,
+                nulls: args.nulls,
+                threshold: args.threshold,
+            });
+
+            return { jobId };
+        } catch (error) {
+            await rm(workDir, { recursive: true, force: true })
+                .catch(() => undefined);
+
+            throw error;
+        }
+    }
+
+    getFootprintJob(
+        jobId: string,
+        allegroUserId: number,
+    ): FootprintJobView {
+        const job = this.footprintJobs.get(jobId);
+
+        if (!job || job.allegroUserId !== allegroUserId) {
+            throw new NotFoundException('Overlay check job was not found.');
+        }
+
+        return {
+            jobId: job.jobId,
+            status: job.status,
+            error: job.error,
+            result: job.result,
+        };
+    }
+
+    private async runFootprintJob(args: {
+        jobId: string;
+        workDir: string;
+        organizationId: string;
+        originalPath: string;
+        suspectPath: string;
+        masterPath: string | undefined;
+        nulls: number | undefined;
+        threshold: number | undefined;
+    }): Promise<void> {
+        const job = this.footprintJobs.get(args.jobId);
+
+        if (!job) {
+            await rm(args.workDir, { recursive: true, force: true })
+                .catch(() => undefined);
+            return;
+        }
+
+        job.status = 'RUNNING';
+
+        try {
+            job.result = await this.pixelSeal.footprint({
+                organizationId: args.organizationId,
+                originalPath: args.originalPath,
+                suspectPath: args.suspectPath,
+                masterPath: args.masterPath,
+                nulls: args.nulls,
+                threshold: args.threshold,
+                jobId: args.jobId,
+            });
+
+            job.status = 'COMPLETED';
+        } catch (error) {
+            job.error = error instanceof Error
+                ? error.message
+                : 'The overlay check failed.';
+            job.status = 'FAILED';
+        } finally {
+            await rm(args.workDir, { recursive: true, force: true })
+                .catch(() => undefined);
+        }
+    }
+
+    private validateFootprintImage(
+        file: FootprintUpload,
+        label: string,
+    ): { buffer: Buffer; extension: string } {
+        const extension = MIME_EXTENSIONS[file.mimetype.toLowerCase()];
+
+        if (!extension) {
+            throw new BadRequestException(
+                `${label} image: only JPG, PNG and WebP are supported.`,
+            );
+        }
+
+        if (!Buffer.isBuffer(file.buffer) || file.buffer.length === 0) {
+            throw new BadRequestException(`${label} image is empty.`);
+        }
+
+        if (file.buffer.length > MAX_IMAGE_BYTES) {
+            throw new PayloadTooLargeException(
+                `${label} image exceeds the 10 MB limit.`,
+            );
+        }
+
+        if (!matchesImageSignature(file.buffer, extension)) {
+            throw new BadRequestException(
+                `${label} image: the file content does not match its format.`,
+            );
+        }
+
+        return { buffer: file.buffer, extension };
+    }
+
+    private removeExpiredFootprintJobs(): void {
+        const now = Date.now();
+
+        for (const [jobId, job] of this.footprintJobs) {
+            const finished =
+                job.status === 'COMPLETED' || job.status === 'FAILED';
+
+            if (finished && now - job.createdAt > FOOTPRINT_JOB_TTL_MS) {
+                this.footprintJobs.delete(jobId);
+            }
+        }
+    }
+
     private async readLocalImage(key: string): Promise<Buffer> {
         try {
             return await this.storage.getBuffer(key);
@@ -236,7 +484,6 @@ export class WatermarkVerificationService {
             height: result.height ?? 0,
         };
 
-        // Internal details are hidden by default.
         response.organization = null;
         response.ownership = null;
         response.watermark = null;
@@ -256,7 +503,6 @@ export class WatermarkVerificationService {
         const organization =
             await this.organizations.findByInvisibleWatermarkId(result.id);
 
-        // The watermark is valid, but its organization is not registered.
         if (!organization) {
             response.status = 'unknown_organization';
             return response;
@@ -274,7 +520,6 @@ export class WatermarkVerificationService {
             name: organization.name,
         };
 
-        // Reveal technical details only to the owning organization.
         if (ownership === 'own') {
             response.watermark = {
                 id: result.id,

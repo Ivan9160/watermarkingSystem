@@ -156,7 +156,7 @@ export function BatchPage() {
     const [message, setMessage] = useState('');
     const [checkVersion, setCheckVersion] = useState(0);
     const [needsOrganization, setNeedsOrganization] = useState(false);
-    const [organizationName, setOrganizationName] = useState('My WaterM Store');
+    const [organizationName, setOrganizationName] = useState('My WatermarkOS Store');
 
     const chosenImages = useMemo(
         () => images.filter(image => selectedIds.includes(image.id)),
@@ -450,7 +450,7 @@ export function BatchPage() {
 
                     {message && <p className="batch-message" role="alert">{message}</p>}
                     {needsOrganization && <div className="batch-organization-panel">
-                        <p>A WaterM organization is required for your Allegro seller before the first batch.</p>
+                        <p>A WaterarkOS organization is required for your Allegro seller before the first batch.</p>
                         <label className="form-field"><span>Organization name</span>
                             <input type="text" maxLength={100} value={organizationName}
                                 onChange={e => setOrganizationName(e.target.value)} />

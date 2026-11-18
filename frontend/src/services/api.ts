@@ -2,9 +2,23 @@ import type {
     AllegroConnection, ImportProgress, ProductImage, WorkspaceSession,
     CreateBatchRequest, CreateBatchResponse, BatchStatusResponse, BatchResultsResponse, LocalUploadResponse,
     WatermarkVerificationResponse,
+    FootprintJobCreated, FootprintJobResponse,
 } from '../types';
-
+import { purgeBatchState, syncOrganization } from '../storage/batchStorage';
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '/api';
+let sessionExpiredHandled = false;
+function extractReason(body: unknown, fallback: string): string {
+    const message = body && typeof body === 'object' && 'message' in body
+        ? (body as { message?: unknown }).message
+        : undefined;
+
+    if (Array.isArray(message)) {
+        return message.filter((part): part is string => typeof part === 'string').join('; ');
+    }
+
+    return typeof message === 'string' ? message : fallback;
+}
+
 async function uploadLocalImage(file: File, offerId: string): Promise<LocalUploadResponse> {
     const form = new FormData();
     form.append('file', file);
@@ -35,20 +49,26 @@ async function uploadWatermarkVerificationImage(
 
     if (!response.ok) {
         const body: unknown = await response.json().catch(() => undefined);
-        const message = body && typeof body === 'object' && 'message' in body
-            ? (body as { message?: unknown }).message
-            : undefined;
-        const reason = Array.isArray(message)
-            ? message.filter((part): part is string => typeof part === 'string').join('; ')
-            : typeof message === 'string'
-                ? message
-                : `Verification request failed (${response.status})`;
-        throw new Error(reason);
+        throw new Error(extractReason(body, `Verification request failed (${response.status})`));
     }
 
     return response.json() as Promise<WatermarkVerificationResponse>;
 }
 
+async function startFootprintCheck(form: FormData): Promise<FootprintJobCreated> {
+    const response = await fetch(`${API_BASE}/watermarks/footprint/check`, {
+        method: 'POST',
+        credentials: 'include',
+        body: form,
+    });
+
+    if (!response.ok) {
+        const body: unknown = await response.json().catch(() => undefined);
+        throw new Error(extractReason(body, `Overlay check request failed (${response.status})`));
+    }
+
+    return response.json() as Promise<FootprintJobCreated>;
+}
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
     const response = await fetch(`${API_BASE}${path}`, {
@@ -61,14 +81,13 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
     });
 
     if (!response.ok) {
+        if (response.status === 401 && !sessionExpiredHandled) {
+            sessionExpiredHandled = true;
+            syncOrganization(null);
+            purgeBatchState();
+        }
         const body: unknown = await response.json().catch(() => undefined);
-        const message = (body && typeof body === 'object' && 'message' in body)
-            ? (body as { message?: unknown }).message
-            : undefined;
-        const reason = Array.isArray(message)
-            ? message.filter((part): part is string => typeof part === 'string').join('; ')
-            : typeof message === 'string' ? message : `API request failed (${response.status})`;
-        throw new Error(reason);
+        throw new Error(extractReason(body, `API request failed (${response.status})`));
     }
 
     return response.json() as Promise<T>;
@@ -82,6 +101,9 @@ export const api = {
             method: 'POST',
             body: JSON.stringify({ imageId }),
         }),
+    startFootprintCheck,
+    getFootprintJob: (jobId: string) =>
+        request<FootprintJobResponse>(`/watermarks/footprint/check/${encodeURIComponent(jobId)}`),
     getLocalImages: () => request<{ items: ProductImage[] }>('/local-images'),
     deleteLocalImage: (ref: string) => request<{ removed: boolean }>(`/local-images/${encodeURIComponent(ref.replace(/^waterm-local:/, ''))}`, {
         method: 'DELETE',

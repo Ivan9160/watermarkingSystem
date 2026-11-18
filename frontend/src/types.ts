@@ -183,3 +183,29 @@ export interface WatermarkVerificationResponse {
 
     verificationId?: string;
 }
+
+
+export type FootprintMasterSource = 'uploaded' | 'stored' | 'generated';
+
+export interface FootprintCheckResult {
+    present: boolean;
+    z: number;
+    retention: number;
+    threshold: number;
+    verdict: string;
+    aligned: boolean;
+    masterSource: FootprintMasterSource;
+    nulls: number;
+    warning?: string | null;
+}
+
+export interface FootprintJobResponse {
+    jobId: string;
+    status: 'QUEUED' | 'RUNNING' | 'COMPLETED' | 'FAILED';
+    error?: string | null;
+    result?: FootprintCheckResult | null;
+}
+
+export interface FootprintJobCreated {
+    jobId: string;
+}

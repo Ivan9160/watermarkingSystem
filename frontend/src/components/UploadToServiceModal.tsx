@@ -213,7 +213,7 @@ export function UploadToServiceModal({ batchId, imageCount, onClose, onNavigate 
                             <p className="wm-publish-hint">
                                 {published.status === 'PARTIAL'
                                     ? 'Some offers or images were not updated. Check Allegro before attempting any manual retry; the applied offers have already changed.'
-                                    : 'The processed images have been sent to Allegro. Reimport the catalog to refresh the photos shown in WaterM.'}
+                                    : 'The processed images have been sent to Allegro. Reimport the catalog to refresh the photos shown in WatermarkOS.'}
                             </p>
                         </section>
                     ) : (

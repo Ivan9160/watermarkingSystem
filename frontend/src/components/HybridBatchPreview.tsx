@@ -198,7 +198,7 @@ export function HybridBatchPreview({ imageSrc, config, onPositionChange, onPatte
 
     return <div className="hybrid-batch-preview wm-local-batch-preview">
         <div className="wm-local-preview-area">
-            {loadError && <p className="wm-local-preview-message" role="alert">Cannot display the source image. Check your WaterM session.</p>}
+            {loadError && <p className="wm-local-preview-message" role="alert">Cannot display the source image. Check your WatermarkOS session.</p>}
             {!loadError && !ready && <p className="wm-local-preview-message">Loading image…</p>}
             {ready && <svg ref={svgRef} className={`wm-local-preview-svg${dragging ? ' is-dragging' : ''}`} width={w} height={h}
                 viewBox={`0 0 ${w} ${h}`} xmlns="http://www.w3.org/2000/svg" role="img"

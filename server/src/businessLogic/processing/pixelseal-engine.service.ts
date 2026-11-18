@@ -1,4 +1,3 @@
-
 import {
   Injectable,
   Logger,
@@ -13,6 +12,8 @@ import {
 } from 'node:child_process';
 
 import { existsSync } from 'node:fs';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 
@@ -31,16 +32,16 @@ interface PixelSealEmbedRequest {
 }
 
 interface PixelSealVerifyRequest {
-    op: 'verify';
-    method: 'pixelseal';
-    input: string;
-    keyId?: string;
-    jobId: string;
+  op: 'verify';
+  method: 'pixelseal';
+  input: string;
+  keyId?: string;
+  jobId: string;
 }
 
 type PixelSealRequest =
-    | PixelSealEmbedRequest
-    | PixelSealVerifyRequest;
+  | PixelSealEmbedRequest
+  | PixelSealVerifyRequest;
 
 interface PixelSealResponse {
   ok: boolean;
@@ -67,6 +68,20 @@ export interface PixelSealVerificationResult extends PixelSealResponse {
   tagDistance: number | null;
 }
 
+export type FootprintMasterSource = 'uploaded' | 'stored' | 'generated';
+
+export interface PixelSealFootprintResult {
+  present: boolean;
+  z: number;
+  retention: number;
+  threshold: number;
+  verdict: string;
+  aligned: boolean;
+  masterSource: FootprintMasterSource;
+  nulls: number;
+  warning: string | null;
+}
+
 interface PendingRequest {
   child: ChildProcessWithoutNullStreams;
   jobId: string;
@@ -74,6 +89,12 @@ interface PendingRequest {
   reject: (reason: Error) => void;
   timeout: NodeJS.Timeout;
 }
+
+const DEFAULT_TIMEOUT_MS = 180_000;
+const DEFAULT_FOOTPRINT_TIMEOUT_MS = 900_000;
+const DEFAULT_NULLS = 12;
+const DEFAULT_THRESHOLD = 6.0;
+const DEFAULT_SEED = 3;
 
 @Injectable()
 export class PixelSealEngineService implements OnModuleDestroy {
@@ -94,30 +115,30 @@ export class PixelSealEngineService implements OnModuleDestroy {
     outputPath: string;
     config: InvisibleWatermarkConfig;
     jobId?: string;
-}): Promise<PixelSealResponse> {
+  }): Promise<PixelSealResponse> {
     const jobId = args.jobId ?? randomUUID();
 
     const watermarkId = await this.getOrganizationWatermarkId(
-        args.organizationId,
+      args.organizationId,
     );
 
     const request: PixelSealEmbedRequest = {
-        op: 'embed',
-        method: args.config.method ?? 'pixelseal',
-        input: resolve(args.inputPath),
-        output: resolve(args.outputPath),
-        id: watermarkId,
+      op: 'embed',
+      method: args.config.method ?? 'pixelseal',
+      input: resolve(args.inputPath),
+      output: resolve(args.outputPath),
+      id: watermarkId,
 
-        ...(args.config.keyId
-            ? { keyId: args.config.keyId }
-            : {}),
+      ...(args.config.keyId
+        ? { keyId: args.config.keyId }
+        : {}),
 
-        selfCheck: args.config.selfCheck ?? true,
-        jobId,
+      selfCheck: args.config.selfCheck ?? true,
+      jobId,
     };
 
     return this.enqueue(request);
-}
+  }
 
   async verify(args: {
     inputPath: string;
@@ -148,11 +169,242 @@ export class PixelSealEngineService implements OnModuleDestroy {
     };
   }
 
+  async footprint(args: {
+    organizationId: string;
+    originalPath: string;
+    suspectPath: string;
+    masterPath?: string;
+    nulls?: number;
+    threshold?: number;
+    seed?: number;
+    jobId?: string;
+  }): Promise<PixelSealFootprintResult> {
+    const jobId = args.jobId ?? randomUUID();
+
+    const nulls = Number.isInteger(args.nulls) && (args.nulls as number) >= 2
+      ? (args.nulls as number)
+      : DEFAULT_NULLS;
+
+    const threshold = typeof args.threshold === 'number' &&
+      Number.isFinite(args.threshold)
+      ? args.threshold
+      : DEFAULT_THRESHOLD;
+
+    const seed = args.seed ?? DEFAULT_SEED;
+
+    let tempDir: string | undefined;
+    let masterPath = args.masterPath;
+    let masterSource: FootprintMasterSource = 'uploaded';
+
+    try {
+      if (!masterPath) {
+        tempDir = await mkdtemp(join(tmpdir(), 'footprint-'));
+        masterPath = join(tempDir, 'master.png');
+        masterSource = 'generated';
+
+        await this.embed({
+          organizationId: args.organizationId,
+          inputPath: args.originalPath,
+          outputPath: masterPath,
+          config: { method: 'pixelseal', selfCheck: true },
+          jobId: `${jobId}-master`,
+        });
+      }
+
+      const finalMasterPath = masterPath;
+
+      const output = await this.enqueueTask(
+        () => this.runFootprintScript({
+          originalPath: args.originalPath,
+          masterPath: finalMasterPath,
+          suspectPath: args.suspectPath,
+          nulls,
+          threshold,
+          seed,
+          jobId,
+        }),
+      );
+
+      const z = this.readNumber(output, /^z\s*=\s*(\S+)/m);
+      const retention = this.readNumber(
+        output,
+        /^retention a\s*=\s*(\S+)/m,
+      );
+
+      if (z === null || retention === null) {
+        throw new InternalServerErrorException(
+          `Footprint check returned no result for job ${jobId}: ${output.slice(-500)}`,
+        );
+      }
+
+      const present = z >= threshold;
+
+      return {
+        present,
+        z,
+        retention,
+        threshold,
+        verdict: present ? 'OUR FOOTPRINT PRESENT' : 'not shown',
+        aligned: /aligned to the original first/.test(output),
+        masterSource,
+        nulls,
+        warning: null,
+      };
+    } finally {
+      if (tempDir) {
+        await rm(tempDir, { recursive: true, force: true })
+          .catch(() => undefined);
+      }
+    }
+  }
+
+  private readNumber(text: string, pattern: RegExp): number | null {
+    const match = pattern.exec(text);
+
+    if (!match?.[1]) {
+      return null;
+    }
+
+    const value = Number(match[1]);
+
+    return Number.isFinite(value) ? value : null;
+  }
+
+  private runFootprintScript(args: {
+    originalPath: string;
+    masterPath: string;
+    suspectPath: string;
+    nulls: number;
+    threshold: number;
+    seed: number;
+    jobId: string;
+  }): Promise<string> {
+    const root = resolve(
+      process.env['PIXELSEAL_ROOT'] ?? process.cwd(),
+    );
+
+    const defaultPythonPath =
+      process.platform === 'win32'
+        ? join('.venv-pixelseal', 'Scripts', 'python.exe')
+        : join('.venv-pixelseal', 'bin', 'python');
+
+    const python = resolve(
+      root,
+      process.env['PIXELSEAL_PYTHON'] ?? defaultPythonPath,
+    );
+
+    const script = resolve(
+      root,
+      process.env['PIXELSEAL_FOOTPRINT_SCRIPT'] ??
+        'engine/footprint_check.py',
+    );
+
+    if (!existsSync(python)) {
+      throw new Error(
+        `PixelSeal Python was not found at ${python}. Check PIXELSEAL_ROOT and PIXELSEAL_PYTHON.`,
+      );
+    }
+
+    if (!existsSync(script)) {
+      throw new Error(
+        `Footprint script was not found at ${script}. Check PIXELSEAL_FOOTPRINT_SCRIPT.`,
+      );
+    }
+
+    const timeoutMs = this.getTimeoutMs('footprint');
+
+    return new Promise<string>((resolveResult, rejectResult) => {
+      const child = spawn(
+        python,
+        [
+          script,
+          '--original', resolve(args.originalPath),
+          '--master', resolve(args.masterPath),
+          '--suspect', resolve(args.suspectPath),
+          '--embedder', 'pixelseal',
+          '--nulls', String(args.nulls),
+          '--threshold', String(args.threshold),
+          '--seed', String(args.seed),
+        ],
+        {
+          cwd: dirnameOf(script),
+          env: {
+            ...process.env,
+            PYTHONUNBUFFERED: '1',
+          },
+          stdio: ['ignore', 'pipe', 'pipe'],
+          windowsHide: true,
+        },
+      );
+
+      let stdout = '';
+      let stderr = '';
+      let finished = false;
+
+      const timer = setTimeout(() => {
+        if (finished) return;
+
+        finished = true;
+        child.kill();
+
+        rejectResult(
+          new Error(
+            `Footprint check timed out after ${timeoutMs} ms for job ${args.jobId}.`,
+          ),
+        );
+      }, timeoutMs);
+
+      child.stdout.setEncoding('utf8');
+      child.stderr.setEncoding('utf8');
+
+      child.stdout.on('data', (chunk: string) => {
+        stdout += chunk;
+      });
+
+      child.stderr.on('data', (chunk: string) => {
+        stderr = `${stderr}${chunk}`.slice(-12_000);
+      });
+
+      child.on('error', (error) => {
+        if (finished) return;
+
+        finished = true;
+        clearTimeout(timer);
+
+        rejectResult(
+          new Error(
+            `Could not start footprint check: ${error.message}`,
+          ),
+        );
+      });
+
+      child.on('close', (code) => {
+        if (finished) return;
+
+        finished = true;
+        clearTimeout(timer);
+
+        if (/^z\s*=/m.test(stdout)) {
+          resolveResult(stdout);
+          return;
+        }
+
+        const reason = (stderr.trim() || stdout.trim()).slice(-500);
+
+        rejectResult(
+          new Error(
+            `Footprint check failed (code=${code}): ${reason || 'no output'}`,
+          ),
+        );
+      });
+    });
+  }
+
   private sendOne(
     request: PixelSealRequest,
   ): Promise<PixelSealResponse> {
     const child = this.getOrStartProcess();
-    const timeoutMs = this.getTimeoutMs();
+    const timeoutMs = this.getTimeoutMs(request.op);
 
     return new Promise<PixelSealResponse>(
       (resolveResult, rejectResult) => {
@@ -220,8 +472,6 @@ export class PixelSealEngineService implements OnModuleDestroy {
       return this.child;
     }
 
-    // All relative paths are resolved from PIXELSEAL_ROOT.
-    // PIXELSEAL_ROOT defaults to the current working directory.
     const root = resolve(
       process.env['PIXELSEAL_ROOT'] ?? process.cwd(),
     );
@@ -424,14 +674,20 @@ export class PixelSealEngineService implements OnModuleDestroy {
     pending.reject(error);
   }
 
-  private getTimeoutMs(): number {
-    const value = Number(
-      process.env['PIXELSEAL_TIMEOUT_MS'] ?? 180_000,
-    );
+  private getTimeoutMs(op: PixelSealRequest['op'] | 'footprint'): number {
+    const name = op === 'footprint'
+      ? 'PIXELSEAL_FOOTPRINT_TIMEOUT_MS'
+      : 'PIXELSEAL_TIMEOUT_MS';
+
+    const fallback = op === 'footprint'
+      ? DEFAULT_FOOTPRINT_TIMEOUT_MS
+      : DEFAULT_TIMEOUT_MS;
+
+    const value = Number(process.env[name] ?? fallback);
 
     return Number.isFinite(value) && value >= 1_000
       ? value
-      : 180_000;
+      : fallback;
   }
 
   private stderrSuffix(): string {
@@ -460,45 +716,51 @@ export class PixelSealEngineService implements OnModuleDestroy {
   }
 
   private async getOrganizationWatermarkId(
-      organizationId: string,
+    organizationId: string,
   ): Promise<string> {
-      const organization = await db.orm.public.Organization
-          .where({ id: organizationId })
-          .select('invisibleWatermarkId')
-          .first();
+    const organization = await db.orm.public.Organization
+      .where({ id: organizationId })
+      .select('invisibleWatermarkId')
+      .first();
 
-      if (!organization) {
-          throw new NotFoundException(
-              `Organization ${organizationId} not found`,
-          );
-      }
+    if (!organization) {
+      throw new NotFoundException(
+        `Organization ${organizationId} not found`,
+      );
+    }
 
-      const watermarkId = organization.invisibleWatermarkId;
+    const watermarkId = organization.invisibleWatermarkId;
 
-      if (
-          typeof watermarkId !== 'string' ||
-          !/^[0-9a-f]{10}$/i.test(watermarkId)
-      ) {
-          throw new InternalServerErrorException(
-              `Organization ${organizationId} has an invalid invisible watermark ID`,
-          );
-      }
+    if (
+      typeof watermarkId !== 'string' ||
+      !/^[0-9a-f]{10}$/i.test(watermarkId)
+    ) {
+      throw new InternalServerErrorException(
+        `Organization ${organizationId} has an invalid invisible watermark ID`,
+      );
+    }
 
-      return watermarkId.toLowerCase();
+    return watermarkId.toLowerCase();
   }
 
   private enqueue(
-      request: PixelSealRequest,
+    request: PixelSealRequest,
   ): Promise<PixelSealResponse> {
-      const task = this.queue.then(
-          () => this.sendOne(request),
-      );
-
-      this.queue = task.then(
-          () => undefined,
-          () => undefined,
-      );
-
-      return task;
+    return this.enqueueTask(() => this.sendOne(request));
   }
+
+  private enqueueTask<T>(task: () => Promise<T>): Promise<T> {
+    const run = this.queue.then(task);
+
+    this.queue = run.then(
+      () => undefined,
+      () => undefined,
+    );
+
+    return run;
+  }
+}
+
+function dirnameOf(filePath: string): string {
+  return resolve(filePath, '..');
 }
