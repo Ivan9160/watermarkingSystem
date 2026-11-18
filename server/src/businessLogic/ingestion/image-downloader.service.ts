@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { ImageDownloadError } from '../common/image-download.error.ts';
 import { IMAGE_TYPES, matchesImageSignature } from '../common/image-types.ts';
 import { parseAllowedImageUrl } from '../common/image-url.policy.ts';
+import { error } from 'node:console';
 
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 
@@ -23,8 +24,8 @@ export class ImageDownloaderService {
         redirect: 'error',
         signal: AbortSignal.timeout(15_000),
       });
-    } catch {
-      throw new ImageDownloadError('Cannot download image', true);
+    } catch (error: any) {
+      throw new ImageDownloadError(`Error downloading image: ${error.message}`, true);
     }
 
     if (!response.ok) {

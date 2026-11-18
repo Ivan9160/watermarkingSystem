@@ -99,13 +99,12 @@ export function createZip(entries: Array<{ name: string; bytes: Uint8Array }>): 
     }
 
     const centralOffset = offset;
+
     for (const header of central) {
-        for (const header of central) {
-            chunks.push(toBlobPart(header));
-            offset += header.length;
-        }
+        chunks.push(toBlobPart(header));
         offset += header.length;
     }
+
     const centralSize = offset - centralOffset;
     if (offset + 22 > MAX_UINT32) throw new Error('Batch ZIP exceeds 4 GB.');
 

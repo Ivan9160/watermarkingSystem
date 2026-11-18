@@ -4113,19 +4113,28 @@ a {
     flex-direction: column;
     gap: 12px;
     margin-top: 16px;
-    padding: 16px;
-    border: 1px solid var(--border-color, #dedee5);
-    border-radius: 10px;
+    padding: 16px 0 0;
+    border: none;
+    border-top: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 0;
+    background: transparent;
 }
 
 .verification-technical-details h4 {
-    margin: 0 0 4px;
+    margin: 0 0 2px;
     font-size: 14px;
     font-weight: 600;
 }
 
 .verification-technical-details .verification-detail {
     margin: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.verification-technical-details .verification-detail:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
 }
 
 .verification-technical-details code {

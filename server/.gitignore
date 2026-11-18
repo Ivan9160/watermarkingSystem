@@ -12,6 +12,10 @@ __pycache__/
 *.pth
 *.pt
 
+engine/__pycache__/
+engine/ckpts/
+
+
 /tmp/
 *.tmp
 .env

@@ -44,7 +44,9 @@ export function IntegrationsPage() {
 
     const [connection, setConnection] = useState<AllegroConnection>({ connected: false });
     const [busy, setBusy] = useState(false);
+    const [connecting, setConnecting] = useState(false);
     const [notice, setNotice] = useState('');
+    const connectStarted = useRef(false);
 
     const returnedFromOAuth = useRef(
         new URLSearchParams(window.location.search).get('allegro') === 'connected',
@@ -160,8 +162,26 @@ export function IntegrationsPage() {
     }, [clearAllegroImages, runImport, setImportProgress]);
 
     function connect() {
+        if (connectStarted.current || connecting || busy) return;
+
+        connectStarted.current = true;
+        setConnecting(true);
+        setNotice('Redirecting to Allegro...');
         window.location.assign(api.getAllegroLoginUrl());
     }
+
+    useEffect(() => {
+
+        const resetConnectionRedirect = () => {
+            connectStarted.current = false;
+            setConnecting(false);
+        };
+
+        window.addEventListener('pageshow', resetConnectionRedirect);
+        return () => {
+            window.removeEventListener('pageshow', resetConnectionRedirect);
+        };
+    }, []);
 
     async function disconnect() {
         activeRequest.current++;
@@ -225,8 +245,12 @@ export function IntegrationsPage() {
 
                     <div className="integration-actions">
                         {!connection.connected ? (
-                            <button className="btn btn-primary" disabled={busy} onClick={connect}>
-                                Connect Allegro →
+                            <button
+                                className="btn btn-primary"
+                                disabled={busy || connecting}
+                                onClick={connect}
+                            >
+                                {connecting ? 'Redirecting to Allegro...' : 'Connect Allegro →'}
                             </button>
                         ) : (
                             <>
@@ -309,7 +333,7 @@ export function IntegrationsPage() {
                         </div>
                         <div>
                             <b>02</b><strong>Import</strong>
-                            <p>WaterM finds your offers and retrieves every gallery photo.</p>
+                            <p>WatermarkOS finds your offers and retrieves every gallery photo.</p>
                         </div>
                         <div>
                             <b>03</b><strong>Watermark</strong>

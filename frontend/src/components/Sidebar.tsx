@@ -20,7 +20,7 @@ export function Sidebar() {
         <aside className="sidebar">
             <div className="brand">
                 <span className="brand-mark">◈</span>
-                <span>WaterM<span className="brand-period">.</span></span>
+                <span>WatermarkOS<span className="brand-period">.</span></span>
             </div>
             <nav className="sidebar-navigation" aria-label="Main navigation">
                 {navigation.map(item => {
