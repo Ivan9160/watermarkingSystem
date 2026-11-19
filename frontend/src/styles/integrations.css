@@ -1,0 +1,177 @@
+/* ===== 07. Allegro integration ===== */
+
+.integration-content {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 2px 2px 26px;
+}
+
+.integration-card, .integration-guide {
+    padding: 24px;
+}
+
+.integration-title {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.integration-title h2 {
+    font-size: 19px;
+}
+
+.integration-title p {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 3px;
+}
+
+.integration-title .status-chip {
+    margin-left: auto;
+}
+
+.integration-icon {
+    font-size: 23px;
+    padding: 7px 13px;
+    border: 1px solid #6e3b28;
+    border-radius: 10px;
+    background: #3b231c;
+}
+
+.integration-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 22px;
+}
+
+.connection-details {
+    display: flex;
+    gap: 28px;
+    margin-top: 22px;
+    color: #a0adc0;
+    font-size: 12px;
+}
+
+.connection-details strong {
+    color: #e4e8f0;
+}
+
+.integration-guide h2 {
+    font-size: 16px;
+    margin-bottom: 16px;
+}
+
+.integration-steps {
+    display: grid;
+    grid-template-columns: repeat(3,minmax(0,1fr));
+    gap: 16px;
+}
+
+.integration-steps > div {
+    border-radius: 10px;
+    background: #1d2637;
+    border: 1px solid #2f3b51;
+    padding: 17px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.integration-steps b {
+    color: #b6aaff;
+    font-size: 21px;
+}
+
+.integration-steps strong {
+    color: #f0edff;
+    font-size: 14px;
+}
+
+.integration-steps p {
+    font-size: 12px;
+    color: #9ba9bc;
+}
+
+.integration-note {
+    margin-top: 19px;
+    font-size: 12px;
+    color: #8998ac;
+}
+
+
+/* Import progress is styled here, never inside TSX. */
+.integration-progress {
+    padding: 24px;
+    min-width: 0;
+}
+
+.integration-progress .panel-heading h2 {
+    font-size: 16px;
+}
+
+.integration-progress-label {
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.integration-progress-bar {
+    display: block;
+    width: 100%;
+    height: 12px;
+    margin: 12px 0 0;
+    overflow: hidden;
+    border: 0;
+    border-radius: 999px;
+    background: #242e40;
+    accent-color: var(--accent);
+}
+
+.integration-progress-bar::-webkit-progress-bar {
+    background: #242e40;
+    border-radius: 999px;
+}
+
+.integration-progress-bar::-webkit-progress-value {
+    background: var(--accent);
+    border-radius: 999px;
+    transition: width .2s ease;
+}
+
+.integration-progress-bar::-moz-progress-bar {
+    background: var(--accent);
+    border-radius: 999px;
+}
+
+.integration-progress-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.integration-progress-stat {
+    min-width: 0;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    background: var(--surface-2);
+}
+
+.integration-progress-stat span {
+    display: block;
+    color: #a9b5c6;
+    font-size: 11px;
+}
+
+.integration-progress-stat strong {
+    display: block;
+    margin-top: 6px;
+    font-size: 24px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+

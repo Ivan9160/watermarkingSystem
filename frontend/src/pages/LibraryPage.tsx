@@ -11,11 +11,8 @@ import { useApp, type LibrarySourceFilter } from '../context/AppContext';
 import type { ProductImage } from '../types';
 import { api } from '../services/api';
 
-type FormatFilter = 'all' | 'jpeg' | 'png' | 'webp' | 'unknown';
-type ResolutionFilter = 'all' | 'small' | 'hd' | 'large' | 'unknown';
-type SizeFilter = 'all' | 'under1' | 'from1to5' | 'over5' | 'unknown';
-type CountFilter = 'all' | 'multiple' | 'five';
 type SortOrder = 'asc' | 'desc';
+type LibraryViewMode = 'photos' | 'products';
 type Dimensions = { width: number; height: number };
 type UploadPreview = { id: string; name: string; url?: string; issue?: string; status?: string };
 type ImageGroup = {
@@ -40,22 +37,17 @@ function getOfferId(image: ProductImage): string | undefined {
 function productKey(image: ProductImage): string {
     if (image.source === 'local') {
         if (image.offerId) return `local:${image.offerId}`;
-
         if (image.productName?.trim()) {
             return `local-name:${image.productName.trim().toLowerCase()}`;
         }
     }
-
     if (image.source === 'allegro') {
         const offerId = getOfferId(image);
-
         if (offerId) return `allegro:${offerId}`;
-
         if (image.productName?.trim()) {
             return `allegro-name:${image.productName.trim().toLowerCase()}`;
         }
     }
-
     return `individual:${image.id}`;
 }
 
@@ -63,7 +55,7 @@ function sourceLabel(source: ProductImage['source']): string {
     return source === 'local' ? 'Local' : source === 'allegro' ? 'Allegro' : 'Catalog';
 }
 
-function getFormat(image: ProductImage): Exclude<FormatFilter, 'all'> {
+function getFormat(image: ProductImage): 'jpeg' | 'png' | 'webp' | 'unknown' {
     if (image.mimeType === 'image/jpeg') return 'jpeg';
     if (image.mimeType === 'image/png') return 'png';
     if (image.mimeType === 'image/webp') return 'webp';
@@ -107,12 +99,9 @@ export function LibraryPage() {
     const previewUrls = useRef<string[]>([]);
     const libraryGridRef = useRef<HTMLDivElement>(null);
     const [query, setQuery] = useState('');
+    const [viewMode, setViewMode] = useState<LibraryViewMode>('photos');
     const [selectedOnly, setSelectedOnly] = useState(false);
     const [sort, setSort] = useState<SortOrder>('asc');
-    const [format, setFormat] = useState<FormatFilter>('all');
-    const [resolution, setResolution] = useState<ResolutionFilter>('all');
-    const [size, setSize] = useState<SizeFilter>('all');
-    const [count, setCount] = useState<CountFilter>('all');
     const [dimensions, setDimensions] = useState<Record<string, Dimensions>>({});
     const [detailId, setDetailId] = useState<string | null>(null);
     const [uploadPreviews, setUploadPreviews] = useState<UploadPreview[]>([]);
@@ -138,14 +127,6 @@ export function LibraryPage() {
     }, [detailId]);
 
     const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
-    const groupCounts = useMemo(() => {
-        const counts = new Map<string, number>();
-        for (const image of images) {
-            const key = productKey(image);
-            counts.set(key, (counts.get(key) ?? 0) + 1);
-        }
-        return counts;
-    }, [images]);
 
     const visible = useMemo(() => images
         .filter(image => {
@@ -154,41 +135,15 @@ export function LibraryPage() {
         })
         .filter(image => librarySourceFilter === 'all' || image.source === librarySourceFilter)
         .filter(image => !selectedOnly || selectedSet.has(image.id))
-        .filter(image => format === 'all' || getFormat(image) === format)
-        .filter(image => {
-            const width = image.width ?? dimensions[image.id]?.width;
-            if (resolution === 'all') return true;
-            if (resolution === 'unknown') return width === undefined;
-            if (width === undefined) return false;
-            if (resolution === 'small') return width < 1280;
-            if (resolution === 'hd') return width >= 1280 && width < 3840;
-            return width >= 3840;
-        })
-        .filter(image => {
-            const bytes = image.sizeBytes;
-            if (size === 'all') return true;
-            if (size === 'unknown') return bytes === undefined;
-            if (bytes === undefined) return false;
-            if (size === 'under1') return bytes < MB;
-            if (size === 'from1to5') return bytes >= MB && bytes <= 5 * MB;
-            return bytes > 5 * MB;
-        })
-        .filter(image => {
-            const total = groupCounts.get(productKey(image)) ?? 1;
-            return count === 'all' || (count === 'multiple' ? total >= 2 : total >= 5);
-        })
         .sort((a, b) => Number(recentUploadIds.has(b.id)) - Number(recentUploadIds.has(a.id)) ||
             a.filename.localeCompare(b.filename, undefined, { numeric: true }) * (sort === 'asc' ? 1 : -1)),
-    [images, query, librarySourceFilter, selectedOnly, selectedSet, format,
-        resolution, size, count, sort, dimensions, groupCounts, recentUploadIds]);
+    [images, query, librarySourceFilter, selectedOnly, selectedSet, sort, recentUploadIds]);
 
     const visibleGroups = useMemo<ImageGroup[]>(() => {
         const groups = new Map<string, ImageGroup>();
-
         for (const image of visible) {
             const key = productKey(image);
             let group = groups.get(key);
-
             if (!group) {
                 const offerId = getOfferId(image);
                 group = {
@@ -201,12 +156,19 @@ export function LibraryPage() {
                 };
                 groups.set(key, group);
             }
-
             group.images.push(image);
         }
-
         return Array.from(groups.values());
     }, [visible]);
+
+    const displayGroups: ImageGroup[] = viewMode === 'products'
+        ? visibleGroups
+        : visible.length > 0 ? [{
+            key: 'all-photos',
+            title: 'All Photos',
+            source: visible[0].source,
+            images: visible,
+        }] : [];
 
     const detailImage = images.find(image => image.id === detailId);
     const detailGroup = detailImage
@@ -252,15 +214,9 @@ export function LibraryPage() {
         setUploadError('');
         previewUrls.current.forEach(url => URL.revokeObjectURL(url));
         previewUrls.current = [];
-
         setQuery('');
         setSelectedOnly(false);
-        setFormat('all');
-        setResolution('all');
-        setSize('all');
-        setCount('all');
         setLibrarySourceFilter('all');
-
         const { imported, skipped, accepted } = addLocalImages(files);
         const byFile = new Map(accepted.map(item => [item.file, item.id]));
         const previews: UploadPreview[] = files.slice(0, 11).map(file => {
@@ -283,12 +239,10 @@ export function LibraryPage() {
         setRecentUploadIds(new Set(accepted.map(item => item.id)));
         setUploadNotice(`${imported} image(s) added to Library · uploading to RustFS…${skipped ? ` · ${skipped} skipped` : ''}`);
         requestAnimationFrame(() => libraryGridRef.current?.scrollTo({ top: 0 }));
-
         if (!accepted.length) {
             setUploadError('No valid files selected. Choose JPG, PNG or WebP under 10 MB.');
             return;
         }
-
         let completed = 0;
         let uploadedCount = 0;
         const failures: string[] = [];
@@ -315,7 +269,6 @@ export function LibraryPage() {
                 }
             }));
         }
-
         if (failures.length) {
             setUploadError(`${failures.length} upload(s) failed. ${failures[0]}${failures.length > 1 ? ' (See image details for other errors.)' : ''}`);
             setUploadNotice(`${uploadedCount} saved to RustFS · ${failures.length} failed`);
@@ -341,7 +294,6 @@ export function LibraryPage() {
             'The original image will NOT be deleted from Allegro or your computer.'
         );
         if (!confirmed) return;
-
         if (image.source === 'local' && image.sourceRef) {
             try { await api.deleteLocalImage(image.sourceRef); }
             catch (error) {
@@ -356,7 +308,6 @@ export function LibraryPage() {
     async function removeWithConfirm(targets: ProductImage[], message: string) {
         if (!targets.length) return;
         if (!window.confirm(message)) return;
-
         const removedIds: string[] = [];
         for (const image of targets) {
             if (image.source === 'local' && image.sourceRef) {
@@ -395,10 +346,6 @@ export function LibraryPage() {
     function resetFilters() {
         setQuery('');
         setSelectedOnly(false);
-        setFormat('all');
-        setResolution('all');
-        setSize('all');
-        setCount('all');
         setLibrarySourceFilter('all');
     }
 
@@ -412,21 +359,31 @@ export function LibraryPage() {
             <input ref={fileInput} type="file" hidden multiple
                 accept="image/png,image/jpeg,image/webp" onChange={handleInput}
                 aria-label="Choose product images" />
-
             <PageHeading title="Image Library"
                 subtitle="Browse, filter and manage product photos"
                 actions={<>
                     <button className="btn btn-secondary" onClick={() => setPage('integrations')}>↗ Connect store</button>
                     <button className="btn btn-primary" onClick={() => setPage('batch')}>Go to Batch →</button>
                 </>} />
-
-            <div className="library-toolbar">
-                <div className="library-metrics">
-                    <span className="counter">{images.length} images</span>
-                    <span className="counter counter-accent">{selectedIds.length} selected</span>
-                    <span className="counter">{visible.length} matching</span>
+            <div className="library-toolbar library-toolbar--compact">
+                <div className="library-topline">
+                    <div className="library-metrics">
+                        <span className="counter">{images.length} images</span>
+                        <span className="counter counter-accent">{selectedIds.length} selected</span>
+                        <span className="counter">{visible.length} matching</span>
+                    </div>
+                    <div className="library-view-switch" role="group" aria-label="Library view mode">
+                        <button type="button" className={viewMode === 'photos' ? 'active' : ''}
+                            aria-pressed={viewMode === 'photos'} onClick={() => setViewMode('photos')}>
+                            All Photos
+                        </button>
+                        <button type="button" className={viewMode === 'products' ? 'active' : ''}
+                            aria-pressed={viewMode === 'products'} onClick={() => setViewMode('products')}>
+                            By Products
+                        </button>
+                    </div>
                 </div>
-                <div className="library-controls">
+                <div className="library-controls library-controls--compact">
                     <div className="search-input"><span>⌕</span>
                         <input aria-label="Search images" placeholder="Search file, product or offer ID..."
                             value={query} onChange={event => setQuery(event.target.value)} />
@@ -437,36 +394,9 @@ export function LibraryPage() {
                         <option value="local">Uploaded by me ({localCount})</option>
                         <option value="allegro">Allegro ({allegroCount})</option>
                     </select>
-                    <select aria-label="Image format" value={format}
-                        onChange={event => setFormat(event.target.value as FormatFilter)}>
-                        <option value="all">All formats</option>
-                        <option value="jpeg">JPG / JPEG</option>
-                        <option value="png">PNG</option>
-                        <option value="webp">WebP</option>
-                    </select>
-                    <select aria-label="Resolution" value={resolution}
-                        onChange={event => setResolution(event.target.value as ResolutionFilter)}>
-                        <option value="all">Any resolution</option>
-                        <option value="small">Under 1280px</option>
-                        <option value="hd">1280–3840px</option>
-                        <option value="large">3840px and above</option>
-                    </select>
-                    <select aria-label="File size" value={size}
-                        onChange={event => setSize(event.target.value as SizeFilter)}>
-                        <option value="all">Any file size</option>
-                        <option value="under1">Under 1 MB</option>
-                        <option value="from1to5">1–5 MB</option>
-                        <option value="over5">Over 5 MB</option>
-                    </select>
-                    <select aria-label="Photos per product" value={count}
-                        onChange={event => setCount(event.target.value as CountFilter)}>
-                        <option value="all">Any photo count</option>
-                        <option value="multiple">2+ photos per product</option>
-                        <option value="five">5+ photos per product</option>
-                    </select>
                     <select aria-label="Selection filter" value={selectedOnly ? 'selected' : 'all'}
                         onChange={event => setSelectedOnly(event.target.value === 'selected')}>
-                        <option value="all">All photos</option>
+                        <option value="all">All images</option>
                         <option value="selected">Selected only</option>
                     </select>
                     <select aria-label="Sort images" value={sort}
@@ -474,10 +404,12 @@ export function LibraryPage() {
                         <option value="asc">Name A–Z</option>
                         <option value="desc">Name Z–A</option>
                     </select>
-                    <button className="btn btn-secondary" onClick={resetFilters}>Reset filters</button>
+                    <button type="button" className="btn btn-secondary" onClick={resetFilters}>Reset</button>
+                    <button type="button" className="btn btn-primary" onClick={() => fileInput.current?.click()}>
+                        + Upload images
+                    </button>
                 </div>
             </div>
-
             <div className="library-selection-row">
                 <span>{visibleSelected} of {visible.length} matching images selected</span>
                 <div className="library-selection-actions">
@@ -485,26 +417,20 @@ export function LibraryPage() {
                     <button className="subtle-link" onClick={() => deselectImages(visibleIds)}>Deselect matching</button>
                     <button className="subtle-link" onClick={() => selectImages(images.map(image => image.id))}>Select all</button>
                     <button className="subtle-link" onClick={clearSelection}>Clear selection</button>
-                    <button className="subtle-link"
-                        onClick={() => setCollapsedGroups(new Set(visibleGroups.map(group => group.key)))}>
-                        Collapse all
-                    </button>
-                    <button className="subtle-link" onClick={() => setCollapsedGroups(new Set())}>Expand all</button>
+                    {viewMode === 'products' && <>
+                        <button className="subtle-link"
+                            onClick={() => setCollapsedGroups(new Set(visibleGroups.map(group => group.key)))}>
+                            Collapse all
+                        </button>
+                        <button className="subtle-link" onClick={() => setCollapsedGroups(new Set())}>Expand all</button>
+                    </>}
                     {selectedIds.length > 0 && <button className="subtle-link subtle-link-danger" onClick={deleteSelectedImages}>
                         Delete selected ({selectedIds.length})
                     </button>}
                 </div>
             </div>
-
-            <div className={`panel library-upload${dragOver ? ' library-upload--dragging' : ''}`}>
-                <div className="library-upload-main">
-                    <span aria-hidden="true" className="library-upload-icon">⇪</span>
-                    <div className="library-upload-copy">
-                        <strong className="library-upload-title">Drop product photos anywhere on this page</strong>
-                        <div className="library-upload-description">JPG, PNG, WebP · up to 10 MB per image</div>
-                    </div>
-                    <button className="btn btn-secondary" onClick={() => fileInput.current?.click()}>Choose files</button>
-                </div>
+            {(uploadNotice || uploadError || (showUploadDetails && uploadPreviews.length > 0)) &&
+                <div className={`panel library-upload library-upload--compact${dragOver ? ' library-upload--dragging' : ''}`}>
                 {uploadNotice && <div role="status" className="library-upload-notice">
                     <span className="library-upload-notice-text">{uploadNotice}</span>
                     {uploadPreviews.length > 0 && <button type="button" className="subtle-link"
@@ -528,37 +454,34 @@ export function LibraryPage() {
                         <div className={`library-upload-preview-status${item.issue ? ' library-upload-preview-status--error' : ''}`}>{item.issue ?? item.status ?? 'Uploading…'}</div>
                     </div>)}
                 </div>}
-            </div>
-
+            </div>}
             <div
                 ref={libraryGridRef}
-                className={`library-product-groups scrollable-content${dragOver ? ' library-drag-active' : ''}${visible.length === 0 ? ' library-empty' : ''}`}
+                className={`library-product-groups scrollable-content library-product-groups--${viewMode}${dragOver ? ' library-drag-active' : ''}${visible.length === 0 ? ' library-empty' : ''}`}
             >
                 {catalogLoading && (
                     <div className="empty-library">Loading images...</div>
                 )}
-
                 {catalogError && (
                     <div className="empty-library" role="alert">
                         Remote catalog unavailable: {catalogError}
                     </div>
                 )}
-
-                {visibleGroups.map(group => {
+                {displayGroups.map(group => {
                     const selectedCount = group.images.filter(
                         image => selectedSet.has(image.id)
                     ).length;
                     const allSelected = selectedCount === group.images.length;
-                    const isCollapsed = collapsedGroups.has(group.key);
+                    const isCollapsed = viewMode === 'products' && collapsedGroups.has(group.key);
                     const classes = [
                         'library-product-group',
+                            viewMode === 'photos' ? 'library-product-group--flat' : 'library-product-group--products',
                         isCollapsed ? 'library-product-group--collapsed' : '',
                         selectedCount > 0 ? 'library-product-group--active' : '',
                     ].filter(Boolean).join(' ');
-
                     return (
                         <section key={group.key} className={classes}>
-                            <header className="library-product-group__header">
+                            {viewMode === 'products' && <header className="library-product-group__header">
                                 <div className="library-product-group__controls">
                                     <GroupCheckbox
                                         checked={allSelected}
@@ -579,7 +502,6 @@ export function LibraryPage() {
                                         {sourceLabel(group.source)}
                                     </span>
                                 </div>
-
                                 <div className="library-product-group__info">
                                     <h3 title={group.title}>{group.title}</h3>
                                     <span>
@@ -587,11 +509,9 @@ export function LibraryPage() {
                                         {group.images.length} {group.images.length === 1 ? 'photo' : 'photos'}
                                     </span>
                                 </div>
-
                                 <span className={`library-product-group__selected${selectedCount > 0 ? ' library-product-group__selected--active' : ''}`}>
                                     {selectedCount} / {group.images.length} selected
                                 </span>
-
                                 <div className="library-product-group__actions">
                                     <button type="button" className="btn btn-secondary"
                                         onClick={() => watermarkGroup(group)}>
@@ -603,8 +523,7 @@ export function LibraryPage() {
                                         Delete group
                                     </button>
                                 </div>
-                            </header>
-
+                            </header>}
                             {isCollapsed ? (
                                 <div className="library-product-group__collapsed-preview">
                                     {group.images.slice(0, COLLAPSED_THUMBS).map(image => (
@@ -639,7 +558,6 @@ export function LibraryPage() {
                                                     ? 'Upload failed'
                                                     : 'Uploading…')
                                             : null;
-
                                         return (
                                             <article
                                                 key={image.id}
@@ -662,12 +580,10 @@ export function LibraryPage() {
                                                             event.currentTarget.naturalHeight
                                                         )}
                                                     />
-
                                                     <span className="selection-mark" aria-hidden="true">
                                                         {isSelected ? '✓' : ''}
                                                     </span>
                                                 </button>
-
                                                 <div className="image-footer">
                                                     <div
                                                         className="image-footer-title"
@@ -675,12 +591,10 @@ export function LibraryPage() {
                                                     >
                                                         {image.filename}
                                                     </div>
-
                                                     <div className="image-footer-meta">
                                                         {localStatus ? `${localStatus} · ` : ''}
                                                         {resolutionText}
                                                     </div>
-
                                                     <div className="card-actions">
                                                         <button
                                                             type="button"
@@ -688,14 +602,12 @@ export function LibraryPage() {
                                                         >
                                                             Details
                                                         </button>
-
                                                         <button
                                                             type="button"
                                                             onClick={() => openEditor(image.id)}
                                                         >
                                                             Edit →
                                                         </button>
-
                                                         <button
                                                             type="button"
                                                             className="remove-local"
@@ -715,23 +627,19 @@ export function LibraryPage() {
                         </section>
                     );
                 })}
-
                 {!catalogLoading && visible.length === 0 && (
                     <div className="empty-library dropzone">
                         <div className="drop-icon">▧</div>
-
                         <strong>
                             {images.length
-                                ? 'No images match these filters'
+                                ? 'No images match your search or filters'
                                 : 'Your image library is empty'}
                         </strong>
-
                         <p>
                             {images.length
-                                ? 'Reset filters or try another search. Resolution is known only for loaded thumbnails until the backend supplies metadata.'
+                                ? 'Reset filters or try another search.'
                                 : 'Upload photos or connect an Allegro seller account.'}
                         </p>
-
                         <div className="empty-actions">
                             <button
                                 className="btn btn-primary"
@@ -739,7 +647,6 @@ export function LibraryPage() {
                             >
                                 Choose images
                             </button>
-
                             <button
                                 className="btn btn-secondary"
                                 onClick={images.length
@@ -752,7 +659,6 @@ export function LibraryPage() {
                     </div>
                 )}
             </div>
-
             {detailImage && <div role="presentation" className="image-details-backdrop" onClick={() => setDetailId(null)}>
                 <aside role="dialog" aria-modal="true" aria-labelledby="image-details-title"
                     onClick={event => event.stopPropagation()}

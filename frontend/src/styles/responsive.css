@@ -1,0 +1,229 @@
+/* ===== 08. Responsive breakpoints ===== */
+
+@media (max-width: 1460px) {
+    .library-controls {
+        grid-template-columns: minmax(175px, 1.4fr) repeat(4, minmax(0, 1fr));
+    }
+
+    .library-grid--5 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 1190px) {
+    .templates-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+    .sidebar {
+        width: 202px;
+        flex-basis: 202px;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .main-content { padding: 22px; }
+    .welcome-art { right: 8%; transform: scale(.75) rotate(-11deg); }
+    .library-grid--4,
+    .library-grid--5 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .work-layout { grid-template-columns: 272px minmax(0, 1fr); }
+    .watermark-workspace {
+        grid-template-columns: minmax(215px, 245px) minmax(0, 1fr) minmax(215px, 235px);
+        gap: 11px;
+    }
+    .analysis-layout { grid-template-columns: minmax(0, 1fr) 292px; }
+    .stats-grid { gap: 10px; }
+}
+
+/* When the preview would become too narrow, stack the editor workspace. */
+@media (max-width: 1100px) {
+    .watermark-workspace {
+        display: flex;
+        flex-direction: column;
+        gap: 13px;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    .watermark-workspace > .settings-panel,
+    .watermark-workspace > .settings-column,
+    .watermark-workspace > .watermark-template-panel {
+        overflow: visible;
+        flex: 0 0 auto;
+    }
+
+    .watermark-workspace > .preview-panel {
+        flex: 0 0 auto;
+        min-height: 460px;
+    }
+
+    .watermark-template-panel .template-control-actions { flex-direction: row; }
+    .watermark-template-panel .template-control-actions .btn { width: auto; }
+}
+
+@media (max-width: 890px) {
+    .template-create-panel { grid-template-columns: minmax(0, 1fr); }
+
+    .app-layout { height: auto; min-height: 100dvh; }
+
+    .sidebar {
+        width: 72px;
+        flex-basis: 72px;
+        padding-left: 7px;
+        padding-right: 7px;
+    }
+
+    .brand { font-size: 0; padding: 0 10px 35px; }
+    .brand-mark { width: 37px; height: 37px; }
+    .brand-period { display: none; }
+    .nav-link { font-size: 0; justify-content: center; padding: 13px 6px; }
+    .nav-symbol { font-size: 23px; }
+    .nav-group { font-size: 0; margin: 0 0 7px; }
+    .sidebar-bottom { display: none; }
+    .main-content { min-height: calc(100dvh - 69px); }
+
+    .dashboard-content {
+        display: flex;
+        overflow-y: auto;
+    }
+
+    .welcome-banner { min-height: 175px; }
+    .dashboard-lower { grid-template-columns: 1fr; }
+    .dashboard-panel { min-height: 190px; overflow: visible; }
+    .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .library-grid--3,
+    .library-grid--4,
+    .library-grid--5 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+    .work-layout, .analysis-layout {
+        grid-template-columns: 1fr;
+        display: flex;
+        flex-direction: column;
+        overflow: auto;
+    }
+
+    .settings-column { overflow: visible; flex: 0 0 auto; }
+    .settings-panel { flex: 0 0 auto; overflow: visible; }
+    .preview-panel { min-height: 480px; }
+    .image-review-panel { min-height: 410px; }
+    .analysis-controls { overflow: visible; }
+}
+
+@media (max-width: 760px) {
+    .library-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .library-controls .search-input { grid-column: 1 / -1; }
+    .library-controls > .btn { grid-column: 1 / -1; }
+    .library-selection-row { align-items: flex-start; }
+    .integration-steps { grid-template-columns: 1fr; }
+    .integration-progress-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .integration-title { flex-wrap: wrap; }
+    .integration-title .status-chip { margin: 0; }
+    .connection-details { flex-direction: column; gap: 5px; }
+}
+
+@media (max-width: 620px) {
+    .templates-grid { grid-template-columns: minmax(0, 1fr); }
+    .template-create-panel { padding: 15px; gap: 15px; }
+    .template-card-main-actions { grid-template-columns: minmax(0, 1fr); }
+
+    .topbar { height: 62px; padding: 0 13px; }
+    .account-label, .account-caret, .topbar-slash { display: none; }
+    .topbar-store { font-size: 11px; }
+    .topbar-actions { gap: 6px; }
+    .main-content { padding: 16px 12px; }
+    .page-heading { align-items: flex-start; flex-direction: column; margin-bottom: 14px; }
+    .page-heading h1 { font-size: 23px; }
+    .page-actions { flex-wrap: wrap; }
+    .page-actions .btn { font-size: 10px; padding: 7px; }
+    .welcome-banner { padding: 24px; min-height: 160px; }
+    .welcome-art { display: none; }
+    .welcome-copy h2 { font-size: 24px; }
+    .library-grid { gap: 10px; }
+    .image-thumb { height: 135px; }
+    .image-footer { padding: 9px; }
+    .stat-card { padding: 13px; }
+    .stat-card strong { font-size: 25px; }
+    .library-grid.library-empty { overflow-y: auto; }
+    .library-grid.library-empty .empty-library { min-height: 230px; }
+}
+
+@media (max-width: 520px) {
+    .integration-progress, .integration-card, .integration-guide { padding: 16px; }
+    .integration-progress-stat { padding: 12px; }
+    .integration-progress-stat strong { font-size: 21px; }
+    .library-grid:not(.library-empty) {
+        grid-template-columns: minmax(0, 1fr);
+        max-width: none;
+    }
+    .image-thumb { height: 155px; }
+}
+
+@media (max-height: 710px) and (min-width: 891px) {
+    .dashboard-content { display: flex; overflow-y: auto; }
+    .welcome-banner { flex: 0 0 auto; min-height: 155px; }
+    .dashboard-lower { flex: 0 0 auto; }
+    .dashboard-panel { min-height: 190px; overflow: visible; }
+    .library-grid.library-empty { overflow-y: auto; }
+}
+/* WaterM hybrid preview */
+.hybrid-batch-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 920px;
+    min-height: 0;
+    gap: 8px;
+}
+.hybrid-preview-visual {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 0;
+}
+.hybrid-preview-visual .server-batch-preview { width: 100%; }
+.hybrid-preview-visual .preview-canvas {
+    width: 100%;
+    height: auto;
+    max-height: 100%;
+}
+.hybrid-preview-visual .batch-preview-warning { display: none; }
+.hybrid-sharp-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 2.6%;
+    background: #222b3a;
+    object-fit: contain;
+    box-sizing: border-box;
+    border-radius: 5px;
+}
+.hybrid-preview-status {
+    max-width: 100%;
+    font-size: 11px;
+    line-height: 1.4;
+    text-align: center;
+}
+.hybrid-preview-exact { color: #67dbab; }
+.hybrid-preview-pending { color: #a5b3c9; }
+.hybrid-preview-error { color: #f9a8ae; }
+/* WaterM: render confirmed Sharp previews without Canvas or layout jumps. */
+.hybrid-preview-visual {
+    aspect-ratio: 920 / 585;
+    width: 100%;
+    max-height: min(585px, 55vh);
+    overflow: hidden;
+    background: #222b3a;
+    border-radius: 5px;
+}
+.hybrid-preview-visual > .hybrid-preview-photo {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
