@@ -42,7 +42,7 @@ export function Header() {
                         <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
                         <path d="M10 21h4" />
                     </svg>
-                    {unreadCount > 0 && <span className="wm-notification-count">{unreadCount > 9 ? '9+' : unreadCount}</span>}
+                    {unreadCount > 0 && <span key={unreadCount} className="wm-notification-count wm-notification-count-animated">{unreadCount > 9 ? '9+' : unreadCount}</span>}
                 </button>
                 {notificationsOpen && <div className="wm-notification-menu" role="region" aria-label="Notifications">
                     <div className="wm-notification-heading">

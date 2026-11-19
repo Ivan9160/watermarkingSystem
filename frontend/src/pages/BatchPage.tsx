@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { rememberBatch } from '../utils/batchHistory';
 import { PageHeading } from '../components/PageHeading';
 import { PreviewCanvas } from '../components/PreviewCanvas';
@@ -15,35 +15,28 @@ import type {
     BatchResultsResponse, BatchStatusResponse, CreateBatchRequest, BatchWatermarkConfig,
     ProductImage, ServerWatermarkFormat,
 } from '../types';
-
 const ACTIVE_BATCH_KEY = 'waterm.activeBatchId.v1';
 const POLL_MS = 1500;
 const MAX_PRODUCTS = 20;
 const MAX_IMAGES = 100;
 const MAX_IMAGES_PER_PRODUCT = 20;
-
 function offerIdOf(image: ProductImage): string | null {
     return image.offerId ?? image.filename.match(/^(.+)-\d{2}\.[^.]+$/)?.[1] ?? null;
 }
-
 function canUseAsBatchSource(image: ProductImage): boolean {
     if (!offerIdOf(image)) return false;
     if (offerImageIndexOf(image) === null) return false;
-
     if (image.source === 'local') {
         return image.uploadStatus === 'ready' &&
             /^waterm-local:[a-f0-9]{32}\.(?:jpg|png|webp)$/.test(image.sourceRef ?? '');
     }
-
     if (image.source !== 'allegro') return false;
-
     try {
         return new URL(image.src).protocol === 'https:';
     } catch {
         return false;
     }
 }
-
 function buildProducts(images: ProductImage[]) {
     const grouped = new Map<
         string,
@@ -55,69 +48,49 @@ function buildProducts(images: ProductImage[]) {
             seenUrls: Set<string>;
         }
     >();
-
     for (const image of images) {
         const offerId = offerIdOf(image);
         const offerImageIndex = offerImageIndexOf(image);
-
         if (!offerId || offerImageIndex === null) continue;
-
         const url = image.source === 'local'
             ? image.sourceRef!
             : image.src;
-
         let product = grouped.get(offerId);
-
         if (!product) {
             product = {
                 images: [],
                 seenUrls: new Set<string>(),
             };
-
             grouped.set(offerId, product);
         }
-
         if (product.seenUrls.has(url)) continue;
-
         product.seenUrls.add(url);
-
         product.images.push({
             url,
             offerImageIndex,
         });
     }
-
     return Array.from(grouped, ([offerId, product]) => ({
         offerId,
         images: product.images,
     }));
 }
-
 function getMessage(error: unknown) {
     return error instanceof Error ? error.message : 'Unexpected batch processing error';
 }
-
 function isFinished(status: string) {
     return status === 'COMPLETED' || status === 'FAILED';
 }
-
 function offerImageIndexOf(image: ProductImage): number | null {
     const filename = image.filename;
-
     const extensionIndex = filename.lastIndexOf('.');
     if (extensionIndex <= 0) return null;
-
     const nameWithoutExtension = filename.slice(0, extensionIndex);
-
     const separatorIndex = nameWithoutExtension.lastIndexOf('-');
     if (separatorIndex === -1) return null;
-
     const numberText = nameWithoutExtension.slice(separatorIndex + 1);
-
     if (numberText.length !== 2) return null;
-
     const imageNumber = Number(numberText);
-
     if (
         !Number.isInteger(imageNumber) ||
         imageNumber < 1 ||
@@ -125,16 +98,13 @@ function offerImageIndexOf(image: ProductImage): number | null {
     ) {
         return null;
     }
-
     return imageNumber -1;
 }
-
 export function BatchPage() {
     const {
         images, selectedIds,
         settings, setPage,
     } = useApp();
-
     const [format, setFormat] = useState<ServerWatermarkFormat>('jpeg');
     const [quality, setQuality] = useState(90);
     const [visibleEnabled, setVisibleEnabled] = useState(true);
@@ -142,7 +112,6 @@ export function BatchPage() {
     const [manualPosition, setManualPosition] = useState<DragPosition | null>(null);
     const [manualPatternOffset, setManualPatternOffset] = useState<DragPosition | null>(null);
     useEffect(() => { setManualPosition(null); setManualPatternOffset(null); }, [settings.position, settings.layout]);
-
     const [batchId, setBatchId] = useState<string | null>(() => {
         try { return localStorage.getItem(ACTIVE_BATCH_KEY); }
         catch { return null; }
@@ -157,7 +126,6 @@ export function BatchPage() {
     const [checkVersion, setCheckVersion] = useState(0);
     const [needsOrganization, setNeedsOrganization] = useState(false);
     const [organizationName, setOrganizationName] = useState('My WatermarkOS Store');
-
     const chosenImages = useMemo(
         () => images.filter(image => selectedIds.includes(image.id)),
         [images, selectedIds],
@@ -171,10 +139,8 @@ export function BatchPage() {
         ...(settings.layout === 'single' && manualPosition ? { customPosition: manualPosition } : {}),
         ...(settings.layout === 'pattern' && manualPatternOffset ? { patternOffset: manualPatternOffset } : {}),
     }), [settings, format, quality, manualPosition, manualPatternOffset]);
-
     const validationError = useMemo(() => {
         if (!visibleEnabled && !invisibleEnabled) return 'Choose at least one watermark method';
-
         if (visibleEnabled && !settings.text.trim()) return 'Enter watermark text before processing.';
         if (!imageCount) return 'Select images in Library. Local files must finish uploading before processing.';
         if (imageCount > MAX_IMAGES) return `Too many images (${imageCount}). Maximum is ${MAX_IMAGES} per batch.`;
@@ -184,26 +150,22 @@ export function BatchPage() {
         }
         return null;
     }, [invisibleEnabled, visibleEnabled, settings.text, imageCount, products]);
-
     const finished = Boolean(status && isFinished(status.status));
     const active = Boolean(batchId && !finished);
     const completedCount = (status?.counts.succeeded ?? 0) + (status?.counts.failed ?? 0);
     const percent = status?.totalImages
         ? Math.min(100, Math.round(completedCount / status.totalImages * 100))
         : 0;
-
     useEffect(() => {
         if (!batchId) return;
         let stopped = false;
         let timeout: ReturnType<typeof setTimeout> | undefined;
-
         async function check() {
             try {
                 const next = await api.getBatchStatus(batchId!);
                 if (stopped) return;
                 setStatus(next);
                 setMessage('');
-
                 if (isFinished(next.status)) {
                     const jobResults = await api.getBatchResults(batchId!);
                     if (!stopped) {
@@ -217,14 +179,12 @@ export function BatchPage() {
                 if (!stopped) setMessage(getMessage(error));
             }
         }
-
         void check();
         return () => {
             stopped = true;
             if (timeout) clearTimeout(timeout);
         };
     }, [batchId, checkVersion]);
-
     async function startBatch() {
         if (validationError || busy || active) return;
         const watermarkConfig: BatchWatermarkConfig = {
@@ -267,7 +227,6 @@ export function BatchPage() {
             setBusy(false);
         }
     }
-
     async function createOrganization() {
         if (!organizationName.trim() || busy) return;
         setBusy(true);
@@ -282,7 +241,6 @@ export function BatchPage() {
             setBusy(false);
         }
     }
-
     function resetJob() {
         if (active) return;
         setBatchId(null);
@@ -292,14 +250,12 @@ export function BatchPage() {
         setDownloadProgress('');        setUploadOpen(false);
         try { localStorage.removeItem(ACTIVE_BATCH_KEY); } catch { /* ignored */ }
     }
-
     const resultImages = results?.products.flatMap(product =>
         product.images.map(image => ({ ...image, offerId: product.offerId }))) ?? [];
     const readyCount = countDownloadableImages(results);
     // Synthetic LOCAL-* groups cannot be published as Allegro offer IDs.
     const containsLocalResults = results?.products.some(p => p.offerId.startsWith('LOCAL-')) ?? false;
     const firstOutputUrl = resultImages.find(image => Boolean(image.url))?.url;
-
     async function downloadAll() {
         if (!batchId || !finished || !readyCount || downloading) return;
         setDownloading(true);
@@ -322,7 +278,6 @@ export function BatchPage() {
             setDownloading(false);
         }
     }
-
     return (
         <div className="page-shell batch-processing-page">
             <PageHeading title="Batch Processing" actions={
@@ -346,7 +301,6 @@ export function BatchPage() {
                         {imageCount > 0 && <p className="batch-selected-summary">
                             {imageCount} ready for processing · {products.length} {products.length === 1 ? 'offer' : 'offers'}
                         </p>}
-
                         <div className="batch-options-divider" />
                         <h3 className="batch-options-subtitle">Server output</h3>
                         <div className="batch-options-grid">
@@ -368,11 +322,32 @@ export function BatchPage() {
                         onVisibleChange={setVisibleEnabled} onInvisibleChange={setInvisibleEnabled} />
                     {visibleEnabled && <WatermarkSettingsPanel title="Visible watermark" forceVisible />}
                 </div>
-
                 <div className="panel preview-panel">
                     <div className="panel-heading preview-header">
-                        <h2>{Boolean(firstOutputUrl)
-                            ? 'Processed image' : 'Batch preview'}</h2>
+                        <h2>
+                        {firstOutputUrl ? 'Processed image' : 'Batch preview'}
+                        </h2>
+                        {!firstOutputUrl &&
+                            eligible.length > 0 &&
+                            visibleEnabled &&
+                            (settings.layout === 'single'
+                                ? manualPosition
+                                : manualPatternOffset) && (
+                                <button
+                                    type="button"
+                                    className="wm-drag-reset"
+                                    disabled={busy || active}
+                                    onClick={() => {
+                                        if (settings.layout === 'single') {
+                                            setManualPosition(null);
+                                        } else {
+                                            setManualPatternOffset(null);
+                                        }
+                                    }}
+                                >
+                                    ↺ Reset position
+                                </button>
+                            )}
                     </div>
                     <div className="preview-stage">
                         {firstOutputUrl
@@ -386,29 +361,36 @@ export function BatchPage() {
                                     onPositionChange={setManualPosition} onPatternOffsetChange={setManualPatternOffset}
                                     disabled={busy || active || !visibleEnabled} />
                                 : <PreviewCanvas templateOnly settings={settings} visible={visibleEnabled} />}
+                            {(busy || active) && (
+                            <div
+                                className="wm-batch-processing-overlay"
+                                aria-hidden="true"
+                            >
+                                <img
+                                    src="/assets/processing_anim.gif"
+                                    alt=""
+                                />
+                                <span className="wm-batch-processing-label">
+                                    Processing images…
+                                </span>
+                            </div>
+                        )}
                     </div>
-
-                    {!firstOutputUrl && eligible.length > 0 && visibleEnabled &&
-                        <div className="wm-drag-watermark-hint" role="note">
-                            <span className="wm-drag-hint-symbol" aria-hidden="true">✥</span>
-                            <span><strong>{settings.layout === 'pattern' ? 'Drag the pattern' : 'Drag the watermark'}</strong>
-                                {settings.layout === 'pattern' ? ' anywhere on the photo to reposition the entire pattern.' : ' to any place on the photo.'}
-                                {' '}Release to save. Changes remain local until Start processing.</span>
-                            {(settings.layout === 'single' ? manualPosition : manualPatternOffset) &&
-                                <button type="button" className="wm-drag-reset" disabled={busy || active}
-                                    onClick={() => settings.layout === 'single' ? setManualPosition(null) : setManualPatternOffset(null)}>Reset position</button>}
-                        </div>}
-
                     {batchId && <section className="batch-job-panel" aria-live="polite">
                         <div className="batch-job-heading">
                             <strong>Batch {batchId.slice(0, 8)}…</strong>
-                            <span className="status-chip">{status?.status ?? 'CONNECTING'}</span>
+                            <span className={`status-chip${status?.status === 'COMPLETED' ? ' wm-batch-complete' : ''}`}>
+                                    {status?.status === 'COMPLETED' && <span className="wm-batch-complete-icon" aria-hidden="true">✓</span>}
+                                    {status?.status ?? 'CONNECTING'}
+                                </span>
                         </div>
                         <div className="batch-progress-row">
                             <span>{completedCount} / {status?.totalImages ?? imageCount} processed</span>
                             <strong>{percent}%</strong>
                         </div>
-                        <progress className="batch-progress" value={percent} max="100">{percent}%</progress>
+                        <div className="wm-batch-progress-track" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent} aria-label="Batch processing progress">
+                                <div className="wm-batch-progress-fill" style={{ width: `${percent}%` }} />
+                            </div>
                         <div className="batch-stats">
                             <span>Queued: {status?.counts.pending ?? '—'}</span>
                             <span>Running: {status?.counts.processing ?? '—'}</span>
@@ -428,7 +410,6 @@ export function BatchPage() {
                             {downloadProgress && <span className="batch-download-progress" role="status">{downloadProgress}</span>}
                         </div>}
                     </section>}
-
                     {results && <section className="batch-results" aria-label="Processed image results">
                         <div className="batch-results-heading">
                             <strong>Results ({resultImages.filter(image => image.url).length} ready)</strong>
@@ -447,7 +428,6 @@ export function BatchPage() {
                             </div>)}
                         </div>
                     </section>}
-
                     {message && <p className="batch-message" role="alert">{message}</p>}
                     {needsOrganization && <div className="batch-organization-panel">
                         <p>A WaterarkOS organization is required for your Allegro seller before the first batch.</p>
@@ -458,24 +438,43 @@ export function BatchPage() {
                         <button type="button" className="btn btn-secondary" disabled={busy || !organizationName.trim()}
                             onClick={() => void createOrganization()}>Create organization</button>
                     </div>}
-
-                    <div className="preview-bottom batch-bottom">
-                        <span><span className="small-dot" /> Original images will not be overwritten</span>
-                        {finished
-                            ? <button type="button" className="btn btn-primary" onClick={resetJob}
-                                disabled={busy || downloading}>New batch →</button>
-                            : <button type="button" className="btn btn-primary"
-                                onClick={() => void startBatch()}
-                                disabled={busy || active || Boolean(validationError)}>
-                                {busy ? 'Starting…' : active ? 'Processing…' : 'Start processing →'}
-                            </button>}
-                    </div>
-                    <div className="batch-footer-info">
-                        {validationError ?? 'Runs asynchronously using NestJS, Redis, Sharp and RustFS.'}
-
-                    </div>
                 </div>
-                {visibleEnabled && <WatermarkTemplatePanel />}
+                <div className="batch-right-column">
+                    {visibleEnabled && <WatermarkTemplatePanel />}
+                    <section
+                        className="panel batch-action-panel"
+                        aria-label="Batch processing controls"
+                    >
+                        {finished ? (
+                            <button
+                                type="button"
+                                className="btn btn-primary batch-main-action"
+                                onClick={resetJob}
+                                disabled={busy || downloading}
+                            >
+                                ↻ New batch
+                            </button>
+                        ) : (
+                            <button
+                                type="button"
+                                className="btn btn-primary batch-main-action"
+                                onClick={() => void startBatch()}
+                                disabled={busy || active || Boolean(validationError)}
+                            >
+                                {busy
+                                    ? 'Starting…'
+                                    : active
+                                        ? 'Processing…'
+                                        : 'Start processing →'}
+                            </button>
+                        )}
+                        {validationError && !busy && !active && !finished && (
+                            <p className="batch-action-error" role="alert">
+                                {validationError}
+                            </p>
+                        )}
+                    </section>
+                </div>
             </div>
             {uploadOpen && batchId && <UploadToServiceModal
                 batchId={batchId}
@@ -486,4 +485,3 @@ export function BatchPage() {
         </div>
     );
 }
-

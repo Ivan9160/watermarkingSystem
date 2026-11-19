@@ -1,5 +1,48 @@
 /* ===== Theme, reset and application shell ===== */
 
+/* ===== Shared WaterM scrollbar design =====
+   Applies to all scrolling elements without changing their overflow or layout.
+   Firefox uses scrollbar-color/scrollbar-width; Chromium and Safari also
+   support the WebKit pseudo-elements below. */
+:root {
+    --wm-scrollbar-thumb: #3a4561;
+    --wm-scrollbar-thumb-hover: #657394;
+    --wm-scrollbar-track: transparent;
+}
+
+html,
+body,
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--wm-scrollbar-thumb) var(--wm-scrollbar-track);
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--wm-scrollbar-track);
+    border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--wm-scrollbar-thumb);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: var(--wm-scrollbar-thumb-hover);
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+
 :root {
     font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     font-synthesis: none;
@@ -19,56 +62,45 @@
     --success: #65d99a;
     --radius: 13px;
 }
-
 * {
     box-sizing: border-box;
 }
-
 html, body, #root {
     margin: 0;
     min-height: 100%;
     width: 100%;
 }
-
 body {
     background: var(--bg);
     color: var(--text);
     font-size: 14px;
     line-height: 1.5;
 }
-
 button, select, input {
     font: inherit;
 }
-
 button {
     cursor: pointer;
 }
-
 button:focus-visible, input:focus-visible, select:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
 }
-
 button:disabled {
     cursor: not-allowed;
 }
-
 h1, h2, h3, p {
     margin: 0;
 }
-
 a {
     color: inherit;
 }
-
 .app-layout {
     display: flex;
     width: 100%;
     height: 100dvh;
     min-height: 0;
 }
-
 .sidebar {
     width: 231px;
     flex: 0 0 231px;
@@ -78,17 +110,15 @@ a {
     display: flex;
     flex-direction: column;
 }
-
 .brand {
     display: flex;
     align-items: center;
     gap: 11px;
-    padding: 0 15px 47px 0;
+    padding: 0 15px 35px 0;
     font-weight: 800;
     font-size: 22px;
     letter-spacing: -.9px;
 }
-
 .brand-mark {
     width: 37px;
     height: 37px;
@@ -101,29 +131,24 @@ a {
     color: #fff;
     font-size: 25px;
 }
-
 .brand-period {
     color: var(--accent);
 }
-
 .sidebar-navigation {
     display: flex;
     flex-direction: column;
     gap: 2px;
 }
-
 .nav-group {
     color: #717f94;
     font-size: 10px;
     font-weight: 800;
     letter-spacing: 1.8px;
-    margin: 0 12px 11px;
+    margin: 11px 12px;
 }
-
 .sidebar-navigation > div:nth-of-type(6) .nav-group {
     margin-top: 29px;
 }
-
 .nav-link {
     color: #a9b3c4;
     background: transparent;
@@ -139,18 +164,44 @@ a {
     font-weight: 550;
     transition: background .15s, color .15s;
 }
-
 .nav-link:hover {
     background: #20283a;
     color: #fff;
 }
-
+.sidebar-navigation {
+    position: relative;
+}
+.sidebar-navigation > div:not(.nav-active-indicator) {
+    position: relative;
+    z-index: 1;
+}
+.nav-active-indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: #292642;
+    border-radius: 10px;
+    box-shadow: inset 3px 0 var(--accent);
+    pointer-events: none;
+    z-index: 0;
+    transition:
+        transform 340ms cubic-bezier(0.22, 1, 0.36, 1),
+        height 250ms ease;
+}
 .nav-link.active {
     color: #f0ecff;
-    background: #292642;
-    box-shadow: inset 3px 0 var(--accent);
+    background: transparent;
+    box-shadow: none;
 }
-
+.nav-link.active:hover {
+    background: transparent;
+}
+@media (prefers-reduced-motion: reduce) {
+    .nav-active-indicator {
+        transition: none;
+    }
+}
 .nav-symbol {
     width: 22px;
     text-align: center;
@@ -158,7 +209,6 @@ a {
     font-weight: 500;
     line-height: 1;
 }
-
 .sidebar-bottom {
     margin-top: auto;
     color: #8593aa;
@@ -168,24 +218,20 @@ a {
     gap: 3px;
     font-size: 11px;
 }
-
 .sidebar-bottom strong {
     color: #c6cedc;
     margin: 12px 0 4px;
     font-size: 11px;
 }
-
 .sidebar-bottom small {
     font-size: 10px;
     color: #65738b;
     margin-top: 6px;
 }
-
 .sidebar-divider {
     height: 1px;
     background: var(--border);
 }
-
 .main-area {
     flex: 1;
     min-width: 0;
@@ -193,7 +239,6 @@ a {
     flex-direction: column;
     min-height: 0;
 }
-
 .topbar {
     height: 72px;
     flex-shrink: 0;
@@ -204,7 +249,6 @@ a {
     justify-content: space-between;
     padding: 0 34px;
 }
-
 .topbar-store {
     color: #c9d2e0;
     font-size: 13px;
@@ -213,7 +257,6 @@ a {
     align-items: center;
     gap: 10px;
 }
-
 .store-pulse {
     width: 8px;
     height: 8px;
@@ -221,18 +264,15 @@ a {
     background: #71d9a1;
     box-shadow: 0 0 0 4px #376a4f39;
 }
-
 .topbar-slash {
     color: #54647e;
     padding: 0 5px;
 }
-
 .topbar-actions {
     display: flex;
     align-items: center;
     gap: 22px;
 }
-
 /* Header notifications */
 .wm-notification-root { position: relative; }
 .wm-notification-trigger {
@@ -284,7 +324,6 @@ a {
 .wm-notification-copy small { font-size: 11px; line-height: 1.45; color: #aebbd0; }
 .wm-notification-copy time { font-size: 10px; color: #8494aa; }
 .wm-notification-footer { justify-content: flex-end; }
-
 .demo-badge {
     background: #173329;
     border: 1px solid #2d6647;
@@ -298,18 +337,15 @@ a {
     padding: 7px 12px;
     border-radius: 999px;
 }
-
 .demo-dot {
     width: 7px;
     height: 7px;
     background: #62d996;
     border-radius: 50%;
 }
-
 .account-wrapper {
     position: relative;
 }
-
 .account-trigger {
     background: transparent;
     border: 1px solid transparent;
@@ -321,12 +357,10 @@ a {
     color: #dae1ee;
     font-size: 13px;
 }
-
 .account-trigger:hover, .account-trigger[aria-expanded=true] {
     border-color: #38455d;
     background: #1d2737;
 }
-
 .avatar {
     width: 34px;
     height: 34px;
@@ -338,13 +372,11 @@ a {
     place-items: center;
     flex-shrink: 0;
 }
-
 .account-caret {
     color: #8c9ab2;
     font-size: 18px;
     margin-left: 3px;
 }
-
 .account-menu {
     position: absolute;
     right: 0;
@@ -357,38 +389,31 @@ a {
     box-shadow: 0 22px 70px #0008;
     z-index: 20;
 }
-
 .account-summary {
     display: flex;
     align-items: center;
     gap: 10px;
 }
-
 .account-summary strong, .account-summary small {
     display: block;
 }
-
 .account-summary strong {
     font-size: 13px;
 }
-
 .account-summary small {
     color: var(--muted);
     font-size: 11px;
     margin-top: 3px;
 }
-
 .avatar-large {
     width: 40px;
     height: 40px;
 }
-
 .account-divider {
     height: 1px;
     background: #354054;
     margin: 16px 0 8px;
 }
-
 .account-row {
     display: flex;
     justify-content: space-between;
@@ -396,26 +421,22 @@ a {
     color: var(--muted);
     padding: 7px 0;
 }
-
 .account-row strong {
     color: #d9e1ef;
     font-weight: 600;
 }
-
 .main-content {
     padding: 25px 31px 27px;
     flex: 1;
     min-width: 0;
     min-height: 0;
 }
-
 .page-shell {
     height: 100%;
     display: flex;
     flex-direction: column;
     min-height: 0;
 }
-
 .page-heading {
     flex-shrink: 0;
     min-height: 52px;
@@ -425,26 +446,22 @@ a {
     gap: 15px;
     margin-bottom: 17px;
 }
-
 .page-heading h1 {
     font-size: 26px;
     font-weight: 750;
     line-height: 1.18;
     letter-spacing: -.65px;
 }
-
 .page-heading p {
     font-size: 12px;
     color: var(--muted);
     margin-top: 6px;
 }
-
 .page-actions {
     display: flex;
     gap: 9px;
     align-items: center;
 }
-
 .page-pill {
     border: 1px solid #315e4c;
     border-radius: 30px;
@@ -455,13 +472,11 @@ a {
     font-weight: 750;
     white-space: nowrap;
 }
-
 .page-pill-muted {
     border-color: #54426b;
     background: #292139;
     color: #d2bcf5;
 }
-
 .btn {
     border: 1px solid #3a455b;
     display: inline-flex;
@@ -478,72 +493,59 @@ a {
     color: #e9edf5;
     transition: background .13s, border-color .13s;
 }
-
 .btn:hover:not(:disabled) {
     background: #303a50;
     border-color: #8576fa;
 }
-
 .btn-primary {
     background: var(--accent);
     border-color: var(--accent);
     color: white;
 }
-
 .btn-primary:hover:not(:disabled) {
     background: #7361e8;
 }
-
 .btn-secondary {
     background: #1c2535;
 }
-
 .btn-light {
     color: #251d57;
     border-color: #fff;
     background: #fff;
 }
-
 .btn-light:hover:not(:disabled) {
     background: #f0eefe;
 }
-
 .btn:disabled {
     opacity: .54;
 }
-
 .panel {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     min-width: 0;
 }
-
 .panel-heading {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
 }
-
 .panel-heading h2 {
     font-size: 14px;
     font-weight: 730;
     letter-spacing: -.15px;
 }
-
 .muted-label {
     color: #8693a7;
     font-size: 10px;
     letter-spacing: .75px;
     font-weight: 700;
 }
-
 .scrollable-content {
     overflow: auto;
     min-height: 0;
 }
-
 .small-dot {
     display: inline-block;
     width: 6px;
@@ -553,5 +555,20 @@ a {
     background: #61d998;
     margin-right: 7px;
 }
+/* Smooth page entrance */
+.main-content > .page-shell { animation: none; }
+@keyframes wm-page-entrance { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) {
+ .main-content > .page-shell, .nav-active-indicator, .image-card.selected .selection-mark,
+ .wm-batch-progress-fill, .wm-batch-complete-icon, .wm-notification-bell-new, .wm-notification-count-animated,
+ .review-image-area.wm-scanning::after, .wm-overlay-scanning .analysis-illustration::after { animation: none !important; transition: none !important; }
+}
 
-
+/* Keep the notification icon stable; count animation remains available. */
+.wm-notification-trigger svg {
+    display: block;
+    width: 19px;
+    height: 19px;
+    transform: none !important;
+    animation: none !important;
+}

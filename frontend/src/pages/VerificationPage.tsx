@@ -509,7 +509,7 @@ export function VerificationPage() {
                             )}
                         </div>
 
-                        <div className="review-image-area">
+                        <div className={`review-image-area${verifying ? ' wm-scanning' : ''}`}>
                             {previewSrc ? (
                                 <img src={previewSrc} alt={previewName ? `Verify ${previewName}` : 'Image for verification'} />
                             ) : (
@@ -623,10 +623,10 @@ export function VerificationPage() {
             )}
 
             {mode === 'overlay' && (
-                <div className="analysis-layout">
-                    <section className="panel image-review-panel">
-                        <div className="panel-heading">
-                            <h2>Images for overlay check</h2>
+                <div className={`analysis-layout${overlayRunning ? ' wm-overlay-scanning' : ''}`}>
+                        <section className="panel image-review-panel">
+                            <div className="panel-heading">
+                                <h2>Images for overlay check</h2>
                             <span className="muted-label">
                                 {autoMaster ? '2 images' : '3 images'}
                             </span>

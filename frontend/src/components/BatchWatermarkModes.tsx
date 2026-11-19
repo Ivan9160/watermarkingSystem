@@ -23,7 +23,6 @@ export function BatchWatermarkModes({ visible, invisible, onVisibleChange, onInv
                     <span>Invisible <small>PixelSeal</small></span>
                 </label>
             </div>
-            {invisible && <p className="wm-batch-modes-note">PNG output · Auto ID per image</p>}
         </section>
     );
 }

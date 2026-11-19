@@ -118,33 +118,73 @@ export function DashboardPage() {
                     <span aria-hidden="true">＋</span> New batch
                 </button>}
             />
-
             <div className="wm-dashboard-content scrollable-content">
                 <section className="wm-dash-hero" aria-label="Workspace overview">
+                    <div className="wm-dash-hero-media" aria-hidden="true">
+                        <img
+                            src="/assets/waterm_dashboard_animation.gif"
+                            alt=""
+                            className="wm-dash-hero-gif"
+                        />
+                        <div className="wm-dash-hero-overlay" />
+                    </div>
+
                     <div className="wm-dash-hero-main">
-                        <span className="wm-dash-eyebrow"><span className="wm-dash-spark">✦</span> WATERM / WORKSPACE</span>
-                        <h2>Your images.<br /><span>Ready to protect.</span></h2>
-                        <p>Manage your catalog, apply reusable watermarks and keep processing in one place.</p>
+                        <span className="wm-dash-eyebrow">
+                            <span className="wm-dash-spark">✦</span> WatermarkOS / WORKSPACE
+                        </span>
+                        <h2>
+                            Your images.<br />
+                            <span>Ready to protect.</span>
+                        </h2>
+                        <p>
+                            Manage your catalog, apply reusable watermarks and keep processing in one place.
+                        </p>
                         <div className="wm-dash-hero-buttons">
-                            <button type="button" className="btn btn-light" onClick={() => navigate('library')}>
+                            <button
+                                type="button"
+                                className="btn btn-light"
+                                onClick={() => navigate('library')}
+                            >
                                 Open image library <span aria-hidden="true">↗</span>
                             </button>
-                            <button type="button" className="wm-dash-hero-text-btn" onClick={() => navigate('templates')}>
+                            <button
+                                type="button"
+                                className="wm-dash-hero-text-btn"
+                                onClick={() => navigate('templates')}
+                            >
                                 Browse templates <span aria-hidden="true">→</span>
                             </button>
                         </div>
                     </div>
                     <div className="wm-dash-workspace-card">
-                        <div className="wm-dash-workspace-top"><span>YOUR WORKSPACE</span><span aria-hidden="true">◈</span></div>
-                        <strong title={session.workspace.name}>{session.workspace.name}</strong>
+                        <div className="wm-dash-workspace-top">
+                            <span>YOUR WORKSPACE</span>
+                            <span aria-hidden="true">◈</span>
+                        </div>
+                        <strong title={session.workspace.name}>
+                            {session.workspace.name}
+                        </strong>
                         <div className="wm-dash-workspace-divider" />
                         <div className="wm-dash-workspace-line">
                             <span>Connected service</span>
-                            <b>{connectionLoading ? 'Checking…' : connected ? 'Allegro' : connectionError ? 'Unavailable' : 'None'}</b>
+                            <b>
+                                {connectionLoading
+                                    ? 'Checking…'
+                                    : connected
+                                        ? 'Allegro'
+                                        : connectionError
+                                            ? 'Unavailable'
+                                            : 'None'}
+                            </b>
                         </div>
                         <div className="wm-dash-workspace-line">
                             <span>Watermark draft</span>
-                            <b>{settings.layout === 'pattern' ? 'Repeating pattern' : 'Single watermark'}</b>
+                            <b>
+                                {settings.layout === 'pattern'
+                                    ? 'Repeating pattern'
+                                    : 'Single watermark'}
+                            </b>
                         </div>
                     </div>
                 </section>
