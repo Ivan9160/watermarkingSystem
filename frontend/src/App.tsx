@@ -2,6 +2,7 @@ import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { useApp } from './context/AppContext';
 import { TemplateProvider } from './context/TemplateContext';
+import { NotificationProvider } from './context/NotificationContext';
 import { DashboardPage } from './pages/DashboardPage';
 import { LibraryPage } from './pages/LibraryPage';
 import { EditorPage } from './pages/EditorPage';
@@ -34,5 +35,5 @@ function AppContent() {
 }
 
 export default function App() {
-    return <TemplateProvider><AppContent /></TemplateProvider>;
+    return <TemplateProvider><NotificationProvider><AppContent /></NotificationProvider></TemplateProvider>;
 }

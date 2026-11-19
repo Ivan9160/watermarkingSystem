@@ -3,12 +3,9 @@ import { PageHeading } from '../components/PageHeading';
 import { useApp } from '../context/AppContext';
 import { useTemplates } from '../context/TemplateContext';
 import { api } from '../services/api';
-import { getRecentBatchIds } from '../utils/batchHistory';
 import type {
-    AllegroConnection, BatchStatusResponse, ImportProgress, Page, ProductImage,
+    AllegroConnection, ImportProgress, Page, ProductImage,
 } from '../types';
-
-type BatchRow = { id: string; status?: BatchStatusResponse; error?: string };
 
 function offerIdOf(image: ProductImage): string | undefined {
     return image.offerId || (image.source === 'allegro'
@@ -27,12 +24,6 @@ function readableDate(date: string | undefined | null): string {
     const time = new Date(date);
     return Number.isNaN(time.getTime()) ? 'Not available'
         : time.toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-}
-
-function jobPercent(batch: BatchStatusResponse): number {
-    if (!batch.totalImages) return 0;
-    const complete = batch.counts.succeeded + batch.counts.failed;
-    return Math.min(100, Math.round(complete * 100 / batch.totalImages));
 }
 
 function latestStageLabel(stage: ImportProgress['stage']): string {
@@ -58,12 +49,7 @@ export function DashboardPage() {
     const [remoteImport, setRemoteImport] = useState<ImportProgress | null>(null);
     const [connectionRefresh, setConnectionRefresh] = useState(0);
 
-    const [batches, setBatches] = useState<BatchRow[]>([]);
-    const [batchesLoading, setBatchesLoading] = useState(true);
-    const [batchRefresh, setBatchRefresh] = useState(0);
-
     const refreshConnection = useCallback(() => setConnectionRefresh(current => current + 1), []);
-    const refreshBatches = useCallback(() => setBatchRefresh(current => current + 1), []);
 
     useEffect(() => {
         let cancelled = false;
@@ -94,46 +80,6 @@ export function DashboardPage() {
         return () => { cancelled = true; };
     }, [connectionRefresh]);
 
-    useEffect(() => {
-        let cancelled = false;
-        let timeout: ReturnType<typeof setTimeout> | undefined;
-
-        async function load() {
-            const ids = getRecentBatchIds().slice(0, 4);
-            if (ids.length === 0) {
-                if (!cancelled) { setBatches([]); setBatchesLoading(false); }
-                return;
-            }
-            const rows = await Promise.all(ids.map(async (id): Promise<BatchRow> => {
-                try { return { id, status: await api.getBatchStatus(id) }; }
-                catch (error) {
-                    return { id, error: error instanceof Error ? error.message : 'Cannot read status' };
-                }
-            }));
-            if (cancelled) return;
-            setBatches(rows);
-            setBatchesLoading(false);
-            if (rows.some(row => row.status?.status === 'QUEUED' || row.status?.status === 'PROCESSING')) {
-                timeout = setTimeout(() => { void load(); }, 3500);
-            }
-        }
-
-        setBatchesLoading(true);
-        void load();
-        const onHistoryChange = () => {
-            if (timeout) clearTimeout(timeout);
-            void load();
-        };
-        window.addEventListener('storage', onHistoryChange);
-        window.addEventListener('waterm:batch-history-updated', onHistoryChange);
-        return () => {
-            cancelled = true;
-            if (timeout) clearTimeout(timeout);
-            window.removeEventListener('storage', onHistoryChange);
-            window.removeEventListener('waterm:batch-history-updated', onHistoryChange);
-        };
-    }, [batchRefresh]);
-
     const allegroImages = useMemo(() => images.filter(image => image.source === 'allegro'), [images]);
     const localImages = useMemo(() => images.filter(image => image.source === 'local'), [images]);
     const offers = useMemo(() => new Set(allegroImages.map(offerIdOf).filter(Boolean)).size, [allegroImages]);
@@ -160,7 +106,6 @@ export function DashboardPage() {
     const effectiveImport = importProgress.stage !== 'idle' ? importProgress : remoteImport;
     const connected = connection?.connected === true;
     const recentImages = images.slice(-5).reverse();
-    const latest = batches.find(row => row.status)?.status;
 
     function navigate(page: Page) { setPage(page); }
 
@@ -218,42 +163,6 @@ export function DashboardPage() {
                 {catalogError && <p className="wm-dash-inline-alert" role="alert">Catalog sync: {catalogError}</p>}
 
                 <div className="wm-dash-main-grid">
-                    <section className="panel wm-dash-card wm-dash-batches" aria-label="Recent batch processing">
-                        <div className="wm-dash-section-top">
-                            <div><h2>Recent processing</h2><p>Latest jobs saved in this browser</p></div>
-                            <button type="button" className="wm-dash-inline-action" onClick={refreshBatches}>Refresh <span aria-hidden="true">↻</span></button>
-                        </div>
-                        {batchesLoading ? <p className="wm-dash-empty-text">Loading batch statuses…</p>
-                            : batches.length === 0 ? <div className="wm-dash-empty">
-                                <span className="wm-dash-empty-icon" aria-hidden="true">▤</span>
-                                <strong>No recent batches yet</strong>
-                                <p>Choose Allegro photos from Library and start processing to see jobs here.</p>
-                                <button type="button" className="btn btn-secondary" onClick={() => navigate('batch')}>Go to Batch Processing →</button>
-                            </div> : <div className="wm-dash-batch-list">
-                                {batches.map(row => row.status
-                                    ? <div className="wm-dash-batch-row" key={row.id}>
-                                        <div className="wm-dash-batch-row-head">
-                                            <div className="wm-dash-batch-id"><span aria-hidden="true">▤</span>
-                                                <div><strong>Batch {row.id.slice(0, 8)}</strong><small>{readableDate(row.status.createdAt)}</small></div>
-                                            </div>
-                                            <span className={`wm-dash-status wm-dash-status--${row.status.status.toLowerCase()}`}>{row.status.status}</span>
-                                        </div>
-                                        <div className="wm-dash-batch-progress-label">
-                                            <span>{row.status.counts.succeeded} successful · {row.status.counts.failed} failed</span>
-                                            <b>{row.status.counts.succeeded + row.status.counts.failed} / {row.status.totalImages}</b>
-                                        </div>
-                                        <progress className="wm-dash-progress" max="100" value={jobPercent(row.status)}
-                                            aria-label={`Batch ${row.id} processing progress`}>{jobPercent(row.status)}%</progress>
-                                    </div>
-                                    : <div className="wm-dash-batch-error" key={row.id}>
-                                        <span>Batch {row.id.slice(0, 8)}</span><small>{row.error ?? 'Status unavailable'}</small>
-                                    </div>)}
-                            </div>}
-                        <button type="button" className="wm-dash-panel-link" onClick={() => navigate('batch')}>
-                            Open Batch Processing <span aria-hidden="true">→</span>
-                        </button>
-                    </section>
-
                     <section className="panel wm-dash-card wm-dash-store" aria-label="Allegro integration">
                         <div className="wm-dash-section-top">
                             <div><h2>Connected marketplace</h2><p>Your e-commerce image source</p></div>
@@ -296,7 +205,7 @@ export function DashboardPage() {
                             active={connected} action="Integrations" onClick={() => navigate('integrations')} />
                         <WorkflowStep number="02" title="Select images" note={`${eligibleCount} eligible selected · ${selectedOffers} offers`}
                             active={eligibleCount > 0} action="Image library" onClick={() => navigate('library')} />
-                        <WorkflowStep number="03" title="Apply watermark" note={latest ? `Latest job: ${latest.status.toLowerCase()}` : 'Preview and process selected photos'}
+                        <WorkflowStep number="03" title="Apply watermark" note="Preview and process selected photos"
                             active={batchReady} action="Batch processing" onClick={() => navigate('batch')} />
                     </div>
                     <div className="wm-dash-workflow-footnote">Uploading processed photos back to Allegro is planned for a future update.</div>

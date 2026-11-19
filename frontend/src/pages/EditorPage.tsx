@@ -1,17 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { PageHeading } from '../components/PageHeading';
-import { PreviewCanvas } from '../components/PreviewCanvas';
+import { HybridBatchPreview, type DragPosition } from '../components/HybridBatchPreview';
 import { WatermarkSettingsPanel } from '../components/WatermarkSettingsPanel';
 import { WatermarkTemplatePanel } from '../components/WatermarkTemplatePanel';
 
 import { useApp } from '../context/AppContext';
 import { api } from '../services/api';
 
-import {
-    renderWatermarkedPng,
-    watermarkedFilename,
-} from '../utils/exportWatermarkedImage';
+import { requestSharpPreview } from '../services/watermarkPreviewApi';
+import { buildServerWatermarkConfig } from '../utils/serverWatermarkConfig';
 
 import type {
     BatchResultsResponse,
@@ -142,12 +140,12 @@ function triggerDownload(url: string, filename: string) {
 
 export function EditorPage() {
     const {
-        activeImage,
-        settings,
-        watermarkType,
-        setPage,
+        images, activeImage, openEditor,
+        settings, watermarkType, setPage,
     } = useApp();
 
+    const [manualPosition, setManualPosition] = useState<DragPosition | null>(null);
+    const [manualPatternOffset, setManualPatternOffset] = useState<DragPosition | null>(null);
     const [processing, setProcessing] = useState(false);
     const [downloading, setDownloading] = useState(false);
 
@@ -160,11 +158,16 @@ export function EditorPage() {
     const mounted = useRef(true);
     const operationId = useRef(0);
 
+    const [imageMenuOpen, setImageMenuOpen] = useState(false);
+    const imageMenuRef = useRef<HTMLDivElement>(null);
+
     const currentKey = JSON.stringify({
         imageId: activeImage?.id,
         imageSrc: activeImage?.src,
         watermarkType,
         settings,
+        manualPosition,
+        manualPatternOffset,
     });
 
     const latestKey = useRef(currentKey);
@@ -173,6 +176,21 @@ export function EditorPage() {
     const batchSource = activeImage
         ? getBatchSource(activeImage)
         : null;
+    const sharpConfig = useMemo(() => ({
+        ...buildServerWatermarkConfig(settings, 'png', 100),
+        ...(settings.layout === 'single' && manualPosition
+            ? { customPosition: manualPosition } : {}),
+        ...(settings.layout === 'pattern' && manualPatternOffset
+            ? { patternOffset: manualPatternOffset } : {}),
+    }), [settings, manualPosition, manualPatternOffset]);
+
+    useEffect(() => {
+        setManualPosition(null);
+        setManualPatternOffset(null);
+    }, [activeImage?.id, settings.position, settings.layout]);
+    const sharpInput = activeImage?.source === 'local'
+        ? activeImage.sourceRef
+        : activeImage?.src;
 
     useEffect(() => {
         mounted.current = true;
@@ -195,6 +213,31 @@ export function EditorPage() {
         setError('');
     }, [currentKey]);
 
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (
+                imageMenuRef.current &&
+                !imageMenuRef.current.contains(event.target as Node)
+            ) {
+                setImageMenuOpen(false);
+            }
+        }
+
+        function handleEscape(event: KeyboardEvent) {
+            if (event.key === 'Escape') {
+                setImageMenuOpen(false);
+            }
+        }
+
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('keydown', handleEscape);
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('keydown', handleEscape);
+        };
+    }, []);
+
     const processedCurrent =
         processed?.key === currentKey ? processed : null;
 
@@ -211,29 +254,22 @@ export function EditorPage() {
         keyAtStart: string,
         filenameAtStart: string,
     ) {
-        if (!activeImage) return;
+        if (!sharpInput) throw new Error('Image source is unavailable for Sharp.');
 
-        const result = await renderWatermarkedPng(
-            activeImage.src,
-            settings,
+        const result = await requestSharpPreview(
+            sharpInput,
+            sharpConfig,
+            new AbortController().signal,
         );
 
-        if (
-            !mounted.current ||
-            latestKey.current !== keyAtStart
-        ) {
-            return;
-        }
+        if (!mounted.current || latestKey.current !== keyAtStart) return;
 
-        const url = URL.createObjectURL(result.blob);
-
+        const url = URL.createObjectURL(result);
         setProcessed({
             key: keyAtStart,
             url,
-            filename: watermarkedFilename(filenameAtStart),
-            width: result.width,
-            height: result.height,
-            source: 'client',
+            filename: invisibleFilename(filenameAtStart),
+            source: 'client', // A downloaded Sharp-generated Blob, not Canvas output.
         });
     }
 
@@ -448,7 +484,7 @@ export function EditorPage() {
         (batchStatus?.counts.failed ?? 0);
 
     return (
-        <div className="page-shell">
+        <div className="page-shell watermark-editor-page">
             <PageHeading
                 title="Watermark Editor"
                 subtitle={
@@ -456,16 +492,81 @@ export function EditorPage() {
                     'Select an image from Library'
                 }
                 actions={
-                    <button
-                        className="btn btn-secondary"
-                        type="button"
-                        onClick={() => setPage('library')}
-                    >
-                        ← Library
-                    </button>
+                    <div className="page-actions">
+                        
+                        <div className="editor-image-picker" ref={imageMenuRef}>
+                            <span className="muted-label">Image</span>
+
+                            <div className={`editor-dropdown ${imageMenuOpen ? 'is-open' : ''}`}>
+                                <button
+                                    type="button"
+                                    className="editor-dropdown-trigger"
+                                    aria-label="Choose image to edit"
+                                    aria-expanded={imageMenuOpen}
+                                    aria-controls="editor-image-options"
+                                    disabled={processing || images.length === 0}
+                                    onClick={() => setImageMenuOpen(prev => !prev)}
+                                >
+                                    <span className="editor-dropdown-value">
+                                        {activeImage?.filename ?? 'Choose image'}
+                                    </span>
+
+                                    <svg
+                                        className="editor-dropdown-arrow"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        width="16"
+                                        height="16"
+                                        aria-hidden="true"
+                                    >
+                                        <path d="m6 9 6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                </button>
+
+                                {imageMenuOpen && (
+                                    <div
+                                        id="editor-image-options"
+                                        className="editor-dropdown-menu"
+                                    >
+                                        {images.map(image => (
+                                            <button
+                                                key={image.id}
+                                                type="button"
+                                                className={`editor-dropdown-option ${
+                                                    activeImage?.id === image.id ? 'is-selected' : ''
+                                                }`}
+                                                title={image.filename}
+                                                onClick={() => {
+                                                    openEditor(image.id);
+                                                    setImageMenuOpen(false);
+                                                }}
+                                            >
+                                                <span className="editor-dropdown-filename">
+                                                    {image.filename}
+                                                </span>
+
+                                                {activeImage?.id === image.id && (
+                                                    <span className="editor-dropdown-check">✓</span>
+                                                )}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <button
+                            className="btn btn-secondary"
+                            type="button"
+                            onClick={() => setPage('library')}
+                        >
+                            ← Library
+                        </button>
+                    </div>
                 }
             />
-
             <div
                 className="work-layout watermark-workspace"
                 style={
@@ -494,7 +595,7 @@ export function EditorPage() {
                             {processedCurrent
                                 ? processedCurrent.source === 'server'
                                     ? 'PIXELSEAL · PNG'
-                                    : `${processedCurrent.width} × ${processedCurrent.height} · PNG`
+                                    : 'SHARP · PNG'
                                 : `${activeImage?.filename ?? 'No image'} · ${
                                     watermarkType === 'visible'
                                         ? 'Visible'
@@ -514,18 +615,46 @@ export function EditorPage() {
                     )}
 
                     <div className="preview-stage">
-                        <PreviewCanvas
-                            imageSrc={
-                                processedCurrent?.url ??
-                                activeImage?.src
-                            }
-                            settings={settings}
-                            visible={
-                                !processedCurrent &&
-                                watermarkType === 'visible'
-                            }
-                        />
+                        {processedCurrent?.url ? (
+                            <img className="preview-canvas" src={processedCurrent.url} alt="Processed image (Sharp)" />
+                        ) : watermarkType === 'invisible' ? (
+                            activeImage?.src
+                                ? <img className="preview-canvas" src={activeImage.src} alt="Original image" />
+                                : <p className="muted-label">Choose an image from Library</p>
+                        ) : activeImage?.src ? (
+                            <HybridBatchPreview
+                                key={activeImage.id}
+                                imageSrc={activeImage.src}
+                                previewInput={sharpInput}
+                                config={sharpConfig}
+                                onPositionChange={setManualPosition}
+                                onPatternOffsetChange={setManualPatternOffset}
+                                disabled={processing}
+                            />
+                        ) : (
+                            <p className="muted-label">Choose an image from Library</p>
+                        )}
                     </div>
+
+                    {watermarkType === 'visible' && activeImage && !processedCurrent && (
+                        <div className="wm-drag-watermark-hint" role="note">
+                            <span className="wm-drag-hint-symbol" aria-hidden="true">✥</span>
+                            <span>
+                                <strong>{settings.layout === 'pattern' ? 'Drag the pattern' : 'Drag the watermark'}</strong>
+                                {settings.layout === 'pattern'
+                                    ? ' anywhere on the photo to reposition the entire pattern.'
+                                    : ' to any place on the photo.'}
+                                {' '}Release to save. Changes remain local until Apply watermark.
+                            </span>
+                            {(settings.layout === 'single' ? manualPosition : manualPatternOffset) && (
+                                <button type="button" className="wm-drag-reset" disabled={processing}
+                                    onClick={() => settings.layout === 'single'
+                                        ? setManualPosition(null) : setManualPatternOffset(null)}>
+                                    Reset position
+                                </button>
+                            )}
+                        </div>
+                    )}
 
                     {watermarkType === 'invisible' &&
                         processing &&

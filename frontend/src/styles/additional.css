@@ -1,4 +1,4 @@
-/* ===== WaterM Workspace + E-commerce Dashboard (isolated styles) ===== */
+/* ===== WaterM Workspace + E-commerce Dashboard ===== */
 
 .wm-dashboard-page .page-heading { flex-shrink: 0; }
 .wm-dashboard-content {
@@ -87,7 +87,7 @@
 }
 .wm-dash-stat > strong { display: block; font-size: 29px; font-weight: 850; line-height: 1.2; letter-spacing: -.9px; margin-top: 6px; font-variant-numeric: tabular-nums; }
 .wm-dash-stat > small { display:block; color: #8292aa; font-size: 10px; margin-top: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.wm-dash-main-grid { display: grid; grid-template-columns: minmax(0, 1.26fr) minmax(310px, 1fr); gap: 12px; }
+.wm-dash-main-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
 .wm-dash-bottom-grid { display: grid; grid-template-columns: minmax(0, 1.26fr) minmax(310px, 1fr); gap: 12px; }
 .wm-dash-card { display: flex; flex-direction: column; min-width:0; padding: 17px 19px; gap: 13px; }
 .wm-dash-section-top { display:flex; justify-content:space-between; align-items:start; gap: 14px; }
@@ -220,59 +220,64 @@
 .wm-local-upload-error .btn { align-self: flex-start; margin-top: 4px; }
 .library-upload-preview-status { overflow-wrap: anywhere; }
 
-.batch-processing-page .wm-local-batch-preview {
+/* The Editor and Batch share the exact same interactive preview styling. */
+.watermark-editor-page .preview-stage { min-width: 0; min-height: 0; overflow: hidden; }
+.watermark-editor-page .preview-stage > .hybrid-batch-preview { min-width: 0; min-height: 0; width: 100%; height: 100%; overflow: hidden; }
+.watermark-editor-page .editor-image-picker { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.watermark-editor-page .editor-image-picker select { max-width: min(250px, 25vw); min-width: 130px; }
+:is(.batch-processing-page, .watermark-editor-page) .wm-local-batch-preview {
     height: 100%; min-height: 0; width: 100%; gap: 9px;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
 }
-.batch-processing-page .wm-local-preview-area {
+:is(.batch-processing-page, .watermark-editor-page) .wm-local-preview-area {
     width: 100%; flex: 1 1 auto; min-height: 0; overflow: hidden;
     display: flex; justify-content: center; align-items: center;
 }
-.batch-processing-page .wm-local-preview-svg {
+:is(.batch-processing-page, .watermark-editor-page) .wm-local-preview-svg {
     display: block; width: auto; height: auto; max-width: 100%; max-height: 100%;
     flex: 0 1 auto; border-radius: 5px; box-shadow: 0 14px 45px #0008;
     user-select: none; -webkit-user-select: none;
 }
-.batch-processing-page .wm-local-watermark.is-editable { cursor: grab; touch-action: none; outline: none; }
-.batch-processing-page .wm-local-preview-svg.is-dragging .wm-local-watermark { cursor: grabbing; }
-.batch-processing-page .wm-local-watermark-boundary {
+:is(.batch-processing-page, .watermark-editor-page) .wm-local-watermark.is-editable { cursor: grab; touch-action: none; outline: none; }
+:is(.batch-processing-page, .watermark-editor-page) .wm-local-preview-svg.is-dragging .wm-local-watermark { cursor: grabbing; }
+:is(.batch-processing-page, .watermark-editor-page) .wm-local-watermark-boundary {
     stroke: rgba(190, 173, 255, .36); stroke-dasharray: 8 6;
     transition: stroke 100ms ease; pointer-events: all;
 }
-.batch-processing-page .wm-local-watermark.is-editable:hover .wm-local-watermark-boundary,
-.batch-processing-page .wm-local-watermark.is-editable:focus .wm-local-watermark-boundary,
-.batch-processing-page .wm-local-preview-svg.is-dragging .wm-local-watermark-boundary {
+:is(.batch-processing-page, .watermark-editor-page) .wm-local-watermark.is-editable:hover .wm-local-watermark-boundary,
+:is(.batch-processing-page, .watermark-editor-page) .wm-local-watermark.is-editable:focus .wm-local-watermark-boundary,
+:is(.batch-processing-page, .watermark-editor-page) .wm-local-preview-svg.is-dragging .wm-local-watermark-boundary {
     stroke: rgba(190, 173, 255, .93);
 }
-.batch-processing-page .wm-local-preview-status {
+:is(.batch-processing-page, .watermark-editor-page) .wm-local-preview-status {
     flex: 0 0 auto; font-size: 10px; color: #87d5b0; line-height: 1.4;
     text-align: center; padding: 0 8px;
 }
-.batch-processing-page .wm-local-preview-message { font-size: 12px; color: #aeb9cd; text-align: center; }
-.batch-processing-page .wm-drag-watermark-hint {
+:is(.batch-processing-page, .watermark-editor-page) .wm-local-preview-message { font-size: 12px; color: #aeb9cd; text-align: center; }
+:is(.batch-processing-page, .watermark-editor-page) .wm-drag-watermark-hint {
     display: flex; flex: 0 0 auto; align-items: center; gap: 10px;
     background: #1e2535; border-top: 1px solid #374055;
     padding: 9px 17px; color: #b9c6de; font-size: 11px; line-height: 1.45;
 }
-.batch-processing-page .wm-drag-watermark-hint strong { color: #f1edff; }
-.batch-processing-page .wm-drag-hint-symbol { font-size: 20px; color: #a991ff; }
-.batch-processing-page .wm-drag-reset {
+:is(.batch-processing-page, .watermark-editor-page) .wm-drag-watermark-hint strong { color: #f1edff; }
+:is(.batch-processing-page, .watermark-editor-page) .wm-drag-hint-symbol { font-size: 20px; color: #a991ff; }
+:is(.batch-processing-page, .watermark-editor-page) .wm-drag-reset {
     flex: 0 0 auto; margin-left: auto; white-space: nowrap;
     background: #2f2b49; color: #ded3ff; border: 1px solid #554a80;
     border-radius: 7px; cursor: pointer; font-weight: 700; padding: 6px 10px; font-size: 10px;
 }
-.batch-processing-page .wm-drag-reset:disabled { opacity: .5; cursor: not-allowed; }
-.batch-processing-page .wm-drag-reset:hover:not(:disabled) { background: #413665; }
+:is(.batch-processing-page, .watermark-editor-page) .wm-drag-reset:disabled { opacity: .5; cursor: not-allowed; }
+:is(.batch-processing-page, .watermark-editor-page) .wm-drag-reset:hover:not(:disabled) { background: #413665; }
 @media (max-width: 680px) {
-    .batch-processing-page .wm-drag-watermark-hint { flex-wrap: wrap; gap: 6px; }
-    .batch-processing-page .wm-drag-reset { margin-left: 27px; }
+    :is(.batch-processing-page, .watermark-editor-page) .wm-drag-watermark-hint { flex-wrap: wrap; gap: 6px; }
+    :is(.batch-processing-page, .watermark-editor-page) .wm-drag-reset { margin-left: 27px; }
 }
 
 .batch-processing-page .wm-local-pattern-drag-target {
     cursor: grab;
     touch-action: none;
 }
-.batch-processing-page .wm-local-preview-svg.is-dragging .wm-local-pattern-drag-target {
+:is(.batch-processing-page, .watermark-editor-page) .wm-local-preview-svg.is-dragging .wm-local-pattern-drag-target {
     cursor: grabbing;
 }
 
@@ -316,8 +321,8 @@
 }
 
 .library-product-group--active {
-    border-color: var(--accent, #7c5cff);
-    box-shadow: 0 0 0 1px var(--accent, #7c5cff) inset;
+    border-color: transparent;
+    box-shadow: none;
 }
 
 .library-product-group__header {
@@ -384,6 +389,7 @@
     line-height: 1.3;
     overflow-wrap: anywhere;
     -webkit-line-clamp: 3;
+    line-clamp: 3;
     -webkit-box-orient: vertical;
 }
 
