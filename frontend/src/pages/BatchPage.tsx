@@ -98,7 +98,7 @@ function offerImageIndexOf(image: ProductImage): number | null {
     ) {
         return null;
     }
-    return imageNumber -1;
+    return imageNumber - 1;
 }
 export function BatchPage() {
     const {
@@ -247,7 +247,7 @@ export function BatchPage() {
         setStatus(null);
         setResults(null);
         setMessage('');
-        setDownloadProgress('');        setUploadOpen(false);
+        setDownloadProgress(''); setUploadOpen(false);
         try { localStorage.removeItem(ACTIVE_BATCH_KEY); } catch { /* ignored */ }
     }
     const resultImages = results?.products.flatMap(product =>
@@ -325,7 +325,7 @@ export function BatchPage() {
                 <div className="panel preview-panel">
                     <div className="panel-heading preview-header">
                         <h2>
-                        {firstOutputUrl ? 'Processed image' : 'Batch preview'}
+                            {firstOutputUrl ? 'Processed image' : 'Batch preview'}
                         </h2>
                         {!firstOutputUrl &&
                             eligible.length > 0 &&
@@ -361,7 +361,7 @@ export function BatchPage() {
                                     onPositionChange={setManualPosition} onPatternOffsetChange={setManualPatternOffset}
                                     disabled={busy || active || !visibleEnabled} />
                                 : <PreviewCanvas templateOnly settings={settings} visible={visibleEnabled} />}
-                            {(busy || active) && (
+                        {(busy || active) && (
                             <div
                                 className="wm-batch-processing-overlay"
                                 aria-hidden="true"
@@ -380,17 +380,17 @@ export function BatchPage() {
                         <div className="batch-job-heading">
                             <strong>Batch {batchId.slice(0, 8)}…</strong>
                             <span className={`status-chip${status?.status === 'COMPLETED' ? ' wm-batch-complete' : ''}`}>
-                                    {status?.status === 'COMPLETED' && <span className="wm-batch-complete-icon" aria-hidden="true">✓</span>}
-                                    {status?.status ?? 'CONNECTING'}
-                                </span>
+                                {status?.status === 'COMPLETED' && <span className="wm-batch-complete-icon" aria-hidden="true">✓</span>}
+                                {status?.status ?? 'CONNECTING'}
+                            </span>
                         </div>
                         <div className="batch-progress-row">
                             <span>{completedCount} / {status?.totalImages ?? imageCount} processed</span>
                             <strong>{percent}%</strong>
                         </div>
                         <div className="wm-batch-progress-track" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent} aria-label="Batch processing progress">
-                                <div className="wm-batch-progress-fill" style={{ width: `${percent}%` }} />
-                            </div>
+                            <div className="wm-batch-progress-fill" style={{ width: `${percent}%` }} />
+                        </div>
                         <div className="batch-stats">
                             <span>Queued: {status?.counts.pending ?? '—'}</span>
                             <span>Running: {status?.counts.processing ?? '—'}</span>

@@ -100,7 +100,6 @@
     color: #8998ac;
 }
 
-
 /* Import progress is styled here, never inside TSX. */
 .integration-progress {
     padding: 24px;
@@ -173,5 +172,3 @@
     font-weight: 800;
     font-variant-numeric: tabular-nums;
 }
-
-

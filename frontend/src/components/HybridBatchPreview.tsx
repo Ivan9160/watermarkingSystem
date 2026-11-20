@@ -204,7 +204,7 @@ export function HybridBatchPreview({ imageSrc, config, onPositionChange, onPatte
                 viewBox={`0 0 ${w} ${h}`} xmlns="http://www.w3.org/2000/svg" role="img"
                 aria-label="Local browser preview with draggable watermarks" onPointerMove={moveDrag}
                 onPointerUp={(event: ReactPointerEvent<SVGSVGElement>) => finishDrag(event)} onPointerCancel={(event: ReactPointerEvent<SVGSVGElement>) => finishDrag(event, true)}>
-                <defs><clipPath id={`wm-photo-${svgId}`}><rect x="0" y="0" width={w} height={h}/></clipPath></defs>
+                <defs><clipPath id={`wm-photo-${svgId}`}><rect x="0" y="0" width={w} height={h} /></clipPath></defs>
                 <image href={imageSrc} x="0" y="0" width={w} height={h} preserveAspectRatio="none" pointerEvents="none" />
                 {textPresent && config.mode === 'tile' && <g clipPath={`url(#wm-photo-${svgId})`} pointerEvents="none">
                     {repeated.map(mark => <g key={mark.key} transform={`translate(${mark.x + rotatedW / 2}, ${mark.y + rotatedH / 2}) rotate(${config.angle})`}>

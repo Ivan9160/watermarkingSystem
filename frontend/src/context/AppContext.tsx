@@ -1,9 +1,11 @@
-import {createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode,
+import {    
+createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode,
 } from 'react';
 
 import { api } from '../services/api';
 
-import type {Page, ProductImage, WatermarkSettings, WatermarkType, WorkspaceSession, ImportProgress,
+import type {    
+Page, ProductImage, WatermarkSettings, WatermarkType, WorkspaceSession, ImportProgress,
 } from '../types';
 
 const IS_BACKEND = import.meta.env.VITE_DATA_SOURCE === 'backend';
@@ -133,7 +135,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     const [importProgress, setImportProgress] =
         useState<ImportProgress>(INITIAL_IMPORT_PROGRESS);
-
 
     const [watermarkType, setWatermarkType] =
         useState<WatermarkType>('visible');
@@ -325,8 +326,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
         };
     }
 
-    
-
     function markLocalUploaded(id: string, data: import('../types').LocalUploadResponse) {
         const oldUrl = localUrls.current.get(id);
         setImages(current => current.map(image => image.id === id ? {
@@ -423,7 +422,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
         selectImages(productImageIds);
     }
-
 
     function openEditor(id: string) {
         setActiveImageId(id);

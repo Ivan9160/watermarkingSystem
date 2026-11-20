@@ -163,8 +163,8 @@ export function UploadToServiceModal({ batchId, imageCount, onClose, onNavigate 
                                     <em className={`upload-provider-state is-${connection}`}>
                                         {connection === 'checking' ? 'Checking connection…'
                                             : connection === 'connected' ? 'Account connected'
-                                            : connection === 'disconnected' ? 'Account not connected'
-                                            : 'Connection status unavailable'}
+                                                : connection === 'disconnected' ? 'Account not connected'
+                                                    : 'Connection status unavailable'}
                                     </em>
                                 </span>
                                 <span className="upload-provider-radio" aria-hidden="true" />

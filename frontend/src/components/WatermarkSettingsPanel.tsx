@@ -38,8 +38,8 @@ export function WatermarkSettingsPanel({
                         onChange={event =>
                             setWatermarkType(
                                 event.target.value as
-                                    | 'visible'
-                                    | 'invisible',
+                                | 'visible'
+                                | 'invisible',
                             )
                         }
                     >

@@ -135,13 +135,15 @@ export function IntegrationsPage() {
                 }
 
                 if (returnedFromOAuth.current) {
-                    window.dispatchEvent(new CustomEvent('waterm:notify', { detail: {
-                        id: `allegro-connected:${Date.now()}`,
-                        kind: 'success',
-                        title: 'Allegro connected',
-                        message: 'Your marketplace connection was established successfully.',
-                        page: 'integrations',
-                    } }));
+                    window.dispatchEvent(new CustomEvent('waterm:notify', {
+                        detail: {
+                            id: `allegro-connected:${Date.now()}`,
+                            kind: 'success',
+                            title: 'Allegro connected',
+                            message: 'Your marketplace connection was established successfully.',
+                            page: 'integrations',
+                        }
+                    }));
                     returnedFromOAuth.current = false;
                     void runImport(false);
                     return;
@@ -201,13 +203,15 @@ export function IntegrationsPage() {
             setImportProgress({ ...EMPTY_PROGRESS });
             setLibrarySourceFilter('all');
             setNotice('Allegro disconnected. Your local photos are preserved.');
-            window.dispatchEvent(new CustomEvent('waterm:notify', { detail: {
-                id: `allegro-disconnected:${Date.now()}`,
-                kind: 'info',
-                title: 'Allegro disconnected',
-                message: 'The marketplace was disconnected. Local photos are preserved.',
-                page: 'integrations',
-            } }));
+            window.dispatchEvent(new CustomEvent('waterm:notify', {
+                detail: {
+                    id: `allegro-disconnected:${Date.now()}`,
+                    kind: 'info',
+                    title: 'Allegro disconnected',
+                    message: 'The marketplace was disconnected. Local photos are preserved.',
+                    page: 'integrations',
+                }
+            }));
         } catch (error) {
             setNotice(error instanceof Error ? error.message : 'Could not disconnect Allegro');
         } finally {

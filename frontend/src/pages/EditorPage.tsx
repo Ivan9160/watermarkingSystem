@@ -10,133 +10,18 @@ import { api } from '../services/api';
 
 import { requestSharpPreview } from '../services/watermarkPreviewApi';
 import { buildServerWatermarkConfig } from '../utils/serverWatermarkConfig';
+import { EditorImagePicker } from '../components/EditorImagePicker';
+import {
+    POLL_MS, MAX_POLL_ATTEMPTS, getBatchSource, isFinished, getMessage,
+    delay, invisibleFilename, getSuccessfulImage, getFailedImageMessage,
+    triggerDownload, type ProcessedImage, type BatchSource,
+} from '../utils/editorHelpers';
 
 import type {
-    BatchResultsResponse,
     BatchStatusResponse,
     BatchWatermarkConfig,
     CreateBatchRequest,
-    ProductImage,
 } from '../types';
-
-interface ProcessedImage {
-    key: string;
-    url: string;
-    filename: string;
-    width?: number;
-    height?: number;
-    source: 'client' | 'server';
-    batchId?: string;
-}
-
-interface BatchSource {
-    offerId: string;
-    url: string;
-    offerImageIndex: number;
-    local: boolean;
-}
-
-const POLL_MS = 1500;
-const MAX_POLL_ATTEMPTS = 600;
-
-function randomOfferId(): string {
-    return String(Math.floor(1_000_000_000 + Math.random() * 9_000_000_000));
-}
-
-function toHttpsUrl(value: string | undefined | null): string | null {
-    if (!value) return null;
-
-    try {
-        const parsed = new URL(value);
-
-        return parsed.protocol === 'https:' ? parsed.href : null;
-    } catch {
-        return null;
-    }
-}
-
-function getBatchSource(image: ProductImage): BatchSource | null {
-    if (image.source === 'local') {
-        const sourceRef = image.sourceRef ?? '';
-
-        if (!sourceRef.startsWith('waterm-local:')) {
-            return null;
-        }
-
-        return {
-            offerId: image.offerId ?? `LOCAL-${image.id}`,
-            url: sourceRef,
-            offerImageIndex: 0,
-            local: true,
-        };
-    }
-
-    const url = toHttpsUrl(image.src) ?? toHttpsUrl(image.sourceRef);
-
-    if (!url) return null;
-
-    const filenameMatch = image.filename.match(/^(.+)-(\d{2})\.[^.]+$/);
-
-    return {
-        offerId:
-            image.offerId ??
-            filenameMatch?.[1] ??
-            randomOfferId(),
-        url,
-        offerImageIndex: filenameMatch
-            ? Math.max(0, Number(filenameMatch[2]) - 1)
-            : 1,
-        local: false,
-    };
-}
-
-function isFinished(status: string): boolean {
-    return status === 'COMPLETED' || status === 'FAILED';
-}
-
-function getMessage(error: unknown): string {
-    return error instanceof Error
-        ? error.message
-        : 'Unexpected image processing error';
-}
-
-function delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-function invisibleFilename(filename: string): string {
-    const extensionIndex = filename.lastIndexOf('.');
-    const base = extensionIndex > 0
-        ? filename.slice(0, extensionIndex)
-        : filename;
-
-    return `${base}-watermarked.png`;
-}
-
-function getSuccessfulImage(results: BatchResultsResponse) {
-    return results.products
-        .flatMap(product => product.images)
-        .find(image => image.status === 'SUCCEEDED' && Boolean(image.url));
-}
-
-function getFailedImageMessage(results: BatchResultsResponse): string | null {
-    const failed = results.products
-        .flatMap(product => product.images)
-        .find(image => image.status === 'FAILED');
-
-    return failed?.error ?? null;
-}
-
-function triggerDownload(url: string, filename: string) {
-    const link = document.createElement('a');
-
-    link.href = url;
-    link.download = filename;
-
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-}
 
 export function EditorPage() {
     const {
@@ -157,9 +42,6 @@ export function EditorPage() {
 
     const mounted = useRef(true);
     const operationId = useRef(0);
-
-    const [imageMenuOpen, setImageMenuOpen] = useState(false);
-    const imageMenuRef = useRef<HTMLDivElement>(null);
 
     const currentKey = JSON.stringify({
         imageId: activeImage?.id,
@@ -212,31 +94,6 @@ export function EditorPage() {
     useEffect(() => {
         setError('');
     }, [currentKey]);
-
-    useEffect(() => {
-        function handleClickOutside(event: MouseEvent) {
-            if (
-                imageMenuRef.current &&
-                !imageMenuRef.current.contains(event.target as Node)
-            ) {
-                setImageMenuOpen(false);
-            }
-        }
-
-        function handleEscape(event: KeyboardEvent) {
-            if (event.key === 'Escape') {
-                setImageMenuOpen(false);
-            }
-        }
-
-        document.addEventListener('mousedown', handleClickOutside);
-        document.addEventListener('keydown', handleEscape);
-
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-            document.removeEventListener('keydown', handleEscape);
-        };
-    }, []);
 
     const processedCurrent =
         processed?.key === currentKey ? processed : null;
@@ -493,69 +350,8 @@ export function EditorPage() {
                 }
                 actions={
                     <div className="page-actions">
-                        
-                        <div className="editor-image-picker" ref={imageMenuRef}>
-                            <span className="muted-label">Image</span>
 
-                            <div className={`editor-dropdown ${imageMenuOpen ? 'is-open' : ''}`}>
-                                <button
-                                    type="button"
-                                    className="editor-dropdown-trigger"
-                                    aria-label="Choose image to edit"
-                                    aria-expanded={imageMenuOpen}
-                                    aria-controls="editor-image-options"
-                                    disabled={processing || images.length === 0}
-                                    onClick={() => setImageMenuOpen(prev => !prev)}
-                                >
-                                    <span className="editor-dropdown-value">
-                                        {activeImage?.filename ?? 'Choose image'}
-                                    </span>
-
-                                    <svg
-                                        className="editor-dropdown-arrow"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                        width="16"
-                                        height="16"
-                                        aria-hidden="true"
-                                    >
-                                        <path d="m6 9 6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                </button>
-
-                                {imageMenuOpen && (
-                                    <div
-                                        id="editor-image-options"
-                                        className="editor-dropdown-menu"
-                                    >
-                                        {images.map(image => (
-                                            <button
-                                                key={image.id}
-                                                type="button"
-                                                className={`editor-dropdown-option ${
-                                                    activeImage?.id === image.id ? 'is-selected' : ''
-                                                }`}
-                                                title={image.filename}
-                                                onClick={() => {
-                                                    openEditor(image.id);
-                                                    setImageMenuOpen(false);
-                                                }}
-                                            >
-                                                <span className="editor-dropdown-filename">
-                                                    {image.filename}
-                                                </span>
-
-                                                {activeImage?.id === image.id && (
-                                                    <span className="editor-dropdown-check">✓</span>
-                                                )}
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+                        <EditorImagePicker images={images} activeImage={activeImage} processing={processing} openEditor={openEditor} />
 
                         <button
                             className="btn btn-secondary"
@@ -596,10 +392,9 @@ export function EditorPage() {
                                 ? processedCurrent.source === 'server'
                                     ? 'PIXELSEAL · PNG'
                                     : 'SHARP · PNG'
-                                : `${activeImage?.filename ?? 'No image'} · ${
-                                    watermarkType === 'visible'
-                                        ? 'Visible'
-                                        : 'Invisible'
+                                : `${activeImage?.filename ?? 'No image'} · ${watermarkType === 'visible'
+                                    ? 'Visible'
+                                    : 'Invisible'
                                 }`}
                         </span>
                     </div>

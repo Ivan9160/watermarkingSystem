@@ -30,15 +30,6 @@ export interface WatermarkSettings {
     position: WatermarkPosition;
 }
 
-export interface ProcessingBatch {
-    batchId: string;
-    status: 'queued' | 'processing' | 'completed' | 'failed';
-    total: number;
-    completed: number;
-    failed: number;
-    pending: number;
-}
-
 export interface AllegroConnection {
     connected: boolean;
     sellerName?: string;
@@ -143,7 +134,6 @@ export interface BatchResultsResponse {
     }>;
 }
 
-
 export interface LocalUploadResponse {
     sourceRef: string;
     src: string;
@@ -152,7 +142,6 @@ export interface LocalUploadResponse {
     mimeType: string;
     sizeBytes: number;
 }
-
 
 export type WatermarkVerificationStatus =
     | 'verified'
@@ -183,7 +172,6 @@ export interface WatermarkVerificationResponse {
 
     verificationId?: string;
 }
-
 
 export type FootprintMasterSource = 'uploaded' | 'stored' | 'generated';
 

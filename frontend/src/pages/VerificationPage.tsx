@@ -2,196 +2,15 @@ import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { PageHeading } from '../components/PageHeading';
 import { useApp } from '../context/AppContext';
 import { api } from '../services/api';
+import { FileSlot } from '../components/VerificationFileSlot';
+import {
+    POLL_MS, MAX_POLL_ATTEMPTS, MASTER_SOURCE_LABEL, getLibraryVerificationId,
+    validateFile, delay, getErrorMessage, getVerificationCopy, type Mode,
+} from '../utils/verificationHelpers';
 import type {
     FootprintCheckResult,
-    FootprintMasterSource,
-    ProductImage,
     WatermarkVerificationResponse,
 } from '../types';
-
-type Mode = 'standard' | 'overlay';
-
-const MAX_FILE_BYTES = 10 * 1024 * 1024;
-const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
-const POLL_MS = 1500;
-const MAX_POLL_ATTEMPTS = 400;
-
-const MASTER_SOURCE_LABEL: Record<FootprintMasterSource, string> = {
-    uploaded: 'Uploaded by you',
-    stored: 'Stored result of our batch',
-    generated: 'Generated from the original',
-};
-
-function getLibraryVerificationId(image: ProductImage): string | null {
-    if (image.id.startsWith('allegro-') || image.id.startsWith('local-server-')) {
-        return image.id;
-    }
-
-    if (image.source === 'local' && image.sourceRef) {
-        const match = /^waterm-local:([a-f0-9]{32}\.(?:jpg|png|webp))$/i.exec(image.sourceRef);
-        if (match?.[1]) return `local-server-${match[1]}`;
-    }
-
-    return null;
-}
-
-function validateFile(file: File): string | null {
-    if (!ALLOWED_TYPES.has(file.type)) return 'Choose a JPG, PNG or WebP image.';
-    if (file.size === 0) return 'The selected file is empty.';
-    if (file.size > MAX_FILE_BYTES) return 'The image exceeds the 10 MB limit.';
-    return null;
-}
-
-function delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-function getErrorMessage(cause: unknown, fallback: string): string {
-    return cause instanceof Error ? cause.message : fallback;
-}
-
-const STATUS_COPY: Record<
-    Exclude<WatermarkVerificationResponse['status'], 'verified'>,
-    { title: string; description: string; label: string }
-> = {
-    unknown_organization: {
-        title: 'Unknown organization',
-        description: 'The watermark signature is valid, but its organization is not registered in WatermarkOS.',
-        label: 'UNKNOWN ORGANIZATION',
-    },
-
-    invalid_signature: {
-        title: 'Invalid watermark signature',
-        description: 'Watermark data was detected, but its HMAC signature did not pass verification.',
-        label: 'INVALID SIGNATURE',
-    },
-
-    not_detected: {
-        title: 'No watermark detected',
-        description: 'No valid invisible watermark was detected in this image.',
-        label: 'NOT DETECTED',
-    },
-};
-
-function getVerificationCopy(result: WatermarkVerificationResponse) {
-    if (result.status !== 'verified') {
-        return STATUS_COPY[result.status];
-    }
-
-    if (result.ownership === 'own') {
-        return {
-            title: 'Your watermark verified',
-            description: 'This image contains an authentic invisible watermark belonging to your organization.',
-            label: 'YOUR ORGANIZATION',
-        };
-    }
-
-    if (result.ownership === 'other') {
-        return {
-            title: 'Another organization detected',
-            description: 'This image contains an authentic invisible watermark belonging to another organization.',
-            label: 'OTHER ORGANIZATION',
-        };
-    }
-
-    return {
-        title: 'Watermark verified',
-        description: 'The watermark is authentic, but its ownership could not be determined.',
-        label: 'OWNERSHIP UNKNOWN',
-    };
-}
-
-interface FileSlotProps {
-    label: string;
-    hint: string;
-    file: File | null;
-    disabled: boolean;
-    onSelect: (file: File | null) => void;
-    onError: (message: string) => void;
-}
-
-function FileSlot({ label, hint, file, disabled, onSelect, onError }: FileSlotProps) {
-    const input = useRef<HTMLInputElement>(null);
-    const [previewUrl, setPreviewUrl] = useState('');
-
-    useEffect(() => {
-        if (!file) {
-            setPreviewUrl('');
-            return;
-        }
-
-        const url = URL.createObjectURL(file);
-        setPreviewUrl(url);
-
-        return () => URL.revokeObjectURL(url);
-    }, [file]);
-
-    function handleChange(event: ChangeEvent<HTMLInputElement>) {
-        const picked = event.target.files?.[0] ?? null;
-        event.target.value = '';
-
-        if (!picked) return;
-
-        const problem = validateFile(picked);
-
-        if (problem) {
-            onError(problem);
-            return;
-        }
-
-        onError('');
-        onSelect(picked);
-    }
-
-    return (
-        <div className="form-field">
-            <span>{label}</span>
-
-            <div
-                className="review-image-area"
-                style={{ minHeight: 180, marginBottom: 8 }}
-            >
-                {previewUrl ? (
-                    <img src={previewUrl} alt={label} />
-                ) : (
-                    <p>{hint}</p>
-                )}
-            </div>
-
-            <input
-                ref={input}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                hidden
-                onChange={handleChange}
-            />
-
-            <div className="page-actions">
-                <button
-                    className="btn btn-secondary"
-                    type="button"
-                    onClick={() => input.current?.click()}
-                    disabled={disabled}
-                >
-                    {file ? 'Replace image' : 'Upload image'}
-                </button>
-
-                {file && (
-                    <button
-                        className="subtle-link"
-                        type="button"
-                        onClick={() => onSelect(null)}
-                        disabled={disabled}
-                    >
-                        Clear
-                    </button>
-                )}
-            </div>
-
-            {file && <span className="muted-label">{file.name}</span>}
-        </div>
-    );
-}
 
 export function VerificationPage() {
     const { images, catalogLoading, catalogError, setPage } = useApp();
@@ -546,11 +365,10 @@ export function VerificationPage() {
 
                         {result && verificationCopy && (
                             <div
-                                className={`verification-result verification-result--${
-                                    result.status === 'verified'
-                                        ? result.ownership ?? 'verified'
-                                        : result.status
-                                }`}
+                                className={`verification-result verification-result--${result.status === 'verified'
+                                    ? result.ownership ?? 'verified'
+                                    : result.status
+                                    }`}
                                 role="status"
                                 aria-live="polite"
                             >
@@ -624,9 +442,9 @@ export function VerificationPage() {
 
             {mode === 'overlay' && (
                 <div className={`analysis-layout${overlayRunning ? ' wm-overlay-scanning' : ''}`}>
-                        <section className="panel image-review-panel">
-                            <div className="panel-heading">
-                                <h2>Images for overlay check</h2>
+                    <section className="panel image-review-panel">
+                        <div className="panel-heading">
+                            <h2>Images for overlay check</h2>
                             <span className="muted-label">
                                 {autoMaster ? '2 images' : '3 images'}
                             </span>
@@ -728,9 +546,8 @@ export function VerificationPage() {
 
                         {overlayResult && (
                             <div
-                                className={`verification-result verification-result--${
-                                    overlayResult.present ? 'own' : 'not_detected'
-                                }`}
+                                className={`verification-result verification-result--${overlayResult.present ? 'own' : 'not_detected'
+                                    }`}
                                 role="status"
                                 aria-live="polite"
                             >

@@ -13,7 +13,6 @@ const navigation: { id: Page; label: string; icon: string; group: string }[] = [
     { id: 'verification', label: 'Verification', icon: '◎', group: 'TOOLS' },
 ];
 
-
 export function Sidebar() {
     const { page, setPage } = useApp();
     const navRef = useRef<HTMLElement>(null);
@@ -108,9 +107,8 @@ export function Sidebar() {
 
                             <button
                                 type="button"
-                                className={`nav-link${
-                                    page === item.id ? ' active' : ''
-                                }`}
+                                className={`nav-link${page === item.id ? ' active' : ''
+                                    }`}
                                 aria-current={
                                     page === item.id ? 'page' : undefined
                                 }

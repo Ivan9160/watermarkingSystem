@@ -10,82 +10,11 @@ import { PageHeading } from '../components/PageHeading';
 import { useApp, type LibrarySourceFilter } from '../context/AppContext';
 import type { ProductImage } from '../types';
 import { api } from '../services/api';
-
-type SortOrder = 'asc' | 'desc';
-type LibraryViewMode = 'photos' | 'products';
-type Dimensions = { width: number; height: number };
-type UploadPreview = { id: string; name: string; url?: string; issue?: string; status?: string };
-type ImageGroup = {
-    key: string;
-    title: string;
-    offerId?: string;
-    source: ProductImage['source'];
-    images: ProductImage[];
-};
-
-const MB = 1024 * 1024;
-const MAX_FILE_BYTES = 10 * MB;
-const VALID_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
-const COLLAPSED_THUMBS = 8;
-
-function getOfferId(image: ProductImage): string | undefined {
-    if (image.offerId) return image.offerId;
-    if (image.source !== 'allegro') return undefined;
-    return image.filename.match(/^(.+)-\d{2}\.(?:jpe?g|png|webp)$/i)?.[1];
-}
-
-function productKey(image: ProductImage): string {
-    if (image.source === 'local') {
-        if (image.offerId) return `local:${image.offerId}`;
-        if (image.productName?.trim()) {
-            return `local-name:${image.productName.trim().toLowerCase()}`;
-        }
-    }
-    if (image.source === 'allegro') {
-        const offerId = getOfferId(image);
-        if (offerId) return `allegro:${offerId}`;
-        if (image.productName?.trim()) {
-            return `allegro-name:${image.productName.trim().toLowerCase()}`;
-        }
-    }
-    return `individual:${image.id}`;
-}
-
-function sourceLabel(source: ProductImage['source']): string {
-    return source === 'local' ? 'Local' : source === 'allegro' ? 'Allegro' : 'Catalog';
-}
-
-function getFormat(image: ProductImage): 'jpeg' | 'png' | 'webp' | 'unknown' {
-    if (image.mimeType === 'image/jpeg') return 'jpeg';
-    if (image.mimeType === 'image/png') return 'png';
-    if (image.mimeType === 'image/webp') return 'webp';
-    const extension = image.filename.split('.').pop()?.toLowerCase();
-    if (extension === 'jpg' || extension === 'jpeg') return 'jpeg';
-    if (extension === 'png') return 'png';
-    if (extension === 'webp') return 'webp';
-    return 'unknown';
-}
-
-function formatBytes(bytes: number | undefined): string {
-    if (bytes === undefined) return 'Not available';
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < MB) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / MB).toFixed(2)} MB`;
-}
-
-function GroupCheckbox({ checked, indeterminate, onChange, label }: {
-    checked: boolean;
-    indeterminate: boolean;
-    onChange: () => void;
-    label: string;
-}) {
-    const ref = useRef<HTMLInputElement>(null);
-    useEffect(() => {
-        if (ref.current) ref.current.indeterminate = indeterminate;
-    }, [indeterminate]);
-    return <input ref={ref} type="checkbox" className="library-product-group__check"
-        checked={checked} onChange={onChange} aria-label={label} />;
-}
+import { LibraryGroupGrid } from '../components/LibraryGroupGrid';
+import {
+    VALID_TYPES, MAX_FILE_BYTES, getOfferId, productKey, getFormat, formatBytes,
+    type ImageGroup, type Dimensions, type LibraryViewMode, type SortOrder, type UploadPreview,
+} from '../utils/libraryHelpers';
 
 export function LibraryPage() {
     const {
@@ -137,7 +66,7 @@ export function LibraryPage() {
         .filter(image => !selectedOnly || selectedSet.has(image.id))
         .sort((a, b) => Number(recentUploadIds.has(b.id)) - Number(recentUploadIds.has(a.id)) ||
             a.filename.localeCompare(b.filename, undefined, { numeric: true }) * (sort === 'asc' ? 1 : -1)),
-    [images, query, librarySourceFilter, selectedOnly, selectedSet, sort, recentUploadIds]);
+        [images, query, librarySourceFilter, selectedOnly, selectedSet, sort, recentUploadIds]);
 
     const visibleGroups = useMemo<ImageGroup[]>(() => {
         const groups = new Map<string, ImageGroup>();
@@ -431,30 +360,30 @@ export function LibraryPage() {
             </div>
             {(uploadNotice || uploadError || (showUploadDetails && uploadPreviews.length > 0)) &&
                 <div className={`panel library-upload library-upload--compact${dragOver ? ' library-upload--dragging' : ''}`}>
-                {uploadNotice && <div role="status" className="library-upload-notice">
-                    <span className="library-upload-notice-text">{uploadNotice}</span>
-                    {uploadPreviews.length > 0 && <button type="button" className="subtle-link"
-                        onClick={() => setShowUploadDetails(value => !value)}>
-                        {showUploadDetails ? 'Hide details' : 'Show upload details'}
-                    </button>}
+                    {uploadNotice && <div role="status" className="library-upload-notice">
+                        <span className="library-upload-notice-text">{uploadNotice}</span>
+                        {uploadPreviews.length > 0 && <button type="button" className="subtle-link"
+                            onClick={() => setShowUploadDetails(value => !value)}>
+                            {showUploadDetails ? 'Hide details' : 'Show upload details'}
+                        </button>}
+                    </div>}
+                    {uploadError && <div className="wm-local-upload-error" role="alert">
+                        <strong>Local image upload failed</strong>
+                        <span>{uploadError}</span>
+                        {/unauthori[sz]ed|reconnect allegro|401|session/i.test(uploadError) &&
+                            <button type="button" className="btn btn-secondary"
+                                onClick={() => setPage('integrations')}>Reconnect Allegro</button>}
+                    </div>}
+                    {showUploadDetails && uploadPreviews.length > 0 && <div className="library-upload-preview-list">
+                        {uploadPreviews.map(item => <div key={item.id} className="library-upload-preview-item">
+                            <div className="library-upload-preview-image">
+                                {item.url ? <img src={item.url} alt="" /> : <span>⚠</span>}
+                            </div>
+                            <div title={item.name} className="library-upload-preview-name">{item.name}</div>
+                            <div className={`library-upload-preview-status${item.issue ? ' library-upload-preview-status--error' : ''}`}>{item.issue ?? item.status ?? 'Uploading…'}</div>
+                        </div>)}
+                    </div>}
                 </div>}
-                {uploadError && <div className="wm-local-upload-error" role="alert">
-                    <strong>Local image upload failed</strong>
-                    <span>{uploadError}</span>
-                    {/unauthori[sz]ed|reconnect allegro|401|session/i.test(uploadError) &&
-                        <button type="button" className="btn btn-secondary"
-                            onClick={() => setPage('integrations')}>Reconnect Allegro</button>}
-                </div>}
-                {showUploadDetails && uploadPreviews.length > 0 && <div className="library-upload-preview-list">
-                    {uploadPreviews.map(item => <div key={item.id} className="library-upload-preview-item">
-                        <div className="library-upload-preview-image">
-                            {item.url ? <img src={item.url} alt="" /> : <span>⚠</span>}
-                        </div>
-                        <div title={item.name} className="library-upload-preview-name">{item.name}</div>
-                        <div className={`library-upload-preview-status${item.issue ? ' library-upload-preview-status--error' : ''}`}>{item.issue ?? item.status ?? 'Uploading…'}</div>
-                    </div>)}
-                </div>}
-            </div>}
             <div
                 ref={libraryGridRef}
                 className={`library-product-groups scrollable-content library-product-groups--${viewMode}${dragOver ? ' library-drag-active' : ''}${visible.length === 0 ? ' library-empty' : ''}`}
@@ -467,166 +396,24 @@ export function LibraryPage() {
                         Remote catalog unavailable: {catalogError}
                     </div>
                 )}
-                {displayGroups.map(group => {
-                    const selectedCount = group.images.filter(
-                        image => selectedSet.has(image.id)
-                    ).length;
-                    const allSelected = selectedCount === group.images.length;
-                    const isCollapsed = viewMode === 'products' && collapsedGroups.has(group.key);
-                    const classes = [
-                        'library-product-group',
-                            viewMode === 'photos' ? 'library-product-group--flat' : 'library-product-group--products',
-                        isCollapsed ? 'library-product-group--collapsed' : '',
-                        selectedCount > 0 ? 'library-product-group--active' : '',
-                    ].filter(Boolean).join(' ');
-                    return (
-                        <section key={group.key} className={classes}>
-                            {viewMode === 'products' && <header className="library-product-group__header">
-                                <div className="library-product-group__controls">
-                                    <GroupCheckbox
-                                        checked={allSelected}
-                                        indeterminate={selectedCount > 0 && !allSelected}
-                                        onChange={() => toggleGroupSelection(group)}
-                                        label={`${allSelected ? 'Deselect' : 'Select'} all photos of ${group.title}`}
-                                    />
-                                    <button
-                                        type="button"
-                                        className="library-product-group__toggle"
-                                        aria-expanded={!isCollapsed}
-                                        aria-label={`${isCollapsed ? 'Expand' : 'Collapse'} ${group.title}`}
-                                        onClick={() => toggleGroupCollapsed(group.key)}
-                                    >
-                                        {isCollapsed ? '▸' : '▾'}
-                                    </button>
-                                    <span className="library-product-group__source">
-                                        {sourceLabel(group.source)}
-                                    </span>
-                                </div>
-                                <div className="library-product-group__info">
-                                    <h3 title={group.title}>{group.title}</h3>
-                                    <span>
-                                        {group.offerId ? `Offer ID: ${group.offerId} · ` : ''}
-                                        {group.images.length} {group.images.length === 1 ? 'photo' : 'photos'}
-                                    </span>
-                                </div>
-                                <span className={`library-product-group__selected${selectedCount > 0 ? ' library-product-group__selected--active' : ''}`}>
-                                    {selectedCount} / {group.images.length} selected
-                                </span>
-                                <div className="library-product-group__actions">
-                                    <button type="button" className="btn btn-secondary"
-                                        onClick={() => watermarkGroup(group)}>
-                                        Watermark →
-                                    </button>
-                                    <button type="button" className="btn btn-secondary btn-danger"
-                                        title="Remove this product's photos from WatermarkOS only"
-                                        onClick={() => deleteGroup(group)}>
-                                        Delete group
-                                    </button>
-                                </div>
-                            </header>}
-                            {isCollapsed ? (
-                                <div className="library-product-group__collapsed-preview">
-                                    {group.images.slice(0, COLLAPSED_THUMBS).map(image => (
-                                        <img
-                                            key={image.id}
-                                            src={image.src}
-                                            alt={image.productName ?? image.filename}
-                                            loading="lazy"
-                                            title={image.filename}
-                                        />
-                                    ))}
-                                    {group.images.length > COLLAPSED_THUMBS && (
-                                        <span className="library-product-group__more">
-                                            +{group.images.length - COLLAPSED_THUMBS}
-                                        </span>
-                                    )}
-                                </div>
-                            ) : (
-                                <div className="library-product-group__grid">
-                                    {group.images.map(image => {
-                                        const isSelected = selectedSet.has(image.id);
-                                        const d = dimensions[image.id];
-                                        const width = image.width ?? d?.width;
-                                        const height = image.height ?? d?.height;
-                                        const resolutionText = width && height
-                                            ? `${width}×${height}`
-                                            : 'Resolution loading';
-                                        const localStatus = image.source === 'local'
-                                            ? (image.uploadStatus === 'ready'
-                                                ? 'RustFS ready'
-                                                : image.uploadStatus === 'failed'
-                                                    ? 'Upload failed'
-                                                    : 'Uploading…')
-                                            : null;
-                                        return (
-                                            <article
-                                                key={image.id}
-                                                className={`image-card ${isSelected ? 'selected' : ''}`}
-                                            >
-                                                <button
-                                                    className="image-thumb"
-                                                    type="button"
-                                                    onClick={() => toggleImage(image.id)}
-                                                    aria-pressed={isSelected}
-                                                    aria-label={`${isSelected ? 'Deselect' : 'Select'} ${image.filename}`}
-                                                >
-                                                    <img
-                                                        src={image.src}
-                                                        alt={image.productName ?? image.filename}
-                                                        loading="lazy"
-                                                        onLoad={event => rememberDimensions(
-                                                            image.id,
-                                                            event.currentTarget.naturalWidth,
-                                                            event.currentTarget.naturalHeight
-                                                        )}
-                                                    />
-                                                    <span className="selection-mark" aria-hidden="true">
-                                                        {isSelected ? '✓' : ''}
-                                                    </span>
-                                                </button>
-                                                <div className="image-footer">
-                                                    <div
-                                                        className="image-footer-title"
-                                                        title={image.filename}
-                                                    >
-                                                        {image.filename}
-                                                    </div>
-                                                    <div className="image-footer-meta">
-                                                        {localStatus ? `${localStatus} · ` : ''}
-                                                        {resolutionText}
-                                                    </div>
-                                                    <div className="card-actions">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => setDetailId(image.id)}
-                                                        >
-                                                            Details
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => openEditor(image.id)}
-                                                        >
-                                                            Edit →
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            className="remove-local"
-                                                            title="Remove from WatermarkOS only"
-                                                            aria-label={`Delete ${image.filename} from WatermarkOS`}
-                                                            onClick={() => deleteImage(image)}
-                                                        >
-                                                            Delete
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </article>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </section>
-                    );
-                })}
+                {displayGroups.length > 0 && (
+                    <LibraryGroupGrid
+                        groups={displayGroups}
+                        selectedSet={selectedSet}
+                        viewMode={viewMode}
+                        collapsedGroups={collapsedGroups}
+                        dimensions={dimensions}
+                        toggleGroupSelection={toggleGroupSelection}
+                        toggleGroupCollapsed={toggleGroupCollapsed}
+                        watermarkGroup={watermarkGroup}
+                        deleteGroup={deleteGroup}
+                        toggleImage={toggleImage}
+                        rememberDimensions={rememberDimensions}
+                        setDetailId={setDetailId}
+                        openEditor={openEditor}
+                        deleteImage={deleteImage}
+                    />
+                )}
                 {!catalogLoading && visible.length === 0 && (
                     <div className="empty-library dropzone">
                         <div className="drop-icon">▧</div>
@@ -670,7 +457,7 @@ export function LibraryPage() {
                     <div className="image-details-preview">
                         <img src={detailImage.src} alt={detailImage.productName ?? detailImage.filename}
                             onLoad={event => rememberDimensions(detailImage.id, event.currentTarget.naturalWidth, event.currentTarget.naturalHeight)}
-                            />
+                        />
                     </div>
                     <div className="image-details-metadata">
                         {([
